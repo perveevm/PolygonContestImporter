@@ -6,6 +6,7 @@ import org.w3c.dom.NodeList;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import java.io.File;
 import java.io.PrintWriter;
 import java.util.Map;
 import java.util.TreeMap;
@@ -35,7 +36,7 @@ public class Challenge {
         System.out.println("parsing contest.xml ...");
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder = factory.newDocumentBuilder();
-        Document doc = builder.parse(path + "contest.xml");
+        Document doc = builder.parse(new File(path, "contest.xml"));
         //NodeList problem = doc.getDocumentElement().getChildNodes();
         Element el = doc.getDocumentElement();
         url = el.getAttribute("url");
@@ -54,7 +55,7 @@ public class Challenge {
             String purl = child.getAttribute("url");
             String index = child.getAttribute("index");
             String pname = purl.substring(purl.lastIndexOf("/") + 1);
-            Problem p = new Problem(path + "problems/" + pname + "/problem.xml", id, type);
+            Problem p = new Problem(new File(path, "problems/" + pname + "/problem.xml").getAbsolutePath(), id, type);
             if (!p.url.equals(purl)) {
                 System.out.println("Problem URL do not match! Contest problem = '" + purl + "' problems.xml = '" + p.url + "'");
                 System.exit(1);

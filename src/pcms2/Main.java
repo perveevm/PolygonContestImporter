@@ -21,21 +21,21 @@ public class Main {
 
             if (args[0].equals("problem")) {
                 //Problem pi = new Problem("problem.xml", "ru.", "ioi");
-                Problem pi = new Problem(folder + "problem.xml", args[1], args[2]);
-				File f = new File (folder + "problem.xml");
+                Problem pi = new Problem(new File(folder, "problem.xml").getAbsolutePath(), args[1], args[2]);
+				File f = new File (folder, "problem.xml");
 				f.renameTo(new File(f.getAbsolutePath() + ".old"));
-                PrintWriter pw = new PrintWriter(new FileWriter(folder + "problem.xml"));
+                PrintWriter pw = new PrintWriter(new FileWriter(new File(folder, "problem.xml")));
                 pi.print(pw);
                 pw.close();
             } else if (args[0].equals("challenge")){
                 Challenge ch = new Challenge(args[1], args[2], folder);
-                PrintWriter pw = new PrintWriter(new FileWriter(folder + "challenge.xml"));
+                PrintWriter pw = new PrintWriter(new FileWriter(new File(folder, "challenge.xml")));
                 ch.print(pw);
                 pw.close();
                 for (Problem pr:ch.problems.values()){
-					File f = new File(folder + "problems/" + pr.shortName + "/problem.xml");
+					File f = new File(folder, "problems/" + pr.shortName + "/problem.xml");
 					f.renameTo(new File(f.getAbsolutePath() + ".old"));
-                    pw = new PrintWriter(new FileWriter(folder + "problems/" + pr.shortName + "/problem.xml"));
+                    pw = new PrintWriter(new FileWriter(new File(folder, "problems/" + pr.shortName + "/problem.xml")));
                     pr.print(pw);
                     pw.close();
                 }
