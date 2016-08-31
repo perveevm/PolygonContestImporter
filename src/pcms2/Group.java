@@ -13,10 +13,11 @@ public class Group {
     public String requirePrevious = "false";
     public int first;
     public int last;
-    public void println(PrintWriter pw, String tabs){
-		if (comment.equals("0")){
-			feedback = "statistics";
-		}
+
+    public void println(PrintWriter pw, String tabs) {
+        if (comment.equals("0")) {
+            feedback = "statistics";
+        }
         pw.println(tabs + "<test-group");
         pw.println(tabs + "\tcomment =\"" + comment + "\"");
         pw.println(tabs + "\tscore =\"" + score + "\"");

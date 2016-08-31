@@ -21,18 +21,21 @@ public class Challenge {
     public String id;
     public String type;
     public TreeMap<String, Problem> problems;
-    public Challenge(){
+
+    public Challenge() {
         problems = new TreeMap<>();
         path = "";
     }
-    public Challenge(String ID, String Type, String Path) throws Exception{
+
+    public Challenge(String ID, String Type, String Path) throws Exception {
         problems = new TreeMap<>();
         path = Path;
         id = ID;
         type = Type;
         parse();
     }
-    public void parse() throws Exception{
+
+    public void parse() throws Exception {
         System.out.println("parsing contest.xml ...");
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder = factory.newDocumentBuilder();
@@ -42,15 +45,15 @@ public class Challenge {
         url = el.getAttribute("url");
         Element child = (Element) el.getElementsByTagName("names").item(0);
         NodeList nl = child.getElementsByTagName("name");
-        for (int i = 0; i < nl.getLength(); i++){
+        for (int i = 0; i < nl.getLength(); i++) {
             child = (Element) nl.item(i);
-            if (child.getAttribute("language").equals("russian")){
+            if (child.getAttribute("language").equals("russian")) {
                 name = child.getAttribute("value");
             }
         }
         child = (Element) el.getElementsByTagName("problems").item(0);
         nl = child.getElementsByTagName("problem");
-        for (int i = 0; i < nl.getLength(); i++){
+        for (int i = 0; i < nl.getLength(); i++) {
             child = (Element) nl.item(i);
             String purl = child.getAttribute("url");
             String index = child.getAttribute("index");
@@ -64,7 +67,7 @@ public class Challenge {
         }
     }
 
-    public void print(PrintWriter pw){
+    public void print(PrintWriter pw) {
         pw.println("<?xml version = \"1.0\" encoding = \"windows-1251\" ?>");
         pw.println("<challenge");
         pw.println("\tid = \"" + id + "\"");
@@ -72,7 +75,7 @@ public class Challenge {
         pw.println("\tscoring-model = \"%" + type + "\"");
         pw.println("\txmlai-process = \"http://neerc.ifmo.ru/develop/pcms2/xmlai/default-rules.xml\"");
         pw.println(">");
-        for (Map.Entry<String, Problem> e:problems.entrySet()){
+        for (Map.Entry<String, Problem> e : problems.entrySet()) {
             pw.println("\t<problem-ref alias = \"" + e.getKey().toUpperCase() + "\" " +
                     "id = \"" + e.getKey() + "\" " +
                     "problem-id = \"" + e.getValue().ID + "\" " +
