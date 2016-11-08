@@ -12,16 +12,16 @@ public class Main {
         // 2 - challenge type ioi or icpc
         // 3 - path to folder contest.xml or problem.xml, empty if launched in same folder
         if (args.length < 3) {
-            System.out.println("usage\n <challenge or problem> <challenge id> <ioi or icpc> [path to contest.xml or problem.xml folder]");
+            System.out.println("usage\n <challenge or problem> <challenge id> <ioi or icpc> [path to contest.xml folder]");
             return;
         }
-        String folder = (args.length > 3 ? args[3] : ".");
+        String folder = (args.length > 3 ? args[3] : "");
 
         try {
 
             if (args[0].equals("problem")) {
                 //Problem pi = new Problem("problem.xml", "ru.", "ioi");
-                Problem pi = new Problem(folder, args[1], args[2]);
+                Problem pi = new Problem(new File(folder, "problem.xml").getAbsolutePath(), args[1], args[2]);
                 File f = new File(folder, "problem.xml");
                 f.renameTo(new File(f.getAbsolutePath() + ".old"));
                 PrintWriter pw = new PrintWriter(new FileWriter(new File(folder, "problem.xml")));

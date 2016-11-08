@@ -46,21 +46,14 @@ public class Testset {
 
         return in.replace("%" + tt + "d", ttt);
     }
-    public void print(PrintWriter pw, String tabs, String type){
-        //TODO: Get rid of preliminary testset
-        if (Name.equals("preliminary")) {
-            return;
-        }
+
+    public void print(PrintWriter pw, String tabs, String type) {
         pw.println(tabs + "<testset");
-        if (!Name.equals("preliminary")){
+        if (!Name.equals("preliminary")) {
             Name = "main";
         }
-        if (type.equals("ioi")){
+        if (type.equals("ioi")) {
             pw.println(tabs + "\tname = \"" + Name + "\"");
-            if (Name.equals("main") && groups.size() == 0){
-                pw.println(tabs + "\tfeedback = \"outcome\"");
-            }
-
         }
         pw.println(tabs + "\tinput-name = \"" + InputName + "\"");
         pw.println(tabs + "\toutput-name = \"" + OutputName + "\"");
