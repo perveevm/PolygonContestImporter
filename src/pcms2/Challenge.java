@@ -43,6 +43,11 @@ public class Challenge {
         //NodeList problem = doc.getDocumentElement().getChildNodes();
         Element el = doc.getDocumentElement();
         url = el.getAttribute("url");
+        if (id.equals("auto")){
+            String[] t = url.split("/");
+            id = "com.codeforces.polygon.innopolis" + t[t.length - 1];
+        }
+
         Element child = (Element) el.getElementsByTagName("names").item(0);
         NodeList nl = child.getElementsByTagName("name");
         for (int i = 0; i < nl.getLength(); i++) {
@@ -73,6 +78,7 @@ public class Challenge {
         pw.println("\tid = \"" + id + "\"");
         pw.println("\tname = \"" + name + "\"");
         pw.println("\tscoring-model = \"%" + type + "\"");
+        pw.println("\tscoring-mode = \"group-max\"");
         pw.println("\txmlai-process = \"http://neerc.ifmo.ru/develop/pcms2/xmlai/default-rules.xml\"");
         pw.println(">");
         for (Map.Entry<String, Problem> e : problems.entrySet()) {

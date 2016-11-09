@@ -7,10 +7,10 @@ import java.io.PrintWriter;
  */
 public class Group {
     public String comment;
-    public String score = "sum";
+    public String scoring = "sum";
     public String feedback = "outcome";
     public String groupBonus = "0";
-    public String requirePrevious = "false";
+    public String requireGroups = "";
     public int first;
     public int last;
 
@@ -20,10 +20,10 @@ public class Group {
         }
         pw.println(tabs + "<test-group");
         pw.println(tabs + "\tcomment =\"" + comment + "\"");
-        pw.println(tabs + "\tscore =\"" + score + "\"");
+        pw.println(tabs + "\tscoring =\"" + scoring + "\"");
         pw.println(tabs + "\tfeedback =\"" + feedback + "\"");
         pw.println(tabs + "\tgroup-bonus =\"" + groupBonus + "\"");
-        pw.println(tabs + "\trequire-previous =\"" + requirePrevious + "\"");
+        pw.println(tabs + "\trequire-groups =\"" + requireGroups + "\"");
         pw.println(tabs + ">");
     }
 }
