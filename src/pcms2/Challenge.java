@@ -62,7 +62,7 @@ public class Challenge {
             String purl = child.getAttribute("url");
             String index = child.getAttribute("index");
             String pname = purl.substring(purl.lastIndexOf("/") + 1);
-            Problem p = new Problem(new File(path, "problems/" + pname + "/problem.xml").getAbsolutePath(), id, type);
+            Problem p = new Problem(new File(path, "problems/" + pname).getAbsolutePath(), id, type);
             if (!p.url.equals(purl)) {
                 System.out.println("Problem URL do not match! Contest problem = '" + purl + "' problems.xml = '" + p.url + "'");
                 System.exit(1);
