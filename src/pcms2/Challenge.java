@@ -45,7 +45,7 @@ public class Challenge {
         url = el.getAttribute("url");
         if (id.equals("auto")) {
             String[] t = url.split("/");
-            id = "com.codeforces.polygon.innopolis" + t[t.length - 1];
+            id = "com.codeforces.polygon." + t[t.length - 1];
         }
         Element child = (Element) el.getElementsByTagName("names").item(0);
         NodeList nl = child.getElementsByTagName("name");

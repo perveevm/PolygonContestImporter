@@ -11,9 +11,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.TreeMap;
-import java.util.TreeSet;
+import java.util.*;
 
 /**
  * Created by Ilshat on 11/22/2015.
@@ -26,7 +24,7 @@ public class Problem {
     String Name;
     String shortName;
     String url;
-    Testset[] testsets;
+    TreeMap <String, Testset> testsets;
     ArrayList<Attachment> attachments;
     Verifier v;
     boolean hasPreliminary = false;
@@ -36,11 +34,7 @@ public class Problem {
         GroupsPath = path + "/files/groups.txt";
         ID = idprefix;
         ScriptType = type;
-        if (ScriptType.equals("ioi")) {
-            testsets = new Testset[2];
-        } else {
-            testsets = new Testset[1];
-        }
+        testsets = new TreeMap<>();
         parse();
     }
 
@@ -85,48 +79,37 @@ public class Problem {
         nl = el.getElementsByTagName("testset");
         int sampleCount = 0;
         for (int i = 0; i < nl.getLength(); i++) {//testset
-            //System.out.println("testsets cnt = " + nl.getLength() + " i = " + i);
+            //System.out.println("DEBUG: testsets cnt = " + nl.getLength() + " i = " + i);
             boolean isPreliminary = false;
             boolean hasGroups = false;
             el = (Element) nl.item(i);
             Testset ts = new Testset();
             TreeSet<String> gmap = new TreeSet<>();
-            ts.Name = el.getAttribute("name");
-            ts.InputName = inp;
-            ts.OutputName = outp;
-            ts.TimeLimit = Double.parseDouble(el.getElementsByTagName("time-limit").item(0).
+            ts.name = el.getAttribute("name");
+            ts.inputName = inp;
+            ts.outputName = outp;
+            ts.timeLimit = Double.parseDouble(el.getElementsByTagName("time-limit").item(0).
                     getChildNodes().item(0).getNodeValue()) / 1000;
-            ts.MemoryLimit = el.getElementsByTagName("memory-limit").item(0).
+            ts.memoryLimit = el.getElementsByTagName("memory-limit").item(0).
                     getChildNodes().item(0).getNodeValue();
             int tc = Integer.parseInt(el.getElementsByTagName("test-count").item(0).
                     getChildNodes().item(0).getNodeValue());
-            ts.InputHref = el.getElementsByTagName("input-path-pattern").item(0).
+            ts.inputHref = el.getElementsByTagName("input-path-pattern").item(0).
                     getChildNodes().item(0).getNodeValue();
-            ts.OutputHref = el.getElementsByTagName("answer-path-pattern").item(0).
+            ts.outputHref = el.getElementsByTagName("answer-path-pattern").item(0).
                     getChildNodes().item(0).getNodeValue();
 
-            if (ts.Name.equals("preliminary")) {
+            if (ts.name.equals("preliminary")) {
                 hasPreliminary = true;
                 isPreliminary = true;
-            } else {
-                if (!hasPreliminary && i == 0 && ScriptType.equals("ioi")) {
-                    testsets[0] = new Testset();
-                    testsets[0].Name = "preliminary";
-                    testsets[0].InputName = ts.InputName;
-                    testsets[0].OutputName = ts.OutputName;
-                    testsets[0].TimeLimit = ts.TimeLimit;
-                    testsets[0].MemoryLimit = ts.MemoryLimit;
-                    testsets[0].InputHref = ts.InputHref;
-                    testsets[0].OutputHref = ts.OutputHref;
-                    i++;
-                    testsets[0].Tests = new Test[10];//to-do
-                }
             }
+
             NodeList nl1 = el.getElementsByTagName("tests");
             nl1 = ((Element) nl1.item(0)).getElementsByTagName("test");
-            ts.Tests = new Test[tc];
+            ts.tests = new Test[tc];
             //System.out.println("test count = " + tc);
             for (int j = 0; j < nl1.getLength(); j++) {//tests
+                //System.out.println("DEBUG: j = " + j);
                 el = (Element) nl1.item(j);
                 String cm = el.getAttribute("method");
                 String g = "-1";
@@ -138,7 +121,6 @@ public class Problem {
                         g = "sample";
                     }
                     if (!hasPreliminary && ScriptType.equals("ioi")) {
-                        testsets[0].Tests[sampleCount] = new Test("0", cm, "sample");
                         sampleCount++;
                     }
 
@@ -153,14 +135,20 @@ public class Problem {
                         gmap.add(g);
                         Group gg = new Group();
 
-                        if (groupstxt != null) {
+                        if (ts.name.equals("tests") && groupstxt != null) {
                             String[] group_params = groupstxt.readLine().trim().split("\t");
+                            System.out.println("INFO: " +
+                                    "Group parameters:'" + Arrays.toString(group_params) + "'. " +
+                                    "Group: '" + g + "' " +
+                                    "First test: " + j);
 
                             for (int ig = 0; ig < group_params.length; ig++) {
                                 String[] kv = getKeyAndValue(group_params[ig]);
                                 if (kv[0].equals("group")) {
                                     if (Integer.parseInt(kv[1]) != ts.groups.size()) {
-                                        System.out.println("WARNING: Group numbers are not consecutive?");
+                                        System.out.println("WARNING: Group numbers are not consecutive? " +
+                                                "Group parameters:'" + Arrays.toString(group_params) + "'. " +
+                                                "Group: '" + g + "'");
                                     }
                                 } else if (kv[0].equals("group-bonus")) {
                                     gg.groupBonus = kv[1];
@@ -177,6 +165,13 @@ public class Problem {
                                         }
                                     }
                                     //gg.requireGroups = kv[1];
+                                } else if (kv[0].equals(("feedback"))) {
+                                    gg.feedback = kv[1];
+                                } else if (kv[0].equals("points")) {
+                                    gg.points = kv[1];
+                                    gg.parseIntPoints();
+                                } else if (kv[0].equals("comment")) {
+                                    gg.commentname = ". " + kv[1];
                                 } else {
                                     System.out.println("WARNING: unknown parameter in groups.txt");
                                 }
@@ -191,19 +186,40 @@ public class Problem {
                     System.out.println("WARNING: Groups are enabled but test '" + j + "' has no group!");
                 }
 
-                ts.Tests[j] = new Test("0", cm, g);
-                //System.out.println(ts.Tests[j].comment + " " + ts.Tests[j].points + " " + ts.Tests[j].group);
+                if (!g.equals("-1")) {
+                    Group gg = ts.groups.get(gmap.size() - 1);
+                    if (j >= gg.first && j <= gg.last) {
+                        if (gg.intPoints != null) {
+                            ts.tests[j] = new Test("" + gg.intPoints[j - gg.first], cm, g);
+                        }
+                    } else {
+                        System.out.println("WARNING: Could not get right group for test '" + j + "'!");
+                    }
+                }
+                if (ts.tests[j] == null) {
+                    ts.tests[j] = new Test("0", cm, g);
+                }
+                //System.out.println(ts.tests[j].comment + " " + ts.tests[j].points + " " + ts.tests[j].group);
             }
-            testsets[i] = ts;
+            testsets.put(ts.name, ts);
             //System.out.println("testset finished");
         }
         if (!hasPreliminary && ScriptType.equals("ioi")) {
             System.out.println("No preliminary testset, getting sample tests");
             Test[] temp = new Test[sampleCount];
             for (int i = 0; i < sampleCount; i++) {
-                temp[i] = testsets[0].Tests[i];
+                temp[i] = testsets.get("tests").tests[i];
             }
-            testsets[0].Tests = temp;
+            Testset preliminary = new Testset();
+            preliminary.tests = temp;
+            preliminary.name = "preliminary";
+            preliminary.inputName = testsets.get("tests").inputName;
+            preliminary.outputName = testsets.get("tests").outputName;
+            preliminary.inputHref = testsets.get("tests").inputHref;
+            preliminary.outputHref = testsets.get("tests").outputHref;
+            preliminary.memoryLimit = testsets.get("tests").memoryLimit;
+            preliminary.timeLimit = testsets.get("tests").timeLimit;
+            testsets.put("preliminary", preliminary);
         }
         //files attachments
         el = (Element) ((Element) doc.getElementsByTagName("files").item(0)).getElementsByTagName("attachments").item(0);
@@ -263,9 +279,10 @@ public class Problem {
         pw.println(">");
         pw.println("\t<judging>");
         pw.println("\t\t<script type = \"%" + ScriptType + "\">");
-        for (int i = 0; i < testsets.length; i++) {
-            testsets[i].print(pw, "\t\t\t", ScriptType);
+        for (Map.Entry<String, Testset> t: testsets.entrySet()){
+            t.getValue().print(pw, "\t\t\t", ScriptType);
         }
+
         v.print(pw, "\t\t\t");
         for (Attachment at : attachments) {
             at.print(pw, "\t\t\t");

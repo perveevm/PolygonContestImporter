@@ -7,15 +7,15 @@ import java.util.*;
  * Created by Ilshat on 11/22/2015.
  */
 public class Testset {
-    public String Name;
-    public String InputName;
-    public String OutputName;
-    public String InputHref;
-    public String OutputHref;
-    public double TimeLimit;
-    public String MemoryLimit;
+    public String name;
+    public String inputName;
+    public String outputName;
+    public String inputHref;
+    public String outputHref;
+    public double timeLimit;
+    public String memoryLimit;
     public ArrayList<Group> groups;
-    public Test[] Tests;
+    public Test[] tests;
 
     public Testset() {
         groups = new ArrayList<>();
@@ -27,13 +27,13 @@ public class Testset {
                    String output_href,
                    int time_limit,
                    String memor_limit) {
-        Name = name;
-        OutputName = output_name;
-        InputName = input_name;
-        InputHref = input_href;
-        OutputHref = output_href;
-        TimeLimit = time_limit;
-        MemoryLimit = memor_limit;
+        this.name = name;
+        outputName = output_name;
+        inputName = input_name;
+        inputHref = input_href;
+        outputHref = output_href;
+        timeLimit = time_limit;
+        memoryLimit = memor_limit;
         groups = new ArrayList<>();
     }
 
@@ -48,47 +48,47 @@ public class Testset {
     }
     public void print(PrintWriter pw, String tabs, String type){
         //TODO: Get rid of preliminary testset
-        if (Name.equals("preliminary")) {
-            return;
-        }
+        //if (name.equals("preliminary")) {
+            //return;
+        //}
         pw.println(tabs + "<testset");
-        if (!Name.equals("preliminary")){
-            Name = "main";
+        if (!name.equals("preliminary")){
+            name = "main";
         }
         if (type.equals("ioi")){
-            pw.println(tabs + "\tname = \"" + Name + "\"");
-            if (Name.equals("main") && groups.size() == 0){
+            pw.println(tabs + "\tname = \"" + name + "\"");
+            if (name.equals("main") && groups.size() == 0){
                 pw.println(tabs + "\tfeedback = \"outcome\"");
             }
 
         }
-        pw.println(tabs + "\tinput-name = \"" + InputName + "\"");
-        pw.println(tabs + "\toutput-name = \"" + OutputName + "\"");
-        pw.println(tabs + "\tinput-href = \"" + formatHref(InputHref) + "\"");
-        pw.println(tabs + "\tanswer-href = \"" + formatHref(OutputHref) + "\"");
-        pw.println(tabs + "\ttime-limit = \"" + TimeLimit + "s\"");
-        pw.println(tabs + "\tmemory-limit = \"" + MemoryLimit + "\"");
+        pw.println(tabs + "\tinput-name = \"" + inputName + "\"");
+        pw.println(tabs + "\toutput-name = \"" + outputName + "\"");
+        pw.println(tabs + "\tinput-href = \"" + formatHref(inputHref) + "\"");
+        pw.println(tabs + "\tanswer-href = \"" + formatHref(outputHref) + "\"");
+        pw.println(tabs + "\ttime-limit = \"" + timeLimit + "s\"");
+        pw.println(tabs + "\tmemory-limit = \"" + memoryLimit + "\"");
         if (type.equals("icpc")) {
-            pw.println(tabs + "\ttest-count = \"" + Tests.length + "\"");
+            pw.println(tabs + "\ttest-count = \"" + tests.length + "\"");
         }
         pw.println(tabs + ">");
 
         if (type.equals("ioi")) {
-            if (Name.equals("preliminary")) {
-                for (int i = 0; i < Tests.length; i++) {
-                    Tests[i].println(pw, tabs + "\t");
+            if (name.equals("preliminary")) {
+                for (int i = 0; i < tests.length; i++) {
+                    tests[i].println(pw, tabs + "\t");
                 }
             } else {
                 int g = groups.size();
                 if (g == 0) {
-                    for (int i = 0; i < Tests.length; i++) {
-                        Tests[i].println(pw, tabs + "\t");
+                    for (int i = 0; i < tests.length; i++) {
+                        tests[i].println(pw, tabs + "\t");
                     }
                 } else {
                     for (int i = 0; i < g; i++) {
                         groups.get(i).println(pw, tabs + "\t");
                         for (int j = groups.get(i).first; j <= groups.get(i).last; j++) {
-                            Tests[j].println(pw, tabs + "\t\t");
+                            tests[j].println(pw, tabs + "\t\t");
                         }
                         pw.println(tabs + "\t</test-group>");
                     }
