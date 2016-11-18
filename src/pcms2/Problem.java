@@ -136,7 +136,7 @@ public class Problem {
                         Group gg = new Group();
 
                         if (ts.name.equals("tests") && groupstxt != null) {
-                            String[] group_params = groupstxt.readLine().trim().split("\t");
+                            String[] group_params = groupstxt.readLine().trim().split("(\t)|(;)");
                             System.out.println("INFO: " +
                                     "Group parameters:'" + Arrays.toString(group_params) + "'. " +
                                     "Group: '" + g + "' " +
@@ -172,7 +172,9 @@ public class Problem {
                                     gg.parseIntPoints();
                                 } else if (kv[0].equals("comment")) {
                                     gg.commentname = ". " + kv[1];
-                                } else {
+                                } else if(kv[0].equals("scoring")) {
+                                    gg.scoring = kv[1];
+                                }else {
                                     System.out.println("WARNING: unknown parameter in groups.txt");
                                 }
                             }
