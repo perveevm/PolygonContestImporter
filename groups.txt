@@ -1,0 +1,4 @@
+group="0"
+group="1"	comment = "Subtask 1"	group-bonus="21"	require-groups="0"
+group="2"	group-bonus="0"	require-groups="1"	feedback="outcome"	points="1,1,1,1,1, 1,1,1,1,1, 1,1,1,1,1, 1"
+group="3"	group-bonus="42"	require-groups="2"
