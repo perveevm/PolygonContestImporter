@@ -88,7 +88,11 @@ public class Testset {
                     for (int i = 0; i < g; i++) {
                         groups.get(i).println(pw, tabs + "\t");
                         for (int j = groups.get(i).first; j <= groups.get(i).last; j++) {
-                            tests[j].println(pw, tabs + "\t\t");
+                            if (groups.get(i).intPoints == null) {
+                                tests[j].println(pw, tabs + "\t\t");
+                            } else {
+                                tests[j].println(pw, tabs + "\t\t", "" + groups.get(i).intPoints[j - groups.get(i).first]);
+                            }
                         }
                         pw.println(tabs + "\t</test-group>");
                     }

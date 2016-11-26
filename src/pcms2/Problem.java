@@ -39,7 +39,6 @@ public class Problem {
     }
 
     public void parse() throws Exception {
-        System.out.println("parsing problem...");
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder = factory.newDocumentBuilder();
         Document doc = builder.parse(XMLpath);
@@ -50,6 +49,9 @@ public class Problem {
         //NodeList problem = doc.getDocumentElement().getChildNodes();
         Element el = doc.getDocumentElement();
         shortName = el.getAttribute("short-name");
+
+        System.out.println("\nparsing problem '" + shortName + "'");
+
         url = el.getAttribute("url");
         if (ID.startsWith("com.codeforces.polygon")) {
             String[] t = url.split("/");
@@ -65,7 +67,7 @@ public class Problem {
             el = (Element) n;
             if (el.getAttribute("language").equals("russian")) {
                 Name = el.getAttribute("value");
-                System.out.println(Name);
+                System.out.println("problem name = '" + Name + "'");
             } else {
                 System.out.println(el.getAttribute("language"));
             }
@@ -169,7 +171,7 @@ public class Problem {
                                     gg.feedback = kv[1];
                                 } else if (kv[0].equals("points")) {
                                     gg.points = kv[1];
-                                    gg.parseIntPoints();
+                                    //gg.parseIntPoints();
                                 } else if (kv[0].equals("comment")) {
                                     gg.commentname = ". " + kv[1];
                                 } else if(kv[0].equals("scoring")) {
@@ -188,26 +190,14 @@ public class Problem {
                     System.out.println("WARNING: Groups are enabled but test '" + j + "' has no group!");
                 }
 
-                if (!g.equals("-1")) {
-                    Group gg = ts.groups.get(gmap.size() - 1);
-                    if (j >= gg.first && j <= gg.last) {
-                        if (gg.intPoints != null) {
-                            ts.tests[j] = new Test("" + gg.intPoints[j - gg.first], cm, g);
-                        }
-                    } else {
-                        System.out.println("WARNING: Could not get right group for test '" + j + "'!");
-                    }
-                }
-                if (ts.tests[j] == null) {
-                    ts.tests[j] = new Test("0", cm, g);
-                }
-                //System.out.println(ts.tests[j].comment + " " + ts.tests[j].points + " " + ts.tests[j].group);
+                ts.tests[j] = new Test(cm, g);
+                //System.out.println("DEBUG: " + ts.tests[j].comment + " " + ts.tests[j].points + " " + ts.tests[j].group);
             }
             testsets.put(ts.name, ts);
             //System.out.println("testset finished");
         }
         if (!hasPreliminary && ScriptType.equals("ioi")) {
-            System.out.println("No preliminary testset, getting sample tests");
+            System.out.println("INFO: No preliminary testset, getting sample tests");
             Test[] temp = new Test[sampleCount];
             for (int i = 0; i < sampleCount; i++) {
                 temp[i] = testsets.get("tests").tests[i];
@@ -223,6 +213,14 @@ public class Problem {
             preliminary.timeLimit = testsets.get("tests").timeLimit;
             testsets.put("preliminary", preliminary);
         }
+
+        //parse points
+        if (testsets.get("tests").groups.size() != 0) {
+            ArrayList<Group> gg = testsets.get("tests").groups;
+            for (int i = 0; i < gg.size(); i++) {
+                gg.get(i).parseIntPoints();
+            }
+        }
         //files attachments
         el = (Element) ((Element) doc.getElementsByTagName("files").item(0)).getElementsByTagName("attachments").item(0);
         attachments = new ArrayList<>();
@@ -234,7 +232,7 @@ public class Problem {
                 String atpath = el.getAttribute("path");
                 String ext = atpath.substring(atpath.lastIndexOf('.') + 1, atpath.length());
                 String fname = atpath.substring(atpath.lastIndexOf("/") + 1, atpath.lastIndexOf('.'));
-                System.out.println("File name is '" + fname + "'");
+                //System.out.println("DEBUG: File name is '" + fname + "'");
                 if (fname.equals(shortName) && !ext.equals("h")) {
                     System.out.println("Skipping solution stub '" + fname + "." + ext + "'");
                     continue;

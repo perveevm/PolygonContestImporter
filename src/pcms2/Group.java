@@ -22,7 +22,7 @@ public class Group {
             feedback = "statistics";
         }
         pw.println(tabs + "<test-group");
-        pw.println(tabs + "\tcomment =\"" + comment + commentname + "\"");
+        pw.println(tabs + "\tcomment =\"" + comment + " " + commentname + "\"");
         pw.println(tabs + "\tscoring =\"" + scoring + "\"");
         pw.println(tabs + "\tfeedback =\"" + feedback + "\"");
         pw.println(tabs + "\tgroup-bonus =\"" + groupBonus + "\"");
@@ -31,6 +31,10 @@ public class Group {
     }
 
     public void parseIntPoints() {
+        if (points == null || points.isEmpty()) {
+            return;
+        }
+        //System.out.println("DEBUG: parsing points '" + points + "'");
         String res = "";
         boolean dig = false;
         for (int i = 0; i < points.length(); i++){
@@ -45,10 +49,35 @@ public class Group {
             }
         }
         res = res.trim();
+        //System.out.println("DEBUG: res = " + res);
         String[] p = res.split(" ");
-        intPoints = new int[p.length];
-        for (int i = 0; i < p.length; i++){
-            intPoints[i] = Integer.parseInt(p[i]);
+
+        if (last - first + 1 == p.length) {
+            intPoints = new int[p.length];
+            for (int i = 0; i < p.length; i++){
+                intPoints[i] = Integer.parseInt(p[i]);
+            }
+            return;
         }
+        if (p.length == 1){
+            int tcount = last - first + 1;
+            int total = Integer.parseInt(points);
+
+            if (total < tcount) {
+                System.out.println("WARNING: Could not parse 'points' parameter for group '" + comment + "'");
+                return;
+            }
+
+            intPoints = new int[tcount];
+            for (int i = 0; i < tcount - total % tcount; i++) {
+                intPoints[i] = total / tcount;
+            }
+            for (int i = tcount - total % tcount; i < tcount; i++) {
+                intPoints[i] = total / tcount + 1;
+            }
+            return;
+        }
+
+        System.out.println("WARNING: Could not parse 'points' parameter for group '" + comment + "'");
     }
 }
