@@ -138,7 +138,7 @@ public class Problem {
                         Group gg = new Group();
 
                         if (ts.name.equals("tests") && groupstxt != null) {
-                            String[] group_params = groupstxt.readLine().trim().split("(\t)|(;)");
+                            String[] group_params = groupstxt.readLine().trim().split("(\t;)|(\t)|(;)");
                             System.out.println("INFO: " +
                                     "Group parameters:'" + Arrays.toString(group_params) + "'. " +
                                     "Group: '" + g + "' " +
@@ -294,10 +294,14 @@ public class Problem {
 
     String[] getKeyAndValue(String s) {
         //key="value"
-        String[] ss = s.split("=");
-        ss[0] = ss[0].trim();
-        ss[1] = ss[1].trim();
+        int j = s.indexOf('=');
+        String[] ss = new String[2];
+        ss[0] = s.substring(0, j).trim();
+        ss[1] = s.substring(j + 1).trim();
         ss[1] = ss[1].substring(1, ss[1].length() - 1);
+        ss[1] = ss[1].replaceAll("<", "&lt;");
+        ss[1] = ss[1].replaceAll(">", "&gt;");
+
         return ss;
     }
 }
