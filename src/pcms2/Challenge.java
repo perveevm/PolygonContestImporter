@@ -1,12 +1,15 @@
 package pcms2;
 
+import org.apache.commons.io.FileUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Map;
 import java.util.TreeMap;
@@ -88,5 +91,48 @@ public class Challenge {
         }
         pw.println("</challenge>");
 
+    }
+
+    public boolean copyToVFS(String vfs, BufferedReader in, boolean update) throws IOException {
+        File src = new File(path, "challenge.xml");
+        File dest = new File(vfs + "/etc/" + id.replaceAll("\\.", "/"));
+        //System.out.println("DEBUG: src = '" + src.getAbsolutePath() + " dest = '" + dest.getAbsolutePath() + "'");
+        if (dest.exists()) {
+            System.out.println("Challenge '" + dest.getAbsolutePath() + "' exists.");
+            String yn = "n";
+            if (!update) {
+                System.out.println("Do You want to update it?\n(y - yes, n - no");
+                yn = in.readLine();
+            }
+            if (update || yn.equals("y")) {
+                System.out.println("Updating...");
+                FileUtils.copyFileToDirectory(src, dest);
+            } else {
+                System.out.println("Skipping...");
+            }
+        } else {
+            System.out.println("Copying challenge to '" + dest.getAbsolutePath() + "'.");
+            FileUtils.copyFileToDirectory(src, dest);
+        }
+        return update;
+    }
+
+    public void copyToWEB(String webroot, BufferedReader in) throws IOException {
+        File src = new File(path, "statements/russian/statements.pdf");
+        File dest = new File(webroot + "/statements/" + id.replaceAll("\\.", "/"));
+        //System.out.println("DEBUG: src = '" + src.getAbsolutePath() + " dest = '" + dest.getAbsolutePath() + "'");
+        if (src.exists()) {
+            System.out.println("Statements '" + src.getAbsolutePath() + "' exists.");
+            String yn = "n";
+            System.out.println("Do You want to publish it?\n(y - yes, n - no");
+            yn = in.readLine();
+
+            if (yn.equals("y")) {
+                System.out.println("Publishing...");
+                FileUtils.copyFileToDirectory(src, dest);
+            } else {
+                System.out.println("Skipping...");
+            }
+        }
     }
 }

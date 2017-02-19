@@ -2,6 +2,7 @@ package pcms2;
 
 import java.io.*;
 import java.util.Map;
+import java.util.Properties;
 
 public class Main {
 
@@ -18,6 +19,19 @@ public class Main {
         String folder = (args.length > 3 ? args[3] : ".");
 
         try {
+            Properties props = new Properties();
+            File propsFile = new File("import.properties");
+            if (propsFile.exists()) {
+                InputStreamReader in = new InputStreamReader(new FileInputStream("import.properties"), "UTF-8");
+                props.load(in);
+                in.close();
+            }
+            String vfs = props.getProperty("vfs", null);
+            String webroot = props.getProperty("webroot", null);
+
+            Boolean update = false;
+
+            BufferedReader sysin = new BufferedReader(new InputStreamReader(System.in));
 
             if (args[0].equals("problem")) {
                 //Problem pi = new Problem("problem.xml", "ru.", "ioi");
@@ -27,6 +41,9 @@ public class Main {
                 PrintWriter pw = new PrintWriter(new FileWriter(new File(folder, "problem.xml")));
                 pi.print(pw);
                 pw.close();
+                if (vfs != null) {
+                    pi.copyToVFS(vfs, sysin, update);
+                }
             } else if (args[0].equals("challenge")) {
                 Challenge ch = new Challenge(args[1], args[2], folder);
                 PrintWriter pw = new PrintWriter(new FileWriter(new File(folder, "challenge.xml")));
@@ -38,6 +55,15 @@ public class Main {
                     pw = new PrintWriter(new FileWriter(new File(folder, "problems/" + pr.shortName + "/problem.xml")));
                     pr.print(pw);
                     pw.close();
+                    if (vfs != null) {
+                        update = pr.copyToVFS(vfs, sysin, update);
+                    }
+                }
+                if (vfs != null) {
+                    ch.copyToVFS(vfs, sysin, update);
+                }
+                if (webroot != null) {
+                    ch.copyToWEB(webroot, sysin);
                 }
             }
         } catch (Exception e) {

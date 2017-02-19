@@ -20,6 +20,7 @@ public class Group {
     public void println(PrintWriter pw, String tabs) {
         if (comment.equals("0")) {
             feedback = "statistics";
+            commentname = ". Sample tests";
         }
         pw.println(tabs + "<test-group");
         pw.println(tabs + "\tcomment =\"" + comment + commentname + "\"");
