@@ -37,24 +37,31 @@ public class Main {
                 //Problem pi = new Problem("problem.xml", "ru.", "ioi");
                 Problem pi = new Problem(folder, args[1], args[2]);
                 File f = new File(folder, "problem.xml");
-                f.renameTo(new File(f.getAbsolutePath() + ".old"));
-                PrintWriter pw = new PrintWriter(new FileWriter(new File(folder, "problem.xml")));
+                File temporaryFile = new File(folder, "problem.xml.tmp");
+                PrintWriter pw = new PrintWriter(new FileWriter(temporaryFile));
                 pi.print(pw);
                 pw.close();
+                f.renameTo(new File(f.getAbsolutePath() + ".old"));
+                temporaryFile.renameTo(new File(temporaryFile.getParent(), "problem.xml"));
                 if (vfs != null) {
                     pi.copyToVFS(vfs, sysin, update);
                 }
             } else if (args[0].equals("challenge")) {
                 Challenge ch = new Challenge(args[1], args[2], folder);
-                PrintWriter pw = new PrintWriter(new FileWriter(new File(folder, "challenge.xml")));
-                ch.print(pw);
-                pw.close();
+                try (PrintWriter pw = new PrintWriter(new FileWriter(new File(folder, "challenge.xml")))) {
+                    ch.print(pw);
+                }
                 for (Problem pr : ch.problems.values()) {
+                    File temporaryFile = new File(folder, "problems/" + pr.shortName + "/problem.xml.tmp");
+                    try (PrintWriter pw = new PrintWriter(new FileWriter(temporaryFile))) {
+                        pr.print(pw);
+                    }
+                }
+                for (Problem pr : ch.problems.values()) {
+                    File temporaryFile = new File(folder, "problems/" + pr.shortName + "/problem.xml.tmp");
                     File f = new File(folder, "problems/" + pr.shortName + "/problem.xml");
                     f.renameTo(new File(f.getAbsolutePath() + ".old"));
-                    pw = new PrintWriter(new FileWriter(new File(folder, "problems/" + pr.shortName + "/problem.xml")));
-                    pr.print(pw);
-                    pw.close();
+                    temporaryFile.renameTo(new File(temporaryFile.getParent(), "problem.xml"));
                     if (vfs != null) {
                         update = pr.copyToVFS(vfs, sysin, update);
                     }

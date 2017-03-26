@@ -10,7 +10,6 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.*;
 import java.util.*;
-import java.util.concurrent.SynchronousQueue;
 
 /**
  * Created by Ilshat on 11/22/2015.
