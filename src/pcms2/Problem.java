@@ -24,7 +24,8 @@ public class Problem {
     String url;
     TreeMap<String, Testset> testsets;
     ArrayList<Attachment> attachments;
-    Verifier v;
+    Verifier verifier;
+    Interactor interactor;
     boolean hasPreliminary = false;
 
     public Problem(String path, String idprefix, String type) throws Exception {
@@ -265,17 +266,39 @@ public class Problem {
                 }
             }
         }
-        //assets (checker)
-        el = (Element) ((Element) doc.getElementsByTagName("assets").item(0)).getElementsByTagName("checker").item(0);
-        v = new Verifier();
+        verifier = parseChecker(doc);
+        interactor = parseInteractor(doc);
+        if (interactor != null) {
+            for (Testset e : testsets.values()) {
+                e.inputName = shortName + ".in";
+                e.outputName = shortName + ".out";
+            }
+        }
+
+        //shortName = problem.getAttributes().getNamedItem("short-name").getNodeValue();
+    }
+
+    private Interactor parseInteractor(Document doc) {
+        Element el = (Element) ((Element) doc.getElementsByTagName("assets").item(0)).
+                getElementsByTagName("interactor").item(0);
+        if (el == null) {
+            return null;
+        }
+        el = (Element) el.getElementsByTagName("binary").item(0);
+        return new Interactor(el.getAttribute("type"), el.getAttribute("path"));
+    }
+
+    private Verifier parseChecker(Document doc) {
+        Element el = (Element) ((Element) doc.getElementsByTagName("assets").item(0)).getElementsByTagName("checker").item(0);
+        Verifier v = new Verifier();
         v.type = el.getAttribute("type");
         el = (Element) el.getElementsByTagName("binary").item(0);
         v.executableId = el.getAttribute("type");
         v.file = el.getAttribute("path");
-        //shortName = problem.getAttributes().getNamedItem("short-name").getNodeValue();
+        return v;
     }
 
-    public void print(PrintWriter pw) {
+    public void print(PrintWriter pw) throws IOException {
         pw.println("<?xml version = \"1.0\" encoding=\"UTF-8\"?>");
         pw.println("<problem");
         pw.println("\tversion = \"1.0\"");
@@ -289,7 +312,10 @@ public class Problem {
                 t.getValue().print(pw, "\t\t\t", "icpc");
             }
         }
-        v.print(pw, "\t\t\t");
+        verifier.print(pw, "\t\t\t");
+        if (interactor != null) {
+            interactor.print(pw, "\t\t\t");
+        }
         for (Attachment at : attachments) {
             at.print(pw, "\t\t\t");
         }
@@ -299,7 +325,10 @@ public class Problem {
         for (Map.Entry<String, Testset> t : testsets.entrySet()) {
             t.getValue().print(pw, "\t\t\t", "ioi");
         }
-        v.print(pw, "\t\t\t");
+        verifier.print(pw, "\t\t\t");
+        if (interactor != null) {
+            interactor.print(pw, "\t\t\t");
+        }
         for (Attachment at : attachments) {
             at.print(pw, "\t\t\t");
         }
