@@ -22,7 +22,7 @@ public class Problem {
     String Name;
     String shortName;
     String url;
-    TreeMap <String, Testset> testsets;
+    TreeMap<String, Testset> testsets;
     ArrayList<Attachment> attachments;
     Verifier v;
     boolean hasPreliminary = false;
@@ -178,9 +178,9 @@ public class Problem {
                                     //gg.parseIntPoints();
                                 } else if (kv[0].equals("comment")) {
                                     gg.commentname = ". " + kv[1];
-                                } else if(kv[0].equals("scoring")) {
+                                } else if (kv[0].equals("scoring")) {
                                     gg.scoring = kv[1];
-                                }else {
+                                } else {
                                     System.out.println("WARNING: unknown parameter in groups.txt");
                                 }
                             }
@@ -284,7 +284,7 @@ public class Problem {
         pw.println("\t<judging>");
 
         pw.println("\t\t<script type = \"%" + "icpc" + "\">");
-        for (Map.Entry<String, Testset> t: testsets.entrySet()){
+        for (Map.Entry<String, Testset> t : testsets.entrySet()) {
             if (!t.getValue().name.equals("preliminary")) {
                 t.getValue().print(pw, "\t\t\t", "icpc");
             }
@@ -296,7 +296,7 @@ public class Problem {
         pw.println("\t\t</script>");
 
         pw.println("\t\t<script type = \"%" + "ioi" + "\">");
-        for (Map.Entry<String, Testset> t: testsets.entrySet()){
+        for (Map.Entry<String, Testset> t : testsets.entrySet()) {
             t.getValue().print(pw, "\t\t\t", "ioi");
         }
         v.print(pw, "\t\t\t");
