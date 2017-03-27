@@ -11,22 +11,16 @@ import java.io.PrintWriter;
  */
 public class Interactor {
     public final String executableId;
-    public final String file;
+    public final String binary;
 
-    public Interactor(String type, String file) {
-        if (type.startsWith("java")) {
-            type = "java"; // TODO
-        } else {
-            type = "x86.exe.win32";
-        }
-        this.executableId = type;
-        this.file = file;
+    public Interactor(String executableId, String binary) {
+        this.executableId = executableId;
+        this.binary = binary;
     }
 
-    public void print(PrintWriter writer, String tabs) throws IOException {
+    public void print(PrintWriter writer, String tabs) {
         writer.println(tabs + "<interactor type=\"%testlib\">");
-        FileUtils.copyFile(new File(file), new File("interact.cpp"));
-        writer.println(tabs + "\t<binary executable-id =\"" + executableId + "\" file =\"interact.exe\" />");
+        writer.println(tabs + "\t<binary executable-id =\"" + executableId + "\" file =\"" + binary + "\" />");
         writer.println(tabs + "</interactor>");
     }
 }

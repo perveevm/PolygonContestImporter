@@ -22,6 +22,7 @@ public class Problem {
     String Name;
     String shortName;
     String url;
+    File problemDirectory;
     TreeMap<String, Testset> testsets;
     ArrayList<Attachment> attachments;
     Verifier verifier;
@@ -29,6 +30,10 @@ public class Problem {
     boolean hasPreliminary = false;
 
     public Problem(String path, String idprefix, String type) throws Exception {
+        problemDirectory = new File(path);
+        if (!problemDirectory.exists()) {
+            throw new AssertionError("Couldn't find directory");
+        }
         XMLpath = path + "/problem.xml";
         GroupsPath = path + "/files/groups.txt";
         ID = idprefix;
@@ -267,7 +272,7 @@ public class Problem {
             }
         }
         verifier = parseChecker(doc);
-        interactor = parseInteractor(doc);
+        interactor = handleInteractor(doc);
         if (interactor != null) {
             for (Testset e : testsets.values()) {
                 e.inputName = shortName + ".in";
@@ -278,14 +283,25 @@ public class Problem {
         //shortName = problem.getAttributes().getNamedItem("short-name").getNodeValue();
     }
 
-    private Interactor parseInteractor(Document doc) {
-        Element el = (Element) ((Element) doc.getElementsByTagName("assets").item(0)).
+    private Interactor handleInteractor(Document doc) throws IOException {
+        Element interactorNode = (Element) ((Element) doc.getElementsByTagName("assets").item(0)).
                 getElementsByTagName("interactor").item(0);
-        if (el == null) {
+        if (interactorNode == null) {
             return null;
         }
-        el = (Element) el.getElementsByTagName("binary").item(0);
-        return new Interactor(el.getAttribute("type"), el.getAttribute("path"));
+        Element el = (Element) interactorNode.getElementsByTagName("source").item(0);
+        String sourcePath = el.getAttribute("path");
+        String sourceType = el.getAttribute("type");
+        el = (Element) interactorNode.getElementsByTagName("binary").item(0);
+        String binaryPath = el == null ? null : el.getAttribute("path");
+        if (!sourceType.startsWith("cpp")) {
+            throw new AssertionError("Only C++ interactors are supported");
+        }
+        FileUtils.copyFile(new File(problemDirectory, sourcePath), new File(problemDirectory, "interact.cpp"));
+        if (binaryPath != null) {
+            FileUtils.copyFile(new File(problemDirectory, binaryPath), new File(problemDirectory, "interact.exe"));
+        }
+        return new Interactor("x86.exe.win32", "interact.exe");
     }
 
     private Verifier parseChecker(Document doc) {
