@@ -19,8 +19,8 @@ public class Interactor {
     }
 
     public void print(PrintWriter writer, String tabs) {
-        writer.println(tabs + "<interactor type=\"%testlib\">");
-        writer.println(tabs + "\t<binary executable-id =\"" + executableId + "\" file =\"" + binary + "\" />");
+        writer.println(tabs + "<interactor type = \"%testlib\">");
+        writer.println(tabs + "\t<binary executable-id = \"" + executableId + "\" file = \"" + binary + "\" />");
         writer.println(tabs + "</interactor>");
     }
 }
