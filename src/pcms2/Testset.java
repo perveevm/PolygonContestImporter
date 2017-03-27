@@ -51,6 +51,10 @@ public class Testset {
         //if (name.equals("preliminary")) {
             //return;
         //}
+        if (tests.length == 0) {
+            System.out.println(String.format("WARNING: Testset %s contains zero tests, skipped", name));
+            return;
+        }
         pw.println(tabs + "<testset");
         if (!name.equals("preliminary")){
             name = "main";
