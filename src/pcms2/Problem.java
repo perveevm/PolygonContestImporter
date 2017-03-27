@@ -294,12 +294,12 @@ public class Problem {
         String sourceType = el.getAttribute("type");
         el = (Element) interactorNode.getElementsByTagName("binary").item(0);
         String binaryPath = el == null ? null : el.getAttribute("path");
-        if (!sourceType.startsWith("cpp")) {
-            throw new AssertionError("Only C++ interactors are supported");
-        }
         FileUtils.copyFile(new File(problemDirectory, sourcePath), new File(problemDirectory, "interact.cpp"));
         if (binaryPath != null) {
             FileUtils.copyFile(new File(problemDirectory, binaryPath), new File(problemDirectory, "interact.exe"));
+        }
+        if (!sourceType.startsWith("cpp")) {
+            System.err.println("WARNING: Only C++ interactors are supported, interact.cpp and [interact.exe] are created");
         }
         return new Interactor("x86.exe.win32", "interact.exe");
     }
