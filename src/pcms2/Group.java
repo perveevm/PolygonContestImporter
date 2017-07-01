@@ -31,11 +31,11 @@ public class Group {
             commentname = ". Sample tests";
         }
         pw.println(tabs + "<test-group");
-        pw.println(tabs + "\tcomment =\"" + comment + commentname + "\"");
-        pw.println(tabs + "\tscoring =\"" + scoring + "\"");
-        pw.println(tabs + "\tfeedback =\"" + feedback + "\"");
-        pw.println(tabs + "\tgroup-bonus =\"" + groupBonus + "\"");
-        pw.println(tabs + "\trequire-groups =\"" + requireGroups + "\"");
+        pw.println(tabs + "\tcomment = \"" + comment + commentname + "\"");
+        pw.println(tabs + "\tscoring = \"" + scoring + "\"");
+        pw.println(tabs + "\tfeedback = \"" + feedback + "\"");
+        pw.println(tabs + "\tgroup-bonus = \"" + groupBonus + "\"");
+        pw.println(tabs + "\trequire-groups = \"" + requireGroups + "\"");
         pw.println(tabs + ">");
     }
 
