@@ -136,9 +136,13 @@ public class Problem {
             nl = el.getElementsByTagName("file");
             for (int i = 0; i < nl.getLength(); i++) {
                 el = (Element) nl.item(i);
-                Attachment attach = Attachment.parse(this, el, languageProps);
-                if (attach != null) {
-                    attachments.add(attach);
+                Attachment[] attachs = Attachment.parse(this, el, languageProps);
+                if (attachs != null) {
+                    for (Attachment attach : attachs) {
+                        if (attach != null) {
+                            attachments.add(attach);
+                        }
+                    }
                 }
             }
         }

@@ -82,9 +82,9 @@ public class Main {
 
     static Properties load(String fileName) throws IOException {
         Properties props = new Properties();
-        File propsFile = new File("import.properties");
+        File propsFile = new File(fileName);
         if (propsFile.exists()) {
-            InputStreamReader in = new InputStreamReader(new FileInputStream("import.properties"), "UTF-8");
+            InputStreamReader in = new InputStreamReader(new FileInputStream(fileName), "UTF-8");
             props.load(in);
             in.close();
         }

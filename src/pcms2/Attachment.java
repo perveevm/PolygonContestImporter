@@ -16,7 +16,7 @@ public class Attachment {
         pw.println(tabs + "<attachment language-id=\"" + languageId + "\" href=\"" + href + "\"/>");
 
     }
-    public static Attachment parse(Problem problem, Element el, Properties languagesProps) {
+    public static Attachment[] parse(Problem problem, Element el, Properties languagesProps) {
         String atpath = el.getAttribute("path");
         String ext = atpath.substring(atpath.lastIndexOf('.') + 1, atpath.length());
         String fname = atpath.substring(atpath.lastIndexOf("/") + 1, atpath.lastIndexOf('.'));
@@ -25,14 +25,21 @@ public class Attachment {
             System.out.println("Skipping solution stub '" + fname + "." + ext + "'");
             return null;
         }
-        Attachment attach = new Attachment();
-        attach.href = atpath;
+        Attachment[] attachments;
         if (languagesProps.getProperty(ext) != null) {
             String[] langs = languagesProps.getProperty(ext).split(",");
-            for (String s: langs) {
-                attach.languageId = s.trim();
+            attachments = new Attachment[langs.length];
+            for (int i = 0; i < langs.length; i++) {
+                Attachment attach = new Attachment();
+                attach.href = atpath;
+                attach.languageId = langs[i].trim();
+                attachments[i] = attach;
             }
         } else {
+            attachments = new Attachment[1];
+            Attachment attach = new Attachment();
+            attach.href = atpath;
+
             if (ext.equals("h")) {
                 if (fname.endsWith("_c")) {
                     attach.languageId = "c.gnu";
@@ -50,7 +57,8 @@ public class Attachment {
             } else {
                 attach = null;
             }
+            attachments[0] = attach;
         }
-        return attach;
+        return attachments;
     }
 }
