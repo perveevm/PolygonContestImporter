@@ -44,7 +44,7 @@ public class Group {
         //System.out.println("DEBUG: parsing points '" + points + "'");
         String res = "";
         boolean dig = false;
-        for (int i = 0; i < points.length(); i++){
+        for (int i = 0; i < points.length(); i++) {
             if (points.charAt(i) >= '0' && points.charAt(i) <= '9') {
                 dig = true;
                 res += points.charAt(i);
@@ -61,12 +61,12 @@ public class Group {
 
         if (last - first + 1 == p.length) {
             intPoints = new int[p.length];
-            for (int i = 0; i < p.length; i++){
+            for (int i = 0; i < p.length; i++) {
                 intPoints[i] = Integer.parseInt(p[i]);
             }
             return;
         }
-        if (p.length == 1){
+        if (p.length == 1) {
             int tcount = last - first + 1;
             int total = Integer.parseInt(points);
 
@@ -97,7 +97,7 @@ public class Group {
             if (line == null || line.isEmpty()) continue;
 
             String[] group_params = line.split("(\t;)|(\t)|(;)");
-            TreeMap <String, String> group_par = new TreeMap<>();
+            TreeMap<String, String> group_par = new TreeMap<>();
             for (int ig = 0; ig < group_params.length; ig++) {
                 String[] kv = getKeyAndValue(group_params[ig]);
                 group_par.put(kv[0], kv[1]);
@@ -119,7 +119,7 @@ public class Group {
                     "Group parameters:'" + Arrays.toString(group_params) + "'. " +
                     "Group: '" + group_id + "' ");
 
-            for (Map.Entry<String, String> entry: group_par.entrySet()){
+            for (Map.Entry<String, String> entry : group_par.entrySet()) {
                 if (entry.getKey().equals("group-bonus")) {
                     gg.groupBonus = entry.getValue();
                 } else if (entry.getKey().equals("require-groups")) {
@@ -140,10 +140,12 @@ public class Group {
                     gg.points = entry.getValue();
                 } else if (entry.getKey().equals("comment")) {
                     gg.commentname = ". " + entry.getValue();
-                } else if(entry.getKey().equals("scoring")) {
+                } else if (entry.getKey().equals("scoring")) {
                     gg.scoring = entry.getValue();
-                }else {
-                    System.out.println("WARNING: unknown parameter in groups.txt");
+                } else if (entry.getKey().equals("group")) {
+                    continue;
+                } else {
+                    System.out.println("WARNING: unknown parameter in groups.txt - '" + entry.getKey() + "'");
                 }
             }
         }

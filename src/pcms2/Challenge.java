@@ -98,7 +98,7 @@ public class Challenge {
     public boolean copyToVFS(String vfs, BufferedReader in, boolean update) throws IOException {
         File src = new File(path, "challenge.xml");
         File dest = new File(vfs + "/etc/" + id.replaceAll("\\.", "/") + "/challenge.xml");
-        System.out.println("DEBUG: src = '" + src.getAbsolutePath() + " dest = '" + dest.getAbsolutePath() + "'");
+        //System.out.println("DEBUG: src = '" + src.getAbsolutePath() + " dest = '" + dest.getAbsolutePath() + "'");
         if (dest.exists()) {
             System.out.println("Challenge '" + dest.getAbsolutePath() + "' exists.");
             String yn = "n";
@@ -108,13 +108,13 @@ public class Challenge {
             }
             if (update || yn.equals("y")) {
                 System.out.println("Updating...");
-                FileUtils.copyFileToDirectory(src, dest);
+                FileUtils.copyFileToDirectory(src, dest.getParentFile());
             } else {
                 System.out.println("Skipping...");
             }
         } else {
             System.out.println("Copying challenge to '" + dest.getAbsolutePath() + "'.");
-            FileUtils.copyFileToDirectory(src, dest);
+            FileUtils.copyFileToDirectory(src, dest.getParentFile());
         }
         return update;
     }
@@ -122,7 +122,7 @@ public class Challenge {
     public void copyToWEB(String webroot, BufferedReader in) throws IOException {
         File src = new File(path, "statements/russian/statements.pdf");
         File dest = new File(webroot + "/statements/" + id.replaceAll("\\.", "/") + "/statements.pdf");
-        System.out.println("DEBUG: src = '" + src.getAbsolutePath() + " dest = '" + dest.getAbsolutePath() + "'");
+        //System.out.println("DEBUG: src = '" + src.getAbsolutePath() + " dest = '" + dest.getAbsolutePath() + "'");
         if (src.exists()) {
             System.out.println("Statements '" + src.getAbsolutePath() + "' exists.");
             String yn = "n";
@@ -131,7 +131,7 @@ public class Challenge {
 
             if (yn.equals("y")) {
                 System.out.println("Publishing...");
-                FileUtils.copyFileToDirectory(src, dest);
+                FileUtils.copyFileToDirectory(src, dest.getParentFile());
             } else {
                 System.out.println("Skipping...");
             }
