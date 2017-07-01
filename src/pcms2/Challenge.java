@@ -12,6 +12,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Map;
+import java.util.Properties;
 import java.util.TreeMap;
 
 /**
@@ -30,15 +31,15 @@ public class Challenge {
         path = "";
     }
 
-    public Challenge(String ID, String Type, String Path) throws Exception {
+    public Challenge(String ID, String Type, String Path, Properties languageProps, Properties executableProps) throws Exception {
         problems = new TreeMap<>();
         path = Path;
         id = ID;
         type = Type;
-        parse();
+        parse(languageProps, executableProps);
     }
 
-    public void parse() throws Exception {
+    public void parse(Properties languageProps, Properties executableProps) throws Exception {
         System.out.println("parsing contest.xml ...");
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder = factory.newDocumentBuilder();
@@ -65,9 +66,10 @@ public class Challenge {
             String purl = child.getAttribute("url");
             String index = child.getAttribute("index");
             String pname = purl.substring(purl.lastIndexOf("/") + 1);
-            Problem p = new Problem(new File(path, "problems/" + pname).getAbsolutePath(), id, type);
+            Problem p = new Problem(new File(path, "problems/" + pname).getAbsolutePath(), id, type,
+                    languageProps, executableProps);
             if (!p.url.equals(purl)) {
-                System.out.println("Problem URL do not match! Contest problem = '" + purl + "' problems.xml = '" + p.url + "'");
+                System.out.println("ERROR: Problem URL do not match! Contest problem = '" + purl + "' problems.xml = '" + p.url + "'");
                 System.exit(1);
             }
             problems.put(index, p);
@@ -95,13 +97,13 @@ public class Challenge {
 
     public boolean copyToVFS(String vfs, BufferedReader in, boolean update) throws IOException {
         File src = new File(path, "challenge.xml");
-        File dest = new File(vfs + "/etc/" + id.replaceAll("\\.", "/"));
-        //System.out.println("DEBUG: src = '" + src.getAbsolutePath() + " dest = '" + dest.getAbsolutePath() + "'");
+        File dest = new File(vfs + "/etc/" + id.replaceAll("\\.", "/") + "/challenge.xml");
+        System.out.println("DEBUG: src = '" + src.getAbsolutePath() + " dest = '" + dest.getAbsolutePath() + "'");
         if (dest.exists()) {
             System.out.println("Challenge '" + dest.getAbsolutePath() + "' exists.");
             String yn = "n";
             if (!update) {
-                System.out.println("Do You want to update it?\n(y - yes, n - no");
+                System.out.println("Do You want to update it?\n(y - yes, n - no)");
                 yn = in.readLine();
             }
             if (update || yn.equals("y")) {
@@ -119,12 +121,12 @@ public class Challenge {
 
     public void copyToWEB(String webroot, BufferedReader in) throws IOException {
         File src = new File(path, "statements/russian/statements.pdf");
-        File dest = new File(webroot + "/statements/" + id.replaceAll("\\.", "/"));
-        //System.out.println("DEBUG: src = '" + src.getAbsolutePath() + " dest = '" + dest.getAbsolutePath() + "'");
+        File dest = new File(webroot + "/statements/" + id.replaceAll("\\.", "/") + "/statements.pdf");
+        System.out.println("DEBUG: src = '" + src.getAbsolutePath() + " dest = '" + dest.getAbsolutePath() + "'");
         if (src.exists()) {
             System.out.println("Statements '" + src.getAbsolutePath() + "' exists.");
             String yn = "n";
-            System.out.println("Do You want to publish it?\n(y - yes, n - no");
+            System.out.println("Do You want to publish it?\n(y - yes, n - no)");
             yn = in.readLine();
 
             if (yn.equals("y")) {

@@ -15,10 +15,10 @@ public class Test {
     }
 
     public void println(PrintWriter pw, String tabs, String points) {
-        pw.println(tabs + "<test points=\"" + points + "\" comment=\"" + comment + "\" />");
+        pw.println(tabs + "<test points = \"" + points + "\" comment = \"" + comment + "\" />");
     }
 
     public void println(PrintWriter pw, String tabs) {
-        pw.println(tabs + "<test comment=\"" + comment + "\" />");
+        pw.println(tabs + "<test comment = \"" + comment + "\" />");
     }
 }

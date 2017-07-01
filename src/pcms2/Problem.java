@@ -10,7 +10,6 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.*;
 import java.util.*;
-import java.util.concurrent.SynchronousQueue;
 
 /**
  * Created by Ilshat on 11/22/2015.
@@ -23,25 +22,36 @@ public class Problem {
     String Name;
     String shortName;
     String url;
+    File problemDirectory;
+    String input;
+    String output;
     TreeMap <String, Testset> testsets;
     ArrayList<Attachment> attachments;
-    Verifier v;
-    boolean hasPreliminary = false;
+    Verifier verifier;
+    Interactor interactor;
 
-    public Problem(String path, String idprefix, String type) throws Exception {
+    boolean hasPreliminary = false;
+    int sampleCount = 0;
+    BufferedReader groupstxt;
+
+    public Problem(String path, String idprefix, String type, Properties languageProps, Properties executableProps) throws Exception {
+        problemDirectory = new File(path);
+        if (!problemDirectory.exists()) {
+            throw new AssertionError("Couldn't find directory");
+        }
         XMLpath = path + "/problem.xml";
         GroupsPath = path + "/files/groups.txt";
         ID = idprefix;
         ScriptType = type;
         testsets = new TreeMap<>();
-        parse();
+        parse(languageProps, executableProps);
     }
 
-    public void parse() throws Exception {
+    public void parse(Properties languageProps, Properties executableProps) throws Exception {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder = factory.newDocumentBuilder();
         Document doc = builder.parse(XMLpath);
-        BufferedReader groupstxt = null;
+        groupstxt = null;
         if ((new File(GroupsPath)).exists()) {
             groupstxt = new BufferedReader(new FileReader(GroupsPath));
         }
@@ -63,7 +73,6 @@ public class Problem {
         }
         ID = ID + "." + shortName;
 
-
         //names
         NodeList nl = ((Element) doc.getElementsByTagName("names").item(0)).getElementsByTagName("name");
         for (int i = 0; i < nl.getLength(); i++) {
@@ -76,132 +85,25 @@ public class Problem {
                 System.out.println(el.getAttribute("language"));
             }
         }
+
         //judging
         el = (Element) doc.getElementsByTagName("judging").item(0);
-        String inp = el.getAttribute("input-file");
-        if (inp.isEmpty()) inp = "*";
-        String outp = el.getAttribute("output-file");
-        if (outp.isEmpty()) outp = "*";
+        input = el.getAttribute("input-file");
+        if (input.isEmpty()) input = "*";
+        output = el.getAttribute("output-file");
+        if (output.isEmpty()) output = "*";
+
+        //testset
         nl = el.getElementsByTagName("testset");
-        int sampleCount = 0;
         for (int i = 0; i < nl.getLength(); i++) {//testset
             //System.out.println("DEBUG: testsets cnt = " + nl.getLength() + " i = " + i);
-            boolean isPreliminary = false;
-            boolean hasGroups = false;
             el = (Element) nl.item(i);
             Testset ts = new Testset();
-            TreeSet<String> gmap = new TreeSet<>();
-            ts.name = el.getAttribute("name");
-            ts.inputName = inp;
-            ts.outputName = outp;
-            ts.timeLimit = Double.parseDouble(el.getElementsByTagName("time-limit").item(0).
-                    getChildNodes().item(0).getNodeValue()) / 1000;
-            ts.memoryLimit = el.getElementsByTagName("memory-limit").item(0).
-                    getChildNodes().item(0).getNodeValue();
-            int tc = Integer.parseInt(el.getElementsByTagName("test-count").item(0).
-                    getChildNodes().item(0).getNodeValue());
-            ts.inputHref = el.getElementsByTagName("input-path-pattern").item(0).
-                    getChildNodes().item(0).getNodeValue();
-            ts.outputHref = el.getElementsByTagName("answer-path-pattern").item(0).
-                    getChildNodes().item(0).getNodeValue();
-
-            if (ts.name.equals("preliminary")) {
-                hasPreliminary = true;
-                isPreliminary = true;
-            }
-
-            NodeList nl1 = el.getElementsByTagName("tests");
-            nl1 = ((Element) nl1.item(0)).getElementsByTagName("test");
-            ts.tests = new Test[tc];
-            //System.out.println("test count = " + tc);
-            for (int j = 0; j < nl1.getLength(); j++) {//tests
-                //System.out.println("DEBUG: j = " + j);
-                el = (Element) nl1.item(j);
-                String cm = el.getAttribute("method");
-                String g = "-1";
-                if (!el.getAttribute("cmd").isEmpty()) {
-                    cm += " cmd: '" + el.getAttribute("cmd") + "'";
-                }
-                if (el.getAttribute("sample").equals("true")) {
-                    if (isPreliminary) {
-                        g = "sample";
-                    }
-                    if (!hasPreliminary) {// && ScriptType.equals("ioi")) {
-                        sampleCount++;
-                    }
-
-                }
-                if (!el.getAttribute("group").isEmpty()) {
-                    hasGroups = true;
-                    g = el.getAttribute("group");
-                    if (gmap.contains(g)) {
-                        Group gg = ts.groups.get(gmap.size() - 1);
-                        gg.last += 1;
-                    } else {
-                        gmap.add(g);
-                        Group gg = new Group();
-
-                        if (ts.name.equals("tests") && groupstxt != null) {
-                            String[] group_params = groupstxt.readLine().trim().split("(\t;)|(\t)|(;)");
-                            System.out.println("INFO: " +
-                                    "Group parameters:'" + Arrays.toString(group_params) + "'. " +
-                                    "Group: '" + g + "' " +
-                                    "First test: " + j);
-
-                            for (int ig = 0; ig < group_params.length; ig++) {
-                                String[] kv = getKeyAndValue(group_params[ig]);
-                                if (kv[0].equals("group")) {
-                                    //System.out.println("DEBUG: " + kv[1]);
-                                    if (Integer.parseInt(kv[1]) != ts.groups.size()) {
-                                        System.out.println("WARNING: Group numbers are not consecutive? " +
-                                                "Group parameters:'" + Arrays.toString(group_params) + "'. " +
-                                                "Group: '" + g + "'");
-                                    }
-                                } else if (kv[0].equals("group-bonus")) {
-                                    gg.groupBonus = kv[1];
-                                } else if (kv[0].equals("require-groups")) {
-                                    String[] grps = kv[1].split(" ");
-                                    gg.requireGroups = "";
-                                    for (String grp : grps) {
-                                        try {
-                                            int abc = Integer.parseInt(grp);
-                                            abc++;
-                                            gg.requireGroups += "" + abc + " ";
-                                        } catch (NumberFormatException e) {
-                                            continue;
-                                        }
-                                    }
-                                    //gg.requireGroups = kv[1];
-                                } else if (kv[0].equals(("feedback"))) {
-                                    gg.feedback = kv[1];
-                                } else if (kv[0].equals("points")) {
-                                    gg.points = kv[1];
-                                    //gg.parseIntPoints();
-                                } else if (kv[0].equals("comment")) {
-                                    gg.commentname = ". " + kv[1];
-                                } else if(kv[0].equals("scoring")) {
-                                    gg.scoring = kv[1];
-                                }else {
-                                    System.out.println("WARNING: unknown parameter in groups.txt");
-                                }
-                            }
-                        }
-                        gg.first = j;
-                        gg.last = j;
-                        gg.comment = g;
-                        ts.groups.add(gg);
-                    }
-                } else if (hasGroups) {
-                    System.out.println("WARNING: Groups are enabled but test '" + j + "' has no group!");
-                }
-
-                ts.tests[j] = new Test(cm, g);
-                //System.out.println("DEBUG: " + ts.tests[j].comment + " " + ts.tests[j].points + " " + ts.tests[j].group);
-            }
+            ts.parse(this, el);
             testsets.put(ts.name, ts);
             //System.out.println("testset finished");
         }
-        if (!hasPreliminary) {// && ScriptType.equals("ioi")) {
+        if (!hasPreliminary) {
             System.out.println("INFO: No preliminary testset, getting sample tests");
             Test[] temp = new Test[sampleCount];
             for (int i = 0; i < sampleCount; i++) {
@@ -219,9 +121,10 @@ public class Problem {
             testsets.put("preliminary", preliminary);
         }
 
-        //parse points
+        //parse points and groups
         if (testsets.get("tests").groups.size() != 0) {
             ArrayList<Group> gg = testsets.get("tests").groups;
+            Group.parse(groupstxt, gg);
             for (int i = 0; i < gg.size(); i++) {
                 gg.get(i).parseIntPoints();
             }
@@ -231,49 +134,48 @@ public class Problem {
         attachments = new ArrayList<>();
         if (el != null) {
             nl = el.getElementsByTagName("file");
-
             for (int i = 0; i < nl.getLength(); i++) {
                 el = (Element) nl.item(i);
-                String atpath = el.getAttribute("path");
-                String ext = atpath.substring(atpath.lastIndexOf('.') + 1, atpath.length());
-                String fname = atpath.substring(atpath.lastIndexOf("/") + 1, atpath.lastIndexOf('.'));
-                //System.out.println("DEBUG: File name is '" + fname + "'");
-                if (fname.equals(shortName) && !ext.equals("h")) {
-                    System.out.println("Skipping solution stub '" + fname + "." + ext + "'");
-                    continue;
-                }
-                Attachment attach = new Attachment();
-                attach.href = atpath;
-                if (ext.equals("h")) {
-                    if (fname.endsWith("_c")) {
-                        attach.languageId = "c.gnu";
-                    } else {
-                        attach.languageId = "cpp.gnu";
-                    }
-                } else if (ext.equals("cpp")) {
-                    attach.languageId = "cpp.gnu";
-                } else if (ext.equals("c")) {
-                    attach.languageId = "c.gnu";
-                } else if (ext.equals("pas")) {
-                    attach.languageId = "pascal.free";
-                } else if (ext.equals("java")) {
-                    attach.languageId = "java";
-                } else {
-                    attach = null;
-                }
+                Attachment attach = Attachment.parse(this, el, languageProps);
                 if (attach != null) {
                     attachments.add(attach);
                 }
             }
         }
+
         //assets (checker)
         el = (Element) ((Element) doc.getElementsByTagName("assets").item(0)).getElementsByTagName("checker").item(0);
-        v = new Verifier();
-        v.type = el.getAttribute("type");
-        el = (Element) el.getElementsByTagName("binary").item(0);
-        v.executableId = el.getAttribute("type");
-        v.file = el.getAttribute("path");
-        //shortName = problem.getAttributes().getNamedItem("short-name").getNodeValue();
+        verifier = Verifier.parse(el, executableProps);
+        el = (Element) ((Element) doc.getElementsByTagName("assets").item(0)).
+                getElementsByTagName("interactor").item(0);
+        interactor = Interactor.parse(el, executableProps);
+        if (interactor != null) {
+            for (Testset e : testsets.values()) {
+                e.inputName = shortName + ".in";
+                e.outputName = shortName + ".out";
+            }
+        }
+    }
+
+    private Interactor handleInteractor(Document doc) throws IOException {
+        Element interactorNode = (Element) ((Element) doc.getElementsByTagName("assets").item(0)).
+                getElementsByTagName("interactor").item(0);
+        if (interactorNode == null) {
+            return null;
+        }
+        Element el = (Element) interactorNode.getElementsByTagName("source").item(0);
+        String sourcePath = el.getAttribute("path");
+        String sourceType = el.getAttribute("type");
+        el = (Element) interactorNode.getElementsByTagName("binary").item(0);
+        String binaryPath = el == null ? null : el.getAttribute("path");
+        FileUtils.copyFile(new File(problemDirectory, sourcePath), new File(problemDirectory, "interact.cpp"));
+        if (binaryPath != null) {
+            FileUtils.copyFile(new File(problemDirectory, binaryPath), new File(problemDirectory, "interact.exe"));
+        }
+        if (!sourceType.startsWith("cpp")) {
+            System.err.println("WARNING: Only C++ interactors are supported, interact.cpp and [interact.exe] are created");
+        }
+        return new Interactor("x86.exe.win32", "interact.exe");
     }
 
     public void print(PrintWriter pw) {
@@ -290,7 +192,10 @@ public class Problem {
                 t.getValue().print(pw, "\t\t\t", "icpc");
             }
         }
-        v.print(pw, "\t\t\t");
+        verifier.print(pw, "\t\t\t");
+        if (interactor != null) {
+            interactor.print(pw, "\t\t\t");
+        }
         for (Attachment at : attachments) {
             at.print(pw, "\t\t\t");
         }
@@ -300,7 +205,7 @@ public class Problem {
         for (Map.Entry<String, Testset> t: testsets.entrySet()){
             t.getValue().print(pw, "\t\t\t", "ioi");
         }
-        v.print(pw, "\t\t\t");
+        verifier.print(pw, "\t\t\t");
         for (Attachment at : attachments) {
             at.print(pw, "\t\t\t");
         }
@@ -308,19 +213,6 @@ public class Problem {
 
         pw.println("\t</judging>");
         pw.println("</problem>");
-    }
-
-    String[] getKeyAndValue(String s) {
-        //key="value"
-        int j = s.indexOf('=');
-        String[] ss = new String[2];
-        ss[0] = s.substring(0, j).trim();
-        ss[1] = s.substring(j + 1).trim();
-        ss[1] = ss[1].substring(1, ss[1].length() - 1);
-        ss[1] = ss[1].replaceAll("<", "&lt;");
-        ss[1] = ss[1].replaceAll(">", "&gt;");
-
-        return ss;
     }
 
     public boolean copyToVFS(String vfs, BufferedReader in, boolean update) throws IOException {
@@ -331,7 +223,7 @@ public class Problem {
             System.out.println("Problem '" + dest.getAbsolutePath() + "' exists.");
             String yn = "n";
             if (!update) {
-                System.out.println("Do You want to update it?\n(y - yes, yy - yes to all, n - no");
+                System.out.println("Do You want to update it?\n(y - yes, yy - yes to all, n - no)");
                 yn = in.readLine();
                 if (yn.equals("yy")) {
                     update = true;

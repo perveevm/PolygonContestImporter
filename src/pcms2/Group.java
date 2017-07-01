@@ -1,6 +1,14 @@
 package pcms2;
 
+import com.sun.xml.internal.bind.v2.util.QNameMap;
+
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * Created by Ilshat on 11/23/2015.
@@ -80,5 +88,79 @@ public class Group {
         }
 
         System.out.println("WARNING: Could not parse 'points' parameter for group '" + comment + "'");
+    }
+
+    public static void parse(BufferedReader groupstxt, ArrayList<Group> groups) throws IOException {
+        if (groupstxt == null) return;
+
+        String line;
+        while ((line = groupstxt.readLine()) != null) {
+            line = line.trim();
+            if (line == null || line.isEmpty()) continue;
+
+            String[] group_params = line.split("(\t;)|(\t)|(;)");
+            TreeMap <String, String> group_par = new TreeMap<>();
+            for (int ig = 0; ig < group_params.length; ig++) {
+                String[] kv = getKeyAndValue(group_params[ig]);
+                group_par.put(kv[0], kv[1]);
+            }
+            if (!group_par.containsKey("group")) {
+                System.out.println("WARNING: Group id was not found! " +
+                        "Group parameters:'" + Arrays.toString(group_params) + "'. ");
+                continue;
+            }
+
+            int group_id = Integer.parseInt(group_par.get("group"));
+            if (group_id >= groups.size() || group_id < 0) {
+                System.out.println("WARNING: Group id in 'groups.txt' is wrong! " +
+                        "Group parameters:'" + Arrays.toString(group_params) + "'. ");
+                continue;
+            }
+            Group gg = groups.get(group_id);
+            System.out.println("INFO: " +
+                    "Group parameters:'" + Arrays.toString(group_params) + "'. " +
+                    "Group: '" + group_id + "' ");
+
+            for (Map.Entry<String, String> entry: group_par.entrySet()){
+                if (entry.getKey().equals("group-bonus")) {
+                    gg.groupBonus = entry.getValue();
+                } else if (entry.getKey().equals("require-groups")) {
+                    String[] grps = entry.getValue().split(" ");
+                    gg.requireGroups = "";
+                    for (String grp : grps) {
+                        try {
+                            int abc = Integer.parseInt(grp);
+                            abc++;
+                            gg.requireGroups += "" + abc + " ";
+                        } catch (NumberFormatException e) {
+                            continue;
+                        }
+                    }
+                } else if (entry.getKey().equals(("feedback"))) {
+                    gg.feedback = entry.getValue();
+                } else if (entry.getKey().equals("points")) {
+                    gg.points = entry.getValue();
+                } else if (entry.getKey().equals("comment")) {
+                    gg.commentname = ". " + entry.getValue();
+                } else if(entry.getKey().equals("scoring")) {
+                    gg.scoring = entry.getValue();
+                }else {
+                    System.out.println("WARNING: unknown parameter in groups.txt");
+                }
+            }
+        }
+    }
+
+    static String[] getKeyAndValue(String s) {
+        //key="value"
+        int j = s.indexOf('=');
+        String[] ss = new String[2];
+        ss[0] = s.substring(0, j).trim();
+        ss[1] = s.substring(j + 1).trim();
+        ss[1] = ss[1].substring(1, ss[1].length() - 1);
+        ss[1] = ss[1].replaceAll("<", "&lt;");
+        ss[1] = ss[1].replaceAll(">", "&gt;");
+
+        return ss;
     }
 }
