@@ -38,9 +38,15 @@ public class Main {
                 PrintWriter pw = new PrintWriter(new FileWriter(temporaryFile));
                 pi.print(pw);
                 pw.close();
-
-                f.renameTo(new File(f.getAbsolutePath() + ".old"));
-                temporaryFile.renameTo(new File(temporaryFile.getParent(), "problem.xml"));
+                (new File(f.getAbsolutePath() + ".old")).delete();
+                if (!f.renameTo(new File(f.getAbsolutePath() + ".old"))) {
+                    System.out.println("ERROR: '" + f.getAbsolutePath() + "' couldn't be renamed to '.old' ");
+                    return;
+                }
+                if (!temporaryFile.renameTo(new File(temporaryFile.getParent(), "problem.xml"))){
+                    System.out.println("ERROR: '" + temporaryFile.getAbsolutePath() + "' couldn't be renamed to 'problem.xml' ");
+                    return;
+                }
 
                 if (vfs != null) {
                     pi.copyToVFS(vfs, sysin, update);
@@ -62,8 +68,15 @@ public class Main {
                 for (Problem pr : ch.problems.values()) {
                     File temporaryFile = new File(folder, "problems/" + pr.shortName + "/problem.xml.tmp");
                     File f = new File(folder, "problems/" + pr.shortName + "/problem.xml");
-                    f.renameTo(new File(f.getAbsolutePath() + ".old"));
-                    temporaryFile.renameTo(new File(temporaryFile.getParent(), "problem.xml"));
+                    (new File(f.getAbsolutePath() + ".old")).delete();
+                    if (!f.renameTo(new File(f.getAbsolutePath() + ".old"))) {
+                        System.out.println("ERROR: '" + f.getAbsolutePath() + "' couldn't be renamed to '.old' ");
+                        return;
+                    }
+                    if (!temporaryFile.renameTo(new File(temporaryFile.getParent(), "problem.xml"))){
+                        System.out.println("ERROR: '" + temporaryFile.getAbsolutePath() + "' couldn't be renamed to 'problem.xml' ");
+                        return;
+                    }
                     if (vfs != null) {
                         update = pr.copyToVFS(vfs, sysin, update);
                     }

@@ -191,11 +191,14 @@ public class Problem {
         pw.println("\t<judging>");
 
         pw.println("\t\t<script type = \"%" + "icpc" + "\">");
-        for (Map.Entry<String, Testset> t: testsets.entrySet()){
-            if (!t.getValue().name.equals("preliminary")) {
-                t.getValue().print(pw, "\t\t\t", "icpc");
-            }
+
+        Testset testset = testsets.get("tests");
+        if (testset != null) {
+            testset.print(pw, "\t\t\t", "icpc");
+        } else {
+            System.out.println("WARNING: Testset 'tests' not found! This is the main testset in PCMS.");
         }
+
         verifier.print(pw, "\t\t\t");
         if (interactor != null) {
             interactor.print(pw, "\t\t\t");
@@ -206,9 +209,17 @@ public class Problem {
         pw.println("\t\t</script>");
 
         pw.println("\t\t<script type = \"%" + "ioi" + "\">");
-        for (Map.Entry<String, Testset> t: testsets.entrySet()){
-            t.getValue().print(pw, "\t\t\t", "ioi");
+        testset = testsets.get("preliminary");
+        if (testset != null) {
+            testset.print(pw, "\t\t\t", "ioi");
         }
+        testset = testsets.get("tests");
+        if (testset != null) {
+            testset.print(pw, "\t\t\t", "ioi");
+        } else {
+            System.out.println("WARNING: Testset 'tests' not found! This is the main testset in PCMS.");
+        }
+
         verifier.print(pw, "\t\t\t");
         for (Attachment at : attachments) {
             at.print(pw, "\t\t\t");
