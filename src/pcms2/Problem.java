@@ -50,7 +50,7 @@ public class Problem {
     public void parse(Properties languageProps, Properties executableProps) throws Exception {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder = factory.newDocumentBuilder();
-        Document doc = builder.parse(XMLpath);
+        Document doc = builder.parse(new File(XMLpath));
         groupstxt = null;
         if ((new File(GroupsPath)).exists()) {
             groupstxt = new BufferedReader(new FileReader(GroupsPath));

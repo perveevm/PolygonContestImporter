@@ -95,9 +95,9 @@ public class Main {
 
     static Properties load(String fileName) throws IOException {
         Properties props = new Properties();
-        File propsFile = new File(fileName);
+        File propsFile = new File(System.getenv().get("lib_home"), fileName);
         if (propsFile.exists()) {
-            InputStreamReader in = new InputStreamReader(new FileInputStream(fileName), "UTF-8");
+            InputStreamReader in = new InputStreamReader(new FileInputStream(propsFile), "UTF-8");
             props.load(in);
             in.close();
         }
