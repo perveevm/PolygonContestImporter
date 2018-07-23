@@ -175,7 +175,7 @@ public class Testset {
             if (!el.getAttribute("points").isEmpty()) {
                 points = Double.parseDouble(el.getAttribute("points"));
                 if (Double.compare(points, (int) points) != 0) {
-                    System.out.println("WARNING: Double points are not supported in PCMS but test '" + j + "' has double points!");
+                    System.out.println("WARNING: Non-integer points are not supported in PCMS but test '" + j + "' has non-integer points!");
                 }
             }
 
