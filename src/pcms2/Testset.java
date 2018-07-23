@@ -207,7 +207,11 @@ public class Testset {
                 }
                 gg.last = j;
                 gg.pointsSum += points;
-                gg.points += ((int) points) + ",";
+                if (gg.scoring.equals("sum")) {
+                    gg.points += ((int) points) + ",";
+                } else {
+                    points = 0;
+                }
                 if (sample && !gg.feedback.equals("statistics")) {
                     System.out.printf("WARNING: Group '%s' contains sample tests, changing feedback to statistics!", gg.name);
                     gg.feedback = "statistics";

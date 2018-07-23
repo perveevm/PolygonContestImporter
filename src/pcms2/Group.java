@@ -19,7 +19,7 @@ public class Group {
     String comment = "";
     String scoring = "sum";
     String feedback = "group-score-and-test";
-    String groupBonus = "0";
+    String groupBonus = null;
     String requireGroups = "";
     String points = "";
     double pointsSum = 0;
@@ -30,6 +30,9 @@ public class Group {
     public void println(PrintWriter pw, String tabs) {
         if (comment.isEmpty()) {
             comment = name;
+        }
+        if (groupBonus == null) {
+            groupBonus = "" + (int) pointsSum;
         }
         pw.println(tabs + "<test-group");
         pw.println(tabs + "\tcomment = \"" + comment + "\"");
