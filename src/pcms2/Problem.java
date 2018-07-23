@@ -15,11 +15,13 @@ import java.util.*;
  * Created by Ilshat on 11/22/2015.
  */
 public class Problem {
-    String XMLpath;
-    String GroupsPath;
-    String ID;
-    String ScriptType;
-    String Name;
+    String xmlPath;
+    String groupsPath;
+    String id;
+    String scriptType;
+    String name;
+    //key - language, value - name
+    TreeMap <String, String> names;
     String shortName;
     String url;
     File problemDirectory;
@@ -34,26 +36,27 @@ public class Problem {
     int sampleCount = 0;
     BufferedReader groupstxt;
 
-    public Problem(String path, String idprefix, String type, Properties languageProps, Properties executableProps) throws Exception {
+    public Problem(String path, String idprefix, String type, Properties languageProps, Properties executableProps, String defaultLang) throws Exception {
         problemDirectory = new File(path);
         if (!problemDirectory.exists()) {
             throw new AssertionError("Couldn't find directory");
         }
-        XMLpath = path + "/problem.xml";
-        GroupsPath = path + "/files/groups.txt";
-        ID = idprefix;
-        ScriptType = type;
+        xmlPath = path + "/problem.xml";
+        groupsPath = path + "/files/groups.txt";
+        id = idprefix;
+        scriptType = type;
         testsets = new TreeMap<>();
-        parse(languageProps, executableProps);
+        names = new TreeMap<>();
+        parse(languageProps, executableProps, defaultLang);
     }
 
-    public void parse(Properties languageProps, Properties executableProps) throws Exception {
+    public void parse(Properties languageProps, Properties executableProps, String defaultLang) throws Exception {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder = factory.newDocumentBuilder();
-        Document doc = builder.parse(new File(XMLpath));
+        Document doc = builder.parse(new File(xmlPath));
         groupstxt = null;
-        if ((new File(GroupsPath)).exists()) {
-            groupstxt = new BufferedReader(new FileReader(GroupsPath));
+        if ((new File(groupsPath)).exists()) {
+            groupstxt = new BufferedReader(new FileReader(groupsPath));
         }
         //NodeList problem = doc.getDocumentElement().getChildNodes();
         Element el = doc.getDocumentElement();
@@ -62,28 +65,29 @@ public class Problem {
         System.out.println("\nparsing problem '" + shortName + "'");
 
         url = el.getAttribute("url");
-        if (ID.startsWith("com.codeforces.polygon") || ID.equals("auto")) {
+        if (id.startsWith("com.codeforces.polygon") || id.equals("auto")) {
             String[] t = url.split("/");
             String cflogin = t[t.length - 2];
             if (cflogin.contains(".")) {
                 System.out.println("WARNING: Problem owner login contains '.', replacing with '-'");
                 cflogin = cflogin.replaceAll("\\.", "-");
             }
-            ID = "com.codeforces.polygon." + cflogin;
+            id = "com.codeforces.polygon." + cflogin;
         }
-        ID = ID + "." + shortName;
+        id = id + "." + shortName;
 
         //names
-        NodeList nl = ((Element) doc.getElementsByTagName("names").item(0)).getElementsByTagName("name");
-        for (int i = 0; i < nl.getLength(); i++) {
-            Node n = nl.item(i);
-            el = (Element) n;
-            if (el.getAttribute("language").equals("russian")) {
-                Name = el.getAttribute("value");
-                System.out.println("problem name = '" + Name + "'");
-            } else {
-                System.out.println(el.getAttribute("language"));
-            }
+        NodeList nodeList = ((Element) doc.getElementsByTagName("names").item(0)).getElementsByTagName("name");
+        for (int i = 0; i < nodeList.getLength(); i++) {
+            Node node = nodeList.item(i);
+            el = (Element) node;
+            names.put(el.getAttribute("language"), el.getAttribute("value"));
+        }
+        if (names.containsKey(defaultLang)) {
+            name = names.get(defaultLang);
+        } else {
+            name = names.firstEntry().getValue();
+            System.out.println("WARNING: Problem name for default language '" + defaultLang + "' not found! Using '" + names.firstKey() + "' name.");
         }
 
         //judging
@@ -94,12 +98,11 @@ public class Problem {
         if (output.isEmpty()) output = "*";
 
         //testset
-        nl = el.getElementsByTagName("testset");
-        for (int i = 0; i < nl.getLength(); i++) {//testset
+        nodeList = el.getElementsByTagName("testset");
+        for (int i = 0; i < nodeList.getLength(); i++) {//testset
             //System.out.println("DEBUG: testsets cnt = " + nl.getLength() + " i = " + i);
-            el = (Element) nl.item(i);
-            Testset ts = new Testset();
-            ts.parse(this, el);
+            el = (Element) nodeList.item(i);
+            Testset ts = Testset.parse(this, el);
             testsets.put(ts.name, ts);
             //System.out.println("testset finished");
         }
@@ -121,21 +124,20 @@ public class Problem {
             testsets.put("preliminary", preliminary);
         }
 
-        //parse points and groups
+        //parse groups.txt
         if (testsets.get("tests").groups.size() != 0) {
-            ArrayList<Group> gg = testsets.get("tests").groups;
-            Group.parse(groupstxt, gg);
-            for (int i = 0; i < gg.size(); i++) {
-                gg.get(i).parseIntPoints();
-            }
+            Group.parseGroupstxt(groupstxt, testsets.get("tests").groups, testsets.get("tests").groupNameToId);
         }
+
         //files attachments
-        el = (Element) ((Element) doc.getElementsByTagName("files").item(0)).getElementsByTagName("attachments").item(0);
+        el = (Element)
+                ((Element) doc.getElementsByTagName("files").item(0))
+                .getElementsByTagName("attachments").item(0);
         attachments = new ArrayList<>();
         if (el != null) {
-            nl = el.getElementsByTagName("file");
-            for (int i = 0; i < nl.getLength(); i++) {
-                el = (Element) nl.item(i);
+            nodeList = el.getElementsByTagName("file");
+            for (int i = 0; i < nodeList.getLength(); i++) {
+                el = (Element) nodeList.item(i);
                 Attachment[] attachs = Attachment.parse(this, el, languageProps);
                 if (attachs != null) {
                     for (Attachment attach : attachs) {
@@ -161,32 +163,11 @@ public class Problem {
         }
     }
 
-    private Interactor handleInteractor(Document doc) throws IOException {
-        Element interactorNode = (Element) ((Element) doc.getElementsByTagName("assets").item(0)).
-                getElementsByTagName("interactor").item(0);
-        if (interactorNode == null) {
-            return null;
-        }
-        Element el = (Element) interactorNode.getElementsByTagName("source").item(0);
-        String sourcePath = el.getAttribute("path");
-        String sourceType = el.getAttribute("type");
-        el = (Element) interactorNode.getElementsByTagName("binary").item(0);
-        String binaryPath = el == null ? null : el.getAttribute("path");
-        FileUtils.copyFile(new File(problemDirectory, sourcePath), new File(problemDirectory, "interact.cpp"));
-        if (binaryPath != null) {
-            FileUtils.copyFile(new File(problemDirectory, binaryPath), new File(problemDirectory, "interact.exe"));
-        }
-        if (!sourceType.startsWith("cpp")) {
-            System.err.println("WARNING: Only C++ interactors are supported, interact.cpp and [interact.exe] are created");
-        }
-        return new Interactor("x86.exe.win32", "interact.exe");
-    }
-
     public void print(PrintWriter pw) {
         pw.println("<?xml version = \"1.0\" encoding=\"UTF-8\"?>");
         pw.println("<problem");
         pw.println("\tversion = \"1.0\"");
-        pw.println("\tid = \"" + ID + "\"");
+        pw.println("\tid = \"" + id + "\"");
         pw.println(">");
         pw.println("\t<judging>");
 
@@ -221,6 +202,9 @@ public class Problem {
         }
 
         verifier.print(pw, "\t\t\t");
+        if (interactor != null) {
+            interactor.print(pw, "\t\t\t");
+        }
         for (Attachment at : attachments) {
             at.print(pw, "\t\t\t");
         }
@@ -231,8 +215,8 @@ public class Problem {
     }
 
     public boolean copyToVFS(String vfs, BufferedReader in, boolean update) throws IOException {
-        File src = (new File(XMLpath)).getParentFile();
-        File dest = new File(vfs + "/problems/" + ID.replaceAll("\\.", "/"));
+        File src = (new File(xmlPath)).getParentFile();
+        File dest = new File(vfs + "/problems/" + id.replaceAll("\\.", "/"));
         //System.out.println("DEBUG: src = '" + src.getAbsolutePath() + " dest = '" + dest.getAbsolutePath() + "'");
         if (dest.exists()) {
             System.out.println("Problem '" + dest.getAbsolutePath() + "' exists.");

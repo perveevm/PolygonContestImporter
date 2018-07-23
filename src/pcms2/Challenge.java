@@ -19,27 +19,30 @@ import java.util.TreeMap;
  * Created by Ilshat on 11/24/2015.
  */
 public class Challenge {
-    public String path;
-    public String url;
-    public String name;
-    public String id;
-    public String type;
-    public TreeMap<String, Problem> problems;
+    String path;
+    String url;
+    String name;
+    //language -> name
+    TreeMap <String, String> names;
+    String id;
+    String type;
+    TreeMap<String, Problem> problems;
 
     public Challenge() {
         problems = new TreeMap<>();
         path = "";
     }
 
-    public Challenge(String ID, String Type, String Path, Properties languageProps, Properties executableProps) throws Exception {
+    public Challenge(String ID, String Type, String Path, Properties languageProps, Properties executableProps, String defaultLang) throws Exception {
         problems = new TreeMap<>();
+        names = new TreeMap<>();
         path = Path;
         id = ID;
         type = Type;
-        parse(languageProps, executableProps);
+        parse(languageProps, executableProps, defaultLang);
     }
 
-    public void parse(Properties languageProps, Properties executableProps) throws Exception {
+    void parse(Properties languageProps, Properties executableProps, String defaultLang) throws Exception {
         System.out.println("parsing contest.xml ...");
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder = factory.newDocumentBuilder();
@@ -51,14 +54,21 @@ public class Challenge {
             String[] t = url.split("/");
             id = "com.codeforces.polygon." + t[t.length - 1];
         }
+
+        //names
         Element child = (Element) el.getElementsByTagName("names").item(0);
         NodeList nl = child.getElementsByTagName("name");
         for (int i = 0; i < nl.getLength(); i++) {
             child = (Element) nl.item(i);
-            if (child.getAttribute("language").equals("russian")) {
-                name = child.getAttribute("value");
-            }
+            names.put(child.getAttribute("language"), child.getAttribute("value"));
         }
+        if (names.containsKey(defaultLang)) {
+            name = names.get(defaultLang);
+        } else {
+            name = names.firstEntry().getValue();
+            System.out.println("WARNING: Challenge name for default language '" + defaultLang + "' not found! Using '" + names.firstKey() + "' name.");
+        }
+
         child = (Element) el.getElementsByTagName("problems").item(0);
         nl = child.getElementsByTagName("problem");
         for (int i = 0; i < nl.getLength(); i++) {
@@ -67,7 +77,7 @@ public class Challenge {
             String index = child.getAttribute("index");
             String pname = purl.substring(purl.lastIndexOf("/") + 1);
             Problem p = new Problem(new File(path, "problems/" + pname).getAbsolutePath(), id, type,
-                    languageProps, executableProps);
+                    languageProps, executableProps, defaultLang);
             if (!p.url.equals(purl)) {
                 System.out.println("ERROR: Problem URL do not match! Contest problem = '" + purl + "' problems.xml = '" + p.url + "'");
                 System.exit(1);
@@ -88,8 +98,8 @@ public class Challenge {
         for (Map.Entry<String, Problem> e : problems.entrySet()) {
             pw.println("\t<problem-ref alias = \"" + e.getKey().toUpperCase() + "\" " +
                     "id = \"" + e.getKey() + "\" " +
-                    "problem-id = \"" + e.getValue().ID + "\" " +
-                    "name = \"" + e.getValue().Name + "\"/>");
+                    "problem-id = \"" + e.getValue().id + "\" " +
+                    "name = \"" + e.getValue().name + "\"/>");
         }
         pw.println("</challenge>");
 

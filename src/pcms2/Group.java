@@ -1,5 +1,8 @@
 package pcms2;
 
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -12,24 +15,24 @@ import java.util.TreeMap;
  * Created by Ilshat on 11/23/2015.
  */
 public class Group {
-    public String comment;
-    public String commentname = "";
-    public String scoring = "sum";
-    public String feedback = "group-score-and-test";
-    public String groupBonus = "0";
-    public String requireGroups = "";
-    public String points = "";
-    public int intPoints[];
-    public int first;
-    public int last;
+    String name;
+    String comment = "";
+    String scoring = "sum";
+    String feedback = "group-score-and-test";
+    String groupBonus = "0";
+    String requireGroups = "";
+    String points = "";
+    double pointsSum = 0;
+    int intPoints[];
+    int first = -1;
+    int last = -1;
 
     public void println(PrintWriter pw, String tabs) {
-        if (comment.equals("0")) {
-            feedback = "statistics";
-            commentname = ". Sample tests";
+        if (comment.isEmpty()) {
+            comment = name;
         }
         pw.println(tabs + "<test-group");
-        pw.println(tabs + "\tcomment = \"" + comment + commentname + "\"");
+        pw.println(tabs + "\tcomment = \"" + comment + "\"");
         pw.println(tabs + "\tscoring = \"" + scoring + "\"");
         pw.println(tabs + "\tfeedback = \"" + feedback + "\"");
         pw.println(tabs + "\tgroup-bonus = \"" + groupBonus + "\"");
@@ -41,37 +44,22 @@ public class Group {
         if (points == null || points.isEmpty()) {
             return;
         }
-        //System.out.println("DEBUG: parsing points '" + points + "'");
-        String res = "";
-        boolean dig = false;
-        for (int i = 0; i < points.length(); i++) {
-            if (points.charAt(i) >= '0' && points.charAt(i) <= '9') {
-                dig = true;
-                res += points.charAt(i);
-            } else {
-                if (dig) {
-                    res += ' ';
-                }
-                dig = false;
-            }
-        }
-        res = res.trim();
-        //System.out.println("DEBUG: res = " + res);
-        String[] p = res.split(" ");
+//        System.out.println("DEBUG: parsing points '" + points + "'");
+
+        int[] p = getNumbersArray(points);
+//        System.out.println("DEBUG: points parsed " + Arrays.toString(p));
 
         if (last - first + 1 == p.length) {
-            intPoints = new int[p.length];
-            for (int i = 0; i < p.length; i++) {
-                intPoints[i] = Integer.parseInt(p[i]);
-            }
+            intPoints = p;
             return;
         }
+
         if (p.length == 1) {
             int tcount = last - first + 1;
-            int total = Integer.parseInt(points);
+            int total = p[0];
 
             if (total < tcount) {
-                System.out.println("WARNING: Could not parse 'points' parameter for group '" + comment + "'");
+                System.out.println("WARNING: Could not parse 'points' parameter for group '" + name + "'");
                 return;
             }
 
@@ -85,10 +73,10 @@ public class Group {
             return;
         }
 
-        System.out.println("WARNING: Could not parse 'points' parameter for group '" + comment + "'");
+        System.out.println("WARNING: Could not parse 'points' parameter for group '" + name + "'");
     }
 
-    public static void parse(BufferedReader groupstxt, ArrayList<Group> groups) throws IOException {
+    public static void parseGroupstxt(BufferedReader groupstxt, ArrayList<Group> groups, Map<String, Integer> groupNameToId) throws IOException {
         if (groupstxt == null) return;
 
         String line;
@@ -102,18 +90,20 @@ public class Group {
                 String[] kv = getKeyAndValue(group_params[ig]);
                 group_par.put(kv[0], kv[1]);
             }
+
             if (!group_par.containsKey("group")) {
                 System.out.println("WARNING: Group id was not found! " +
                         "Group parameters:'" + Arrays.toString(group_params) + "'. ");
                 continue;
             }
+            int group_id = groupNameToId.get(group_par.get("group"));
 
-            int group_id = Integer.parseInt(group_par.get("group"));
             if (group_id >= groups.size() || group_id < 0) {
                 System.out.println("WARNING: Group id in 'groups.txt' is wrong! " +
                         "Group parameters:'" + Arrays.toString(group_params) + "'. ");
                 continue;
             }
+
             Group gg = groups.get(group_id);
             System.out.println("INFO: " +
                     "Group parameters:'" + Arrays.toString(group_params) + "'. " +
@@ -123,23 +113,17 @@ public class Group {
                 if (entry.getKey().equals("group-bonus")) {
                     gg.groupBonus = entry.getValue();
                 } else if (entry.getKey().equals("require-groups")) {
-                    String[] grps = entry.getValue().split(" ");
+                    int[] grps = getNumbersArray(entry.getValue());
                     gg.requireGroups = "";
-                    for (String grp : grps) {
-                        try {
-                            int abc = Integer.parseInt(grp);
-                            abc++;
-                            gg.requireGroups += "" + abc + " ";
-                        } catch (NumberFormatException e) {
-                            continue;
-                        }
+                    for (int grp : grps) {
+                        gg.requireGroups += "" + (grp + 1) + " ";
                     }
                 } else if (entry.getKey().equals(("feedback"))) {
                     gg.feedback = entry.getValue();
                 } else if (entry.getKey().equals("points")) {
                     gg.points = entry.getValue();
                 } else if (entry.getKey().equals("comment")) {
-                    gg.commentname = ". " + entry.getValue();
+                    gg.comment = entry.getValue();
                 } else if (entry.getKey().equals("scoring")) {
                     gg.scoring = entry.getValue();
                 } else if (entry.getKey().equals("group")) {
@@ -149,6 +133,27 @@ public class Group {
                 }
             }
         }
+    }
+
+    public static Group parse(Element groupElement, Map <String, Integer> groupNameToId) {
+        Group group = new Group();
+        group.name = groupElement.getAttribute("name");
+        String pointsPolicy = groupElement.getAttribute("points-policy");
+        if (pointsPolicy.equals("complete-group")) {
+            group.scoring = "group";
+        } else if (pointsPolicy.equals("each-test")) {
+            group.scoring = "sum";
+        }
+        NodeList dependencies = groupElement.getElementsByTagName("dependencies");
+        if (dependencies != null && dependencies.getLength() > 0) {
+            dependencies = ((Element) dependencies.item(0))
+                    .getElementsByTagName("dependency");
+            for (int i = 0; i < dependencies.getLength(); i++) {
+                Element dep = (Element) dependencies.item(i);
+                group.requireGroups += groupNameToId.get(dep.getAttribute("group")) + 1 + " ";
+            }
+        }
+        return group;
     }
 
     static String[] getKeyAndValue(String s) {
@@ -162,5 +167,39 @@ public class Group {
         ss[1] = ss[1].replaceAll(">", "&gt;");
 
         return ss;
+    }
+
+    static int[] getNumbersArray(String s) {
+        if (s == null || s.isEmpty()) {
+            return new int[0];
+        }
+        int[] a = new int[s.length()];
+        int last = 0;
+        String res = "";
+        boolean dig = false;
+        for (int i = 0; i < s.length(); i++) {
+            if (s.charAt(i) >= '0' && s.charAt(i) <= '9') {
+                dig = true;
+                res += s.charAt(i);
+            } else {
+                if (dig) {
+                    try {
+                        a[last] = Integer.parseInt(res);
+                        last++;
+                    } catch (NumberFormatException ignored) {
+                    }
+                    res = "";
+                }
+                dig = false;
+            }
+        }
+        if (dig) {
+            try {
+                a[last] = Integer.parseInt(res);
+                last++;
+            } catch (NumberFormatException ignored) {
+            }
+        }
+        return Arrays.copyOf(a, last);
     }
 }

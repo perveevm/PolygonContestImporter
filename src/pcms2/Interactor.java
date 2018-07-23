@@ -8,8 +8,8 @@ import java.util.Properties;
  * Created by Niyaz Nigmatullin on 26.03.17.
  */
 public class Interactor {
-    public final String executableId;
-    public final String binary;
+    final String executableId;
+    final String binary;
 
 
     public Interactor(String executableId, String binary) {

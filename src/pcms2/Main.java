@@ -21,6 +21,7 @@ public class Main {
             Properties props = load("import.properties");
             String vfs = props.getProperty("vfs", null);
             String webroot = props.getProperty("webroot", null);
+            String defaultLanguage = props.getProperty("defaultLanguage");
 
             Properties languageProps = load("language.properties");
             Properties executableProps = load("executable.properties");
@@ -31,7 +32,7 @@ public class Main {
 
             if (args[0].equals("problem")) {
                 //Problem pi = new Problem("problem.xml", "ru.", "ioi");
-                Problem pi = new Problem(folder, args[1], args[2], languageProps, executableProps);
+                Problem pi = new Problem(folder, args[1], args[2], languageProps, executableProps, defaultLanguage);
                 File f = new File(folder, "problem.xml");
 
                 File temporaryFile = new File(folder, "problem.xml.tmp");
@@ -52,7 +53,7 @@ public class Main {
                     pi.copyToVFS(vfs, sysin, update);
                 }
             } else if (args[0].equals("challenge")) {
-                Challenge ch = new Challenge(args[1], args[2], folder, languageProps, executableProps);
+                Challenge ch = new Challenge(args[1], args[2], folder, languageProps, executableProps, defaultLanguage);
                 try (PrintWriter pw = new PrintWriter(new FileWriter(new File(folder, "challenge.xml")))) {
                     ch.print(pw);
                     pw.close();
@@ -95,7 +96,12 @@ public class Main {
 
     static Properties load(String fileName) throws IOException {
         Properties props = new Properties();
-        File propsFile = new File(System.getenv().get("lib_home"), fileName);
+        File propsFile;
+        if (System.getenv().get("lib_home") != null) {
+            propsFile = new File(System.getenv().get("lib_home"), fileName);
+        } else {
+            propsFile = new File(fileName);
+        }
         if (propsFile.exists()) {
             InputStreamReader in = new InputStreamReader(new FileInputStream(propsFile), "UTF-8");
             props.load(in);

@@ -9,9 +9,9 @@ import java.util.Properties;
  * Created by Ilshat on 11/23/2015.
  */
 public class Verifier {
-    public String type;
-    public String executableId;
-    public String file;
+    String type;
+    String executableId;
+    String file;
 
     public void print(PrintWriter pw, String tabs) {
         pw.println(tabs + "<verifier type = \"%" + type + "\">");
