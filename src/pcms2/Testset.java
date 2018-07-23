@@ -2,6 +2,7 @@ package pcms2;
 
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
+import pcms2.properties.Scoring;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -207,7 +208,7 @@ public class Testset {
                 }
                 gg.last = j;
                 gg.pointsSum += points;
-                if (gg.scoring.equals("sum")) {
+                if (gg.scoring == Scoring.SUM) {
                     gg.points += ((int) points) + ",";
                 } else {
                     points = 0;
