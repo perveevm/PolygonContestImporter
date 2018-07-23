@@ -2,6 +2,7 @@ package pcms2;
 
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
+import pcms2.properties.Scoring;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -17,7 +18,7 @@ import java.util.TreeMap;
 public class Group {
     String name;
     String comment = "";
-    String scoring = "sum";
+    Scoring scoring = Scoring.SUM;
     String feedback = "group-score-and-test";
     String groupBonus = null;
     String requireGroups = "";
@@ -128,7 +129,7 @@ public class Group {
                 } else if (entry.getKey().equals("comment")) {
                     gg.comment = entry.getValue();
                 } else if (entry.getKey().equals("scoring")) {
-                    gg.scoring = entry.getValue();
+                    gg.scoring = Scoring.parse(entry.getValue());
                 } else if (entry.getKey().equals("group")) {
                     continue;
                 } else {
@@ -143,9 +144,9 @@ public class Group {
         group.name = groupElement.getAttribute("name");
         String pointsPolicy = groupElement.getAttribute("points-policy");
         if (pointsPolicy.equals("complete-group")) {
-            group.scoring = "group";
+            group.scoring = Scoring.GROUP;
         } else if (pointsPolicy.equals("each-test")) {
-            group.scoring = "sum";
+            group.scoring = Scoring.SUM;
         }
         NodeList dependencies = groupElement.getElementsByTagName("dependencies");
         if (dependencies != null && dependencies.getLength() > 0) {
