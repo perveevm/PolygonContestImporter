@@ -18,13 +18,13 @@ public class Main {
         String folder = (args.length > 3 ? args[3] : ".");
 
         try {
-            Properties props = load("import.pcms2.properties");
+            Properties props = load("import.properties");
             String vfs = props.getProperty("vfs", null);
             String webroot = props.getProperty("webroot", null);
             String defaultLanguage = props.getProperty("defaultLanguage");
 
-            Properties languageProps = load("language.pcms2.properties");
-            Properties executableProps = load("executable.pcms2.properties");
+            Properties languageProps = load("language.properties");
+            Properties executableProps = load("executable.properties");
 
             Boolean update = false;
 
