@@ -33,7 +33,10 @@ public class Group {
             comment = name;
         }
         if (groupBonus == null) {
-            groupBonus = "" + (int) pointsSum;
+            if (scoring == Scoring.GROUP)
+                groupBonus = "" + (int) pointsSum;
+            else
+                groupBonus = "0";
         }
         pw.println(tabs + "<test-group");
         pw.println(tabs + "\tcomment = \"" + comment + "\"");

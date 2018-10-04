@@ -101,7 +101,7 @@ public class Testset {
                         group.parseIntPoints();
                         group.println(pw, tabs + "\t");
                         for (int j = group.first; j <= group.last; j++) {
-                            if (group.intPoints == null) {
+                            if (group.intPoints == null || group.scoring == Scoring.GROUP) {
                                 tests[j].println(pw, tabs + "\t\t");
                             } else {
                                 tests[j].println(pw, tabs + "\t\t", "" + group.intPoints[j - group.first]);
@@ -213,7 +213,7 @@ public class Testset {
                     points = 0;
                 }
                 if (sample && !gg.feedback.equals("statistics")) {
-                    System.out.printf("WARNING: Group '%s' contains sample tests, changing feedback to statistics!", gg.name);
+                    System.out.printf("WARNING: Group '%s' contains sample tests, changing feedback to statistics!\n", gg.name);
                     gg.feedback = "statistics";
                     gg.comment = "Sample tests";
                 }
