@@ -106,25 +106,28 @@ public class Challenge {
     }
 
     public boolean copyToVFS(String vfs, BufferedReader in, boolean update) throws IOException {
-        File src = new File(path, "challenge.xml");
-        File dest = new File(vfs + "/etc/" + id.replaceAll("\\.", "/") + "/challenge.xml");
-        //System.out.println("DEBUG: src = '" + src.getAbsolutePath() + " dest = '" + dest.getAbsolutePath() + "'");
-        if (dest.exists()) {
-            System.out.println("Challenge '" + dest.getAbsolutePath() + "' exists.");
-            String yn = "n";
-            if (!update) {
-                System.out.println("Do You want to update it?\n(y - yes, n - no)");
-                yn = in.readLine();
-            }
-            if (update || yn.equals("y")) {
-                System.out.println("Updating...");
-                FileUtils.copyFileToDirectory(src, dest.getParentFile());
+        String[] files = {"challenge.xml", "submit.lst"};
+        for (String f : files) {
+            File src = new File(path, f);
+            File dest = new File(vfs + "/etc/" + id.replaceAll("\\.", "/") + "/" + f);
+            //System.out.println("DEBUG: src = '" + src.getAbsolutePath() + " dest = '" + dest.getAbsolutePath() + "'");
+            if (dest.exists()) {
+                System.out.println(f + " '" + dest.getAbsolutePath() + "' exists.");
+                String yn = "n";
+                if (!update) {
+                    System.out.println("Do You want to update it?\n(y - yes, n - no)");
+                    yn = in.readLine();
+                }
+                if (update || yn.equals("y")) {
+                    System.out.println("Updating...");
+                    FileUtils.copyFileToDirectory(src, dest.getParentFile());
+                } else {
+                    System.out.println("Skipping...");
+                }
             } else {
-                System.out.println("Skipping...");
+                System.out.println("Copying " + f + " to '" + dest.getAbsolutePath() + "'.");
+                FileUtils.copyFileToDirectory(src, dest.getParentFile());
             }
-        } else {
-            System.out.println("Copying challenge to '" + dest.getAbsolutePath() + "'.");
-            FileUtils.copyFileToDirectory(src, dest.getParentFile());
         }
         return update;
     }

@@ -1,6 +1,7 @@
 package pcms2;
 
 import java.io.*;
+import java.util.Map;
 import java.util.Properties;
 
 public class Main {
@@ -52,12 +53,13 @@ public class Main {
                 if (vfs != null) {
                     pi.copyToVFS(vfs, sysin, update);
                 }
-            } else if (args[0].equals("challenge")) {
+            } else if (args[0].equals("challenge") || args[0].equals("contest")) {
                 Challenge ch = new Challenge(args[1], args[2], folder, languageProps, executableProps, defaultLanguage);
                 try (PrintWriter pw = new PrintWriter(new FileWriter(new File(folder, "challenge.xml")))) {
                     ch.print(pw);
                     pw.close();
                 }
+
                 for (Problem pr : ch.problems.values()) {
                     File temporaryFile = new File(folder, "problems/" + pr.shortName + "/problem.xml.tmp");
                     try (PrintWriter pw = new PrintWriter(new FileWriter(temporaryFile))) {
@@ -65,8 +67,11 @@ public class Main {
                         pw.close();
                     }
                 }
-
-                for (Problem pr : ch.problems.values()) {
+                File submitFile = new File(folder, "submit.lst");
+                PrintWriter submit = new PrintWriter(new FileWriter(submitFile));
+                for (Map.Entry<String, Problem> entry : ch.problems.entrySet()){
+                //for (Problem pr : ch.problems.values()) {
+                    Problem pr = entry.getValue();
                     File temporaryFile = new File(folder, "problems/" + pr.shortName + "/problem.xml.tmp");
                     File f = new File(folder, "problems/" + pr.shortName + "/problem.xml");
                     (new File(f.getAbsolutePath() + ".old")).delete();
@@ -80,8 +85,11 @@ public class Main {
                     }
                     if (vfs != null) {
                         update = pr.copyToVFS(vfs, sysin, update);
+                        pr.printSolutions(submit, ch.id + ".0", entry.getKey().toUpperCase(), languageProps, vfs);
                     }
                 }
+                submit.close();
+
                 if (vfs != null) {
                     ch.copyToVFS(vfs, sysin, update);
                 }

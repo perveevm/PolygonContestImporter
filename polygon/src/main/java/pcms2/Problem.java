@@ -29,6 +29,7 @@ public class Problem {
     String output;
     TreeMap <String, Testset> testsets;
     ArrayList<Attachment> attachments;
+    Solution[] solutions;
     Verifier verifier;
     Interactor interactor;
 
@@ -161,6 +162,9 @@ public class Problem {
                 e.outputName = shortName + ".out";
             }
         }
+        el = (Element) ((Element) doc.getElementsByTagName("assets").item(0)).
+                getElementsByTagName("solutions").item(0);
+        solutions = Solution.parse(el);
     }
 
     public void print(PrintWriter pw) {
@@ -212,6 +216,13 @@ public class Problem {
 
         pw.println("\t</judging>");
         pw.println("</problem>");
+    }
+
+    void printSolutions(PrintWriter pw, String sessionId, String problemAlias, Properties languageProperties, String vfs) {
+        for (Solution sol : solutions) {
+            sol.print(pw, sessionId, problemAlias, languageProperties,
+                    vfs + "/problems/" + id.replaceAll("\\.", "/"));
+        }
     }
 
     public boolean copyToVFS(String vfs, BufferedReader in, boolean update) throws IOException {
