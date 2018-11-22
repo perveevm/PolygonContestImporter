@@ -40,9 +40,16 @@ public class Problem {
     public Problem(String path, String idprefix, String type, Properties languageProps, Properties executableProps, String defaultLang) throws Exception {
         problemDirectory = new File(path);
         if (!problemDirectory.exists()) {
-            throw new AssertionError("Couldn't find directory");
+            throw new AssertionError("ERROR: Couldn't find directory '" + path + "'");
         }
-        xmlPath = path + "/problem.xml";
+        File f = new File(problemDirectory, "problem.xml.polygon");
+        if (!f.exists()) {
+            if (!(new File(problemDirectory, "problem.xml")).renameTo(f)) {
+                System.out.println("ERROR: problem.xml not found in '" + problemDirectory + "'!");
+                return;
+            }
+        }
+        xmlPath = path + "/problem.xml.polygon";
         groupsPath = path + "/files/groups.txt";
         id = idprefix;
         scriptType = type;

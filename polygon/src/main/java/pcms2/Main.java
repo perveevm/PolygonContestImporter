@@ -34,18 +34,19 @@ public class Main {
             if (args[0].equals("problem")) {
                 //Problem pi = new Problem("problem.xml", "ru.", "ioi");
                 Problem pi = new Problem(folder, args[1], args[2], languageProps, executableProps, defaultLanguage);
-                File f = new File(folder, "problem.xml");
-
                 File temporaryFile = new File(folder, "problem.xml.tmp");
                 PrintWriter pw = new PrintWriter(new FileWriter(temporaryFile));
                 pi.print(pw);
                 pw.close();
-                (new File(f.getAbsolutePath() + ".old")).delete();
-                if (!f.renameTo(new File(f.getAbsolutePath() + ".old"))) {
-                    System.out.println("ERROR: '" + f.getAbsolutePath() + "' couldn't be renamed to '.old' ");
-                    return;
-                }
-                if (!temporaryFile.renameTo(new File(temporaryFile.getParent(), "problem.xml"))){
+//                (new File(f.getAbsolutePath() + ".old")).delete();
+//                if (!f.renameTo(new File(f.getAbsolutePath() + ".old"))) {
+//                    System.out.println("ERROR: '" + f.getAbsolutePath() + "' couldn't be renamed to '.old' ");
+//                    return;
+//                }
+
+                File f = new File(folder, "problem.xml");
+                f.delete();
+                if (!temporaryFile.renameTo(f)){
                     System.out.println("ERROR: '" + temporaryFile.getAbsolutePath() + "' couldn't be renamed to 'problem.xml' ");
                     return;
                 }
@@ -72,14 +73,18 @@ public class Main {
                 for (Map.Entry<String, Problem> entry : ch.problems.entrySet()){
                 //for (Problem pr : ch.problems.values()) {
                     Problem pr = entry.getValue();
-                    File temporaryFile = new File(folder, "problems/" + pr.shortName + "/problem.xml.tmp");
+
                     File f = new File(folder, "problems/" + pr.shortName + "/problem.xml");
-                    (new File(f.getAbsolutePath() + ".old")).delete();
-                    if (!f.renameTo(new File(f.getAbsolutePath() + ".old"))) {
-                        System.out.println("ERROR: '" + f.getAbsolutePath() + "' couldn't be renamed to '.old' ");
-                        return;
+                    File temporaryFile = new File(f.getAbsolutePath() + ".tmp");
+//                    (new File(f.getAbsolutePath() + ".old")).delete();
+//                    if (!f.renameTo(new File(f.getAbsolutePath() + ".old"))) {
+//                        System.out.println("ERROR: '" + f.getAbsolutePath() + "' couldn't be renamed to '.old' ");
+//                        return;
+//                    }
+                    if (f.exists()) {
+                        f.delete();
                     }
-                    if (!temporaryFile.renameTo(new File(temporaryFile.getParent(), "problem.xml"))){
+                    if (!temporaryFile.renameTo(f)){
                         System.out.println("ERROR: '" + temporaryFile.getAbsolutePath() + "' couldn't be renamed to 'problem.xml' ");
                         return;
                     }
