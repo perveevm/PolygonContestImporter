@@ -7,15 +7,22 @@ import pcms2.properties.Scoring;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 /**
  * Created by Ilshat on 11/23/2015.
  */
 public class Group {
+
+    /** Map polygon feedback-policy to PCMS feedback parameter */
+    static private final Map<String, String> FEEDBACK_MAPPER;
+    static {
+        Map<String, String> k = new HashMap<>();
+        k.put("points", "group-score");
+        k.put("complete", "outcome");
+        k.put("icpc", "group-score-and-test");
+        FEEDBACK_MAPPER = Collections.unmodifiableMap(k);
+    }
     String name;
     String comment = "";
     Scoring scoring = Scoring.SUM;
@@ -146,10 +153,18 @@ public class Group {
         Group group = new Group();
         group.name = groupElement.getAttribute("name");
         String pointsPolicy = groupElement.getAttribute("points-policy");
+        String feedbackPolicy = groupElement.getAttribute("feedback-policy");
         if (pointsPolicy.equals("complete-group")) {
             group.scoring = Scoring.GROUP;
         } else if (pointsPolicy.equals("each-test")) {
             group.scoring = Scoring.SUM;
+        }
+        if (feedbackPolicy != null) {
+            if (FEEDBACK_MAPPER.containsKey(feedbackPolicy)) {
+                group.feedback = FEEDBACK_MAPPER.get(feedbackPolicy);
+            } else {
+                System.out.println("WARNING: unknown feedback-policy '" + feedbackPolicy + "'");
+            }
         }
         NodeList dependencies = groupElement.getElementsByTagName("dependencies");
         if (dependencies != null && dependencies.getLength() > 0) {
