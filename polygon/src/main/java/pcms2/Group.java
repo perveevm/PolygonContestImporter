@@ -2,6 +2,7 @@ package pcms2;
 
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
+import pcms2.properties.Feedback;
 import pcms2.properties.Scoring;
 
 import java.io.BufferedReader;
@@ -19,7 +20,7 @@ public class Group {
     String name;
     String comment = "";
     Scoring scoring = Scoring.SUM;
-    String feedback = "group-score-and-test";
+    Feedback feedback = Feedback.GROUP_SCORE_AND_TEST;
     String groupBonus = null;
     String requireGroups = "";
     String points = "";
@@ -126,13 +127,13 @@ public class Group {
                         gg.requireGroups += "" + (grp + 1) + " ";
                     }
                 } else if (entry.getKey().equals(("feedback"))) {
-                    gg.feedback = entry.getValue();
+                    gg.feedback = Feedback.getFeedback(entry.getValue());
                 } else if (entry.getKey().equals("points")) {
                     gg.points = entry.getValue();
                 } else if (entry.getKey().equals("comment")) {
                     gg.comment = entry.getValue();
                 } else if (entry.getKey().equals("scoring")) {
-                    gg.scoring = Scoring.parse(entry.getValue());
+                    gg.scoring = Scoring.getScoring(entry.getValue());
                 } else if (entry.getKey().equals("group")) {
                     continue;
                 } else {
@@ -146,11 +147,10 @@ public class Group {
         Group group = new Group();
         group.name = groupElement.getAttribute("name");
         String pointsPolicy = groupElement.getAttribute("points-policy");
-        if (pointsPolicy.equals("complete-group")) {
-            group.scoring = Scoring.GROUP;
-        } else if (pointsPolicy.equals("each-test")) {
-            group.scoring = Scoring.SUM;
-        }
+        group.scoring = Scoring.parse(pointsPolicy);
+        String feedbackPolicy = groupElement.getAttribute("feedback-policy");
+        group.feedback = Feedback.parse(feedbackPolicy);
+
         NodeList dependencies = groupElement.getElementsByTagName("dependencies");
         if (dependencies != null && dependencies.getLength() > 0) {
             dependencies = ((Element) dependencies.item(0))

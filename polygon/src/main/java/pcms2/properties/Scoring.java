@@ -17,6 +17,16 @@ public enum Scoring {
 
     public static Scoring parse(String word) {
         switch (word) {
+            case "each-test":
+                return Scoring.SUM;
+            case "complete-group":
+                return Scoring.GROUP;
+        }
+        throw new AssertionError("Couldn't parse scoring = '" + word + "'");
+    }
+
+    public static Scoring getScoring(String word) {
+        switch (word) {
             case "sum":
                 return Scoring.SUM;
             case "group":
