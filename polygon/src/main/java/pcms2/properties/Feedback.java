@@ -21,8 +21,8 @@ public enum Feedback {
         return word;
     }
 
-    /*
-    Maps Polygon feedback policy to PCMS feedback.
+    /**
+     * Maps Polygon feedback policy to PCMS feedback.
      */
     public static Feedback parse(String word) {
         switch (word) {
@@ -38,8 +38,8 @@ public enum Feedback {
         throw new AssertionError("Couldn't parse feedback = '" + word + "'");
     }
 
-    /*
-    Gets enum Feedback from PCMS feedback word.
+    /**
+     * Gets enum Feedback from PCMS feedback.
      */
     public static Feedback getFeedback(String word) {
         switch (word) {

@@ -15,6 +15,9 @@ public enum Scoring {
         return word;
     }
 
+    /**
+     * Maps Polygon points policy to PCMS Scoring.
+     */
     public static Scoring parse(String word) {
         switch (word) {
             case "each-test":
@@ -25,6 +28,9 @@ public enum Scoring {
         throw new AssertionError("Couldn't parse scoring = '" + word + "'");
     }
 
+    /**
+     * Gets enum scoring from PCMS scoring.
+     */
     public static Scoring getScoring(String word) {
         switch (word) {
             case "sum":
