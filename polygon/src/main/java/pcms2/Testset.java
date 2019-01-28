@@ -2,6 +2,7 @@ package pcms2;
 
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
+import pcms2.properties.Feedback;
 import pcms2.properties.Scoring;
 
 import java.io.PrintWriter;
@@ -214,7 +215,7 @@ public class Testset {
                 }
                 if (sample && !gg.feedback.equals("statistics")) {
                     System.out.printf("WARNING: Group '%s' contains sample tests, changing feedback to statistics!\n", gg.name);
-                    gg.feedback = "statistics";
+                    gg.feedback = Feedback.getFeedback("statistics");
                     gg.comment = "Sample tests";
                 }
             } else if (hasGroups) {
