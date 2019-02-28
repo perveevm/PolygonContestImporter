@@ -30,15 +30,6 @@ public class Group {
     int last = -1;
 
     public void println(PrintWriter pw, String tabs) {
-        if (comment.isEmpty()) {
-            comment = name;
-        }
-        if (groupBonus == null) {
-            if (scoring == Scoring.GROUP)
-                groupBonus = "" + (int) pointsSum;
-            else
-                groupBonus = "0";
-        }
         pw.println(tabs + "<test-group");
         pw.println(tabs + "\tcomment = \"" + comment + "\"");
         pw.println(tabs + "\tscoring = \"" + scoring + "\"");
@@ -53,21 +44,22 @@ public class Group {
             return;
         }
 //        System.out.println("DEBUG: parsing points '" + points + "'");
-
         int[] p = getNumbersArray(points);
 //        System.out.println("DEBUG: points parsed " + Arrays.toString(p));
-
-        if (last - first + 1 == p.length) {
-            intPoints = p;
+        int nonZero = 0;
+        for (int i = 0; i < p.length; i++) {
+            if (p[i] > 0) nonZero++;
+        }
+        if (nonZero == 0) {
             return;
         }
 
-        if (p.length == 1) {
+        if (p.length == 1 || scoring == Scoring.SUM && nonZero != p.length) {
             int tcount = last - first + 1;
-            int total = p[0];
+            int total = Math.max(p[0], (int) pointsSum);
 
             if (total < tcount) {
-                System.out.println("WARNING: Could not parse 'points' parameter for group '" + name + "'");
+                System.out.println("WARNING: Could not parse 'points' parameter for group '" + name + "'. Tests count is bigger than points.");
                 return;
             }
 
@@ -78,6 +70,10 @@ public class Group {
             for (int i = tcount - total % tcount; i < tcount; i++) {
                 intPoints[i] = total / tcount + 1;
             }
+            return;
+        }
+        if (last - first + 1 == p.length) {
+            intPoints = p;
             return;
         }
 
@@ -113,6 +109,7 @@ public class Group {
             }
 
             Group gg = groups.get(group_id);
+//            System.out.println("DEBUG: " + gg.toString());
             System.out.println("INFO: " +
                     "Group parameters:'" + Arrays.toString(group_params) + "'. " +
                     "Group: '" + group_id + "' ");
@@ -140,10 +137,11 @@ public class Group {
                     System.out.println("WARNING: unknown parameter in groups.txt - '" + entry.getKey() + "'");
                 }
             }
+//            System.out.println("DEBUG: " + gg.toString());
         }
     }
 
-    public static Group parse(Element groupElement, Map <String, Integer> groupNameToId) {
+    public static Group parse(Element groupElement, Map<String, Integer> groupNameToId) {
         Group group = new Group();
         group.name = groupElement.getAttribute("name");
         String pointsPolicy = groupElement.getAttribute("points-policy");
@@ -208,5 +206,34 @@ public class Group {
             }
         }
         return Arrays.copyOf(a, last);
+    }
+
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Group name: ").append(name).append("\n");
+        if (!comment.isEmpty()) {
+            sb.append("comment: ").append(comment).append("\n");
+        }
+        sb.append("scoring: ").append(scoring).append("\n");
+        sb.append("feedback: ").append(feedback).append("\n");
+        if (groupBonus != null) {
+            sb.append("group-bonus: ").append(groupBonus).append("\n");
+        }
+        if (!requireGroups.isEmpty()) {
+            sb.append("require-groups: ").append(requireGroups).append("\n");
+        }
+        if (!points.isEmpty()) {
+            sb.append("points: ").append(points).append("\n");
+        }
+        if (pointsSum != 0) {
+            sb.append("points-sum: ").append(pointsSum).append("\n");
+        }
+        if (intPoints != null) {
+            sb.append("int-points: ").append(Arrays.toString(intPoints)).append("\n");
+        }
+        if (first != -1 && last != -1) {
+            sb.append("first: ").append(first).append(", last: ").append(last).append("\n");
+        }
+        return sb.toString();
     }
 }

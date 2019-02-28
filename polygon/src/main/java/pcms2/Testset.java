@@ -99,7 +99,7 @@ public class Testset {
                     }
                 } else {
                     for (Group group : groups) {
-                        group.parseIntPoints();
+
                         group.println(pw, tabs + "\t");
                         for (int j = group.first; j <= group.last; j++) {
                             if (group.intPoints == null || group.scoring == Scoring.GROUP) {
@@ -208,12 +208,13 @@ public class Testset {
                 }
                 gg.last = j;
                 gg.pointsSum += points;
-                if (gg.scoring == Scoring.SUM) {
-                    gg.points += ((int) points) + ",";
-                } else {
-                    points = 0;
-                }
-                if (sample && !gg.feedback.equals("statistics")) {
+                gg.points += ((int) points) + ",";
+//                if (gg.scoring == Scoring.SUM) {
+//                    gg.points += ((int) points) + ",";
+//                } else {
+//                    points = 0;
+//                }
+                if (sample && !gg.feedback.toString().equals("statistics")) {
                     System.out.printf("WARNING: Group '%s' contains sample tests, changing feedback to statistics!\n", gg.name);
                     gg.feedback = Feedback.getFeedback("statistics");
                     gg.comment = "Sample tests";
