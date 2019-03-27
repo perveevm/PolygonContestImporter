@@ -141,9 +141,10 @@ public class Group {
         }
     }
 
-    public static Group parse(Element groupElement, Map<String, Integer> groupNameToId) {
-        Group group = new Group();
-        group.name = groupElement.getAttribute("name");
+    public static Group parse(Element groupElement, ArrayList<Group> groups, Map<String, Integer> groupNameToId) {
+        String name = groupElement.getAttribute("name");
+        Group group = groups.get(groupNameToId.get(name));
+//        group.name = groupElement.getAttribute("name");
         String pointsPolicy = groupElement.getAttribute("points-policy");
         group.scoring = Scoring.parse(pointsPolicy);
         String feedbackPolicy = groupElement.getAttribute("feedback-policy");

@@ -56,10 +56,6 @@ public class Testset {
     }
 
     public void print(PrintWriter pw, String tabs, String type) {
-        //TODO: Get rid of preliminary testset
-        //if (name.equals("preliminary")) {
-        //return;
-        //}
         if (tests.length == 0) {
             System.out.println(String.format("WARNING: Testset %s contains zero tests, skipped", name));
             return;
@@ -144,44 +140,30 @@ public class Testset {
             isPreliminary = true;
         }
 
-        //groups
-        NodeList groupsList = el.getElementsByTagName("groups");
-        if (groupsList != null && groupsList.getLength() > 0) {
-            groupsList = ((Element) groupsList.item(0)).getElementsByTagName("group");
-            for (int i = 0; i < groupsList.getLength(); i++) {
-                Element groupElement = (Element) groupsList.item(i);
-                Group group = Group.parse(groupElement, ts.groupNameToId);
-//                System.out.println("DEBUG: " + group.name + " " + groupElement.getNodeName());
-                ts.groups.add(group);
-                ts.groupNameToId.put(group.name, ts.groups.size() - 1);
-            }
-        }
-
         //tests
         NodeList nl1 = el.getElementsByTagName("tests");
         nl1 = ((Element) nl1.item(0)).getElementsByTagName("test");
         ts.tests = new Test[tc];
-        //System.out.println("test count = " + tc);
         for (int j = 0; j < nl1.getLength(); j++) {//tests
             //System.out.println("DEBUG: j = " + j);
-            el = (Element) nl1.item(j);
-            String comment = el.getAttribute("method");
+            Element testEl = (Element) nl1.item(j);
+            String comment = testEl.getAttribute("method");
             String groupName = "-1";
             double points = 0;
 
-            if (!el.getAttribute("cmd").isEmpty()) {
-                comment += " cmd: '" + el.getAttribute("cmd") + "'";
+            if (!testEl.getAttribute("cmd").isEmpty()) {
+                comment += " cmd: '" + testEl.getAttribute("cmd") + "'";
             }
 
-            if (!el.getAttribute("points").isEmpty()) {
-                points = Double.parseDouble(el.getAttribute("points"));
+            if (!testEl.getAttribute("points").isEmpty()) {
+                points = Double.parseDouble(testEl.getAttribute("points"));
                 if (Double.compare(points, (int) points) != 0) {
                     System.out.println("WARNING: Non-integer points are not supported in PCMS but test '" + j + "' has non-integer points!");
                 }
             }
 
             boolean sample = false;
-            if (el.getAttribute("sample").equals("true")) {
+            if (testEl.getAttribute("sample").equals("true")) {
                 sample = true;
                 if (isPreliminary) {
                     groupName = "sample";
@@ -191,15 +173,14 @@ public class Testset {
                 }
 
             }
-            if (!el.getAttribute("group").isEmpty()) {
+            if (!testEl.getAttribute("group").isEmpty()) {
                 hasGroups = true;
-                groupName = el.getAttribute("group");
+                groupName = testEl.getAttribute("group");
                 if (!ts.groupNameToId.containsKey(groupName)) {
-                    System.out.println("WARNING: Group '" + groupName + "' was not found in groups element!");
-                    Group gg = new Group();
-                    gg.first = j;
-                    gg.name = groupName;
-                    ts.groups.add(gg);
+                    Group group = new Group();
+                    group.first = j;
+                    group.name = groupName;
+                    ts.groups.add(group);
                     ts.groupNameToId.put(groupName, ts.groups.size() - 1);
                 }
                 Group gg = ts.groups.get(ts.groupNameToId.get(groupName));
@@ -209,13 +190,8 @@ public class Testset {
                 gg.last = j;
                 gg.pointsSum += points;
                 gg.points += ((int) points) + ",";
-//                if (gg.scoring == Scoring.SUM) {
-//                    gg.points += ((int) points) + ",";
-//                } else {
-//                    points = 0;
-//                }
                 if (sample && !gg.feedback.toString().equals("statistics")) {
-                    System.out.printf("WARNING: Group '%s' contains sample tests, changing feedback to statistics!\n", gg.name);
+                    System.out.printf("INFO: Group '%s' contains sample tests, changing feedback to statistics!\n", gg.name);
                     gg.feedback = Feedback.getFeedback("statistics");
                     gg.comment = "Sample tests";
                 }
@@ -225,6 +201,18 @@ public class Testset {
 
             ts.tests[j] = new Test(comment, groupName, points);
             //System.out.println("DEBUG: " + ts.tests[j].comment + " " + ts.tests[j].points + " " + ts.tests[j].group);
+        }
+
+        //groups
+        NodeList groupsList = el.getElementsByTagName("groups");
+        if (groupsList != null && groupsList.getLength() > 0) {
+            groupsList = ((Element) groupsList.item(0)).getElementsByTagName("group");
+            for (int i = 0; i < groupsList.getLength(); i++) {
+                Element groupElement = (Element) groupsList.item(i);
+                Group group = Group.parse(groupElement, ts.groups, ts.groupNameToId);
+//                System.out.println("DEBUG: " + group.name + " " + groupElement.getNodeName());
+//                System.out.printf("DEBUG: Group '%s', points = '%s'\n", group.name, group.points);
+            }
         }
         return ts;
     }
