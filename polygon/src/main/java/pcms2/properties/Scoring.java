@@ -18,14 +18,14 @@ public enum Scoring {
     /**
      * Maps Polygon points policy to PCMS Scoring.
      */
-    public static Scoring parse(String word) {
-        switch (word) {
+    public static Scoring parse(String pointsPolicy) {
+        switch (pointsPolicy) {
             case "each-test":
                 return Scoring.SUM;
             case "complete-group":
                 return Scoring.GROUP;
         }
-        throw new AssertionError("Couldn't parse scoring = '" + word + "'");
+        throw new AssertionError("Couldn't parse scoring = '" + pointsPolicy + "'");
     }
 
     /**

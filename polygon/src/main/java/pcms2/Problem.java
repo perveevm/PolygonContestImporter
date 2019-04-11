@@ -5,6 +5,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import pcms2.properties.Feedback;
 import pcms2.properties.Scoring;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -139,10 +140,15 @@ public class Problem {
             for (Group group : testsets.get("tests").groups) {
                 group.parseIntPoints();
                 if (group.groupBonus == null) {
-                    if (group.scoring == Scoring.GROUP)
+                    if (group.scoring == Scoring.GROUP) {
                         group.groupBonus = "" + (int) group.pointsSum;
-                    else
+                        if (group.feedback == Feedback.OUTCOME) {
+                            group.scoring = Scoring.SUM;
+                            group.intPoints = null;
+                        }
+                    } else {
                         group.groupBonus = "0";
+                    }
                 }
                 if (group.comment.isEmpty()) {
                     group.comment = group.name;
