@@ -148,7 +148,9 @@ public class Group {
         String pointsPolicy = groupElement.getAttribute("points-policy");
         group.scoring = Scoring.parse(pointsPolicy);
         String feedbackPolicy = groupElement.getAttribute("feedback-policy");
-        group.feedback = Feedback.parse(feedbackPolicy);
+        if (group.feedback != Feedback.STATISTICS) {
+            group.feedback = Feedback.parse(feedbackPolicy);
+        }
 
         NodeList dependencies = groupElement.getElementsByTagName("dependencies");
         if (dependencies != null && dependencies.getLength() > 0) {
