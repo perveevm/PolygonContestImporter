@@ -14,18 +14,14 @@ import java.util.TreeMap;
  * Created by Ilshat on 11/23/2015.
  */
 public class Group {
-//    String name;
     String comment = "";
     Scoring scoring = Scoring.GROUP;
     Feedback feedback = Feedback.GROUP_SCORE_AND_TEST;
     int groupBonus;
     String requireGroups = "";
     String points;
-//    double pointsSum = 0;
-//    int intPoints[];
     int first = -1;
     int last = -1;
-    int testCount = 0;
     boolean hasSampleTests;
 
     public void println(PrintWriter pw, String tabs) {

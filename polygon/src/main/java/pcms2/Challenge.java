@@ -16,10 +16,7 @@ import java.util.TreeMap;
  */
 public class Challenge {
     String path;
-//    String url;
     String name;
-    //language -> name
-//    TreeMap <String, String> names;
     String id;
     String type;
     //problem index -> problem
@@ -36,7 +33,6 @@ public class Challenge {
     public Challenge(Contest contest, String ID, String Type, String Path, Properties languageProps, Properties executableProps, String defaultLang) throws Exception {
         problems = new TreeMap<>();
         problemNames = new TreeMap<>();
-//        names = new TreeMap<>();
         path = Path;
         id = ID;
         type = Type;

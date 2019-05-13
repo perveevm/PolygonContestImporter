@@ -17,18 +17,9 @@ import java.util.TreeMap;
 public class Problem {
     File directory;
     File xmlFile;
-//    String xmlPath;
-//    String groupsPath;
     String id;
-//    String scriptType;
-//    String name;
-    //key - language, value - name
-//    TreeMap <String, String> names;
     String shortName;
-//    String url;
-
-//    String input;
-//    String output;
+    //testset name -> testset
     //possible testset names - preliminary, main
     TreeMap <String, Testset> testsets;
     ArrayList<Attachment> attachments;
@@ -37,11 +28,7 @@ public class Problem {
     Verifier verifier;
     Interactor interactor;
 
-    boolean hasPreliminary = false;
-    int sampleCount = 0;
-//    BufferedReader groupstxt;
-
-    public Problem(polygon.Problem polygonProblem, String idprefix, Properties languageProps, Properties executableProps) throws Exception {
+    public Problem(polygon.Problem polygonProblem, String idprefix, Properties languageProps, Properties executableProps) {
         directory = polygonProblem.getDirectory();
         xmlFile = new File(directory, "problem.xml");
         id = idprefix;
@@ -50,10 +37,9 @@ public class Problem {
         parse(polygonProblem, languageProps, executableProps);
     }
 
-    public void parse(polygon.Problem polygonProblem, Properties languageProps, Properties executableProps) throws Exception {
+    public void parse(polygon.Problem polygonProblem, Properties languageProps, Properties executableProps) {
         System.out.println("importing problem '" + shortName + "'");
         shortName = polygonProblem.getShortName();
-//        System.out.println("\nparsing problem '" + shortName + "'");
 
         if (id.startsWith("com.codeforces.polygon") || id.equals("auto")) {
             String[] t = polygonProblem.getUrl().split("/");
@@ -120,7 +106,7 @@ public class Problem {
             preliminary = Testset.parse(polygonProblem.getTestsets().get("preliminary"), input, output);
         } else {
             System.out.println("INFO: No preliminary testset, getting sample tests");
-            sampleCount = polygonProblem.getTestsets().get("tests").getSampleTestCount();
+            int sampleCount = polygonProblem.getTestsets().get("tests").getSampleTestCount();
             Test[] temp = new Test[sampleCount];
             for (int i = 0; i < sampleCount; i++) {
                 temp[i] = maints.tests[i];

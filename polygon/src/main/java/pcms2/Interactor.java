@@ -26,14 +26,8 @@ public class Interactor {
         if (interactor == null) {
             return null;
         }
-//        String sourcePath = interactor.getSourcePath();
-//        String sourceType = interactor.getSourceType();
         String binaryPath = interactor.getBinaryPath();
         String binaryType = interactor.getBinaryType();
-
-//        if (!sourceType.startsWith("cpp")) {
-//            System.err.println("WARNING: Only C++ interactors are supported, interact.cpp and [interact.exe] are created");
-//        }
 
         return new Interactor(executableProps.getProperty(binaryType), binaryPath);
 

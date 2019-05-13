@@ -118,10 +118,8 @@ public class Testset {
         //System.out.println("DEBUG: testsets cnt = " + nl.getLength() + " i = " + i);
         Testset ts = new Testset();
 
-//        boolean isPreliminary = false;
         boolean hasGroups = false;
 
-        TreeSet<String> gmap = new TreeSet<>();
         ts.name = polygonTestset.getName();
         ts.inputName = input;
         ts.outputName = output;
@@ -130,11 +128,6 @@ public class Testset {
         int tc = polygonTestset.getTestCount();
         ts.inputHref = formatHref(polygonTestset.getInputPathPattern());
         ts.outputHref = formatHref(polygonTestset.getOutputPathPattern());
-
-//        if (ts.name.equals("preliminary")) {
-//            problem.hasPreliminary = true;
-//            isPreliminary = true;
-//        }
 
         //tests
         ts.tests = new Test[tc];
@@ -165,8 +158,6 @@ public class Testset {
                 }
                 gg.last = j;
                 gg.hasSampleTests = polTest.isSample();
-//                gg.pointsSum += points;
-//                gg.points += ((int) points) + ",";
                 if (polTest.getPoints() > 0 && polygonTestset.getGroups().get(groupName).getPointsPolicy() == PointsPolicy.EACH_TEST) {
                     points = polTest.getPoints();
                     if (Double.compare(points, (int) points) != 0) {
