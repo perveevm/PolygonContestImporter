@@ -38,8 +38,8 @@ public class Problem {
     }
 
     public void parse(polygon.Problem polygonProblem, Properties languageProps, Properties executableProps) {
-        System.out.println("importing problem '" + shortName + "'");
         shortName = polygonProblem.getShortName();
+        System.out.println("importing problem '" + shortName + "'");
 
         if (id.startsWith("com.codeforces.polygon") || id.equals("auto")) {
             String[] t = polygonProblem.getUrl().split("/");

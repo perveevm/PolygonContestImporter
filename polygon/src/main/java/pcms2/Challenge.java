@@ -19,6 +19,7 @@ public class Challenge {
     String name;
     String id;
     String type;
+    String language;
     //problem index -> problem
     TreeMap<String, Problem> problems;
     //problem index -> problem name
@@ -36,6 +37,7 @@ public class Challenge {
         path = Path;
         id = ID;
         type = Type;
+        language = defaultLang;
         parse(contest, languageProps, executableProps, defaultLang);
     }
 
@@ -110,7 +112,7 @@ public class Challenge {
     }
 
     public void copyToWEB(String webroot, BufferedReader in) throws IOException {
-        File src = new File(path, "statements/russian/statements.pdf");
+        File src = new File(path, "statements/" + language + "/statements.pdf");
         File dest = new File(webroot + "/statements/" + id.replaceAll("\\.", "/") + "/statements.pdf");
         //System.out.println("DEBUG: src = '" + src.getAbsolutePath() + " dest = '" + dest.getAbsolutePath() + "'");
         if (src.exists()) {

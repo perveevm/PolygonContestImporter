@@ -125,6 +125,9 @@ public class Problem {
 
         BufferedReader br = new BufferedReader(new FileReader(groupsTxtFile));
         Testset testset = testsets.get("tests");
+        if (testset.groups == null) {
+            testset.groups = new TreeMap<>();
+        }
         boolean hasGroups = testset.groups.size() > 0;
         String line;
         while ((line = br.readLine()) != null) {
@@ -151,6 +154,7 @@ public class Problem {
                     continue;
                 }
                 group = new Group();
+                group.name = group_par.get("group");
                 testset.groups.put(group_par.get("group"), group);
             }
             group.parameters = group_par;

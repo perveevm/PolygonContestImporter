@@ -121,6 +121,9 @@ public class Testset {
         boolean hasGroups = false;
 
         ts.name = polygonTestset.getName();
+        if (ts.name.equals("tests")) {
+            ts.name = "main";
+        }
         ts.inputName = input;
         ts.outputName = output;
         ts.timeLimit = polygonTestset.getTimeLimit() / 1000;
@@ -176,6 +179,7 @@ public class Testset {
         Map<String, polygon.Group> polGroups = polygonTestset.getGroups();
         if (polGroups != null) {
             for (polygon.Group polGroup : polGroups.values()) {
+//                System.out.println("DEBUG: " + polGroup.getName());
                 int index = ts.groupNameToId.get(polGroup.getName());
                 Group other = ts.groups.get(index - 1);
                 Group group = Group.parse(polGroup, ts.groupNameToId, other.hasSampleTests, other.first, other.last);

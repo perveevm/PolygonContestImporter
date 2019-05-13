@@ -44,6 +44,7 @@ public class Testset {
 
         //groups
         NodeList groupsList = el.getElementsByTagName("groups");
+//        System.out.println("DEBUG: " + groupsList + " " + groupsList.getLength());
         if (groupsList != null && groupsList.getLength() > 0) {
             ts.groups = new TreeMap<>();
             groupsList = ((Element) groupsList.item(0)).getElementsByTagName("group");

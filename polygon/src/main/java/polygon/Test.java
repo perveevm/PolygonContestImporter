@@ -14,7 +14,7 @@ public class Test {
         test.method = testEl.getAttribute("method");
         test.cmd = testEl.getAttribute("cmd");
         test.points = 0;
-        if (testEl.getAttribute("points") != null) {
+        if (!testEl.getAttribute("points").isEmpty()) {
             test.points = Double.parseDouble(testEl.getAttribute("points"));
         }
         test.sample = Boolean.valueOf(testEl.getAttribute("sample"));
