@@ -1,5 +1,7 @@
 package pcms2.properties;
 
+import polygon.properties.FeedbackPolicy;
+
 public enum Feedback {
     HIDE("hide"),
     NONE("none"),
@@ -36,6 +38,20 @@ public enum Feedback {
                 return Feedback.OUTCOME;
         }
         throw new AssertionError("Couldn't parse feedback = '" + word + "'");
+    }
+
+    public static Feedback parse(FeedbackPolicy feedbackPolicy) {
+        switch (feedbackPolicy) {
+            case NONE:
+                return Feedback.NONE;
+            case POINTS:
+                return Feedback.GROUP_SCORE;
+            case ICPC:
+                return Feedback.GROUP_SCORE_AND_TEST;
+            case COMPLETE:
+                return Feedback.OUTCOME;
+        }
+        throw new AssertionError("Couldn't parse feedback = '" + feedbackPolicy + "'");
     }
 
     /**

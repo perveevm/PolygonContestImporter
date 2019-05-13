@@ -4,6 +4,7 @@ import org.apache.commons.io.FileUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
+import polygon.Contest;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -20,69 +21,54 @@ import java.util.TreeMap;
  */
 public class Challenge {
     String path;
-    String url;
+//    String url;
     String name;
     //language -> name
-    TreeMap <String, String> names;
+//    TreeMap <String, String> names;
     String id;
     String type;
+    //problem index -> problem
     TreeMap<String, Problem> problems;
+    //problem index -> problem name
+    TreeMap<String, String> problemNames;
 
     public Challenge() {
         problems = new TreeMap<>();
+        problemNames = new TreeMap<>();
         path = "";
     }
 
-    public Challenge(String ID, String Type, String Path, Properties languageProps, Properties executableProps, String defaultLang) throws Exception {
+    public Challenge(Contest contest, String ID, String Type, String Path, Properties languageProps, Properties executableProps, String defaultLang) throws Exception {
         problems = new TreeMap<>();
-        names = new TreeMap<>();
+        problemNames = new TreeMap<>();
+//        names = new TreeMap<>();
         path = Path;
         id = ID;
         type = Type;
-        parse(languageProps, executableProps, defaultLang);
+        parse(contest, languageProps, executableProps, defaultLang);
     }
 
-    void parse(Properties languageProps, Properties executableProps, String defaultLang) throws Exception {
-        System.out.println("parsing contest.xml ...");
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder builder = factory.newDocumentBuilder();
-        Document doc = builder.parse(new File(path, "contest.xml"));
-        //NodeList problem = doc.getDocumentElement().getChildNodes();
-        Element el = doc.getDocumentElement();
-        url = el.getAttribute("url");
+    void parse(Contest contest, Properties languageProps, Properties executableProps, String defaultLang) throws Exception {
+
+        String url = contest.getUrl();
         if (id.equals("auto")) {
             String[] t = url.split("/");
             id = "com.codeforces.polygon." + t[t.length - 1];
         }
 
         //names
-        Element child = (Element) el.getElementsByTagName("names").item(0);
-        NodeList nl = child.getElementsByTagName("name");
-        for (int i = 0; i < nl.getLength(); i++) {
-            child = (Element) nl.item(i);
-            names.put(child.getAttribute("language"), child.getAttribute("value"));
-        }
-        if (names.containsKey(defaultLang)) {
-            name = names.get(defaultLang);
+        if (contest.getNames().containsKey(defaultLang)) {
+            name = contest.getNames().get(defaultLang);
         } else {
-            name = names.firstEntry().getValue();
-            System.out.println("WARNING: Challenge name for default language '" + defaultLang + "' not found! Using '" + names.firstKey() + "' name.");
+            name = contest.getNames().firstEntry().getValue();
+            System.out.println("WARNING: Challenge name for default language '" + defaultLang + "' not found! Using '" + contest.getNames().firstKey() + "' name.");
         }
 
-        child = (Element) el.getElementsByTagName("problems").item(0);
-        nl = child.getElementsByTagName("problem");
-        for (int i = 0; i < nl.getLength(); i++) {
-            child = (Element) nl.item(i);
-            String purl = child.getAttribute("url");
-            String index = child.getAttribute("index");
-            String pname = purl.substring(purl.lastIndexOf("/") + 1);
-            Problem p = new Problem(new File(path, "problems/" + pname).getAbsolutePath(), id, type,
-                    languageProps, executableProps, defaultLang);
-            if (!p.url.equals(purl)) {
-                System.out.println("ERROR: Problem URL do not match! Contest problem = '" + purl + "' problems.xml = '" + p.url + "'");
-                System.exit(1);
-            }
+        for (Map.Entry<String, polygon.Problem> entry : contest.getProblems().entrySet()) {
+            String index = entry.getKey();
+            Problem p = new Problem(entry.getValue(), id, languageProps, executableProps);
             problems.put(index, p);
+            problemNames.put(index, entry.getValue().getNames().getOrDefault(defaultLang, entry.getValue().getNames().get(contest.getNames().firstKey())));
         }
     }
 
@@ -99,7 +85,7 @@ public class Challenge {
             pw.println("\t<problem-ref alias = \"" + e.getKey().toUpperCase() + "\" " +
                     "id = \"" + e.getKey() + "\" " +
                     "problem-id = \"" + e.getValue().id + "\" " +
-                    "name = \"" + e.getValue().name + "\"/>");
+                    "name = \"" + problemNames.get(e.getKey()) + "\"/>");
         }
         pw.println("</challenge>");
 

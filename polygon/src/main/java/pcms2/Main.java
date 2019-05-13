@@ -1,5 +1,7 @@
 package pcms2;
 
+import polygon.Contest;
+
 import java.io.*;
 import java.util.Map;
 import java.util.Properties;
@@ -8,24 +10,24 @@ public class Main {
 
     public static void main(String[] args) {
         // args description
-        // 0 - challenge or problem
+        // 0 - contest or problem
         // 1 - challenge id in pcms
         // 2 - challenge type ioi or icpc
         // 3 - path to folder contest.xml or problem.xml, empty if launched in same folder
-        if (args.length < 3) {
-            System.out.println("usage\n <challenge or problem> <challenge id> <ioi or icpc> [path to contest.xml or problem.xml folder]");
+        if (args.length < 2 || args.length < 3 && !args[0].equals("problem")) {
+            System.out.println("usage\n <contest or problem> <challenge id> <ioi or icpc> [path to contest.xml or problem.xml folder]");
             return;
         }
         String folder = (args.length > 3 ? args[3] : ".");
 
         try {
-            Properties props = load("import.properties");
+            Properties props = load(new Properties(), "import.properties");
             String vfs = props.getProperty("vfs", null);
             String webroot = props.getProperty("webroot", null);
             String defaultLanguage = props.getProperty("defaultLanguage");
 
-            Properties languageProps = load("language.properties");
-            Properties executableProps = load("executable.properties");
+            Properties languageProps = load(getDefaultLanguageProperties(), "language.properties");
+            Properties executableProps = load(getDefaultExecutableProperties(), "executable.properties");
 
             Boolean update = false;
 
@@ -33,7 +35,8 @@ public class Main {
 
             if (args[0].equals("problem")) {
                 //Problem pi = new Problem("problem.xml", "ru.", "ioi");
-                Problem pi = new Problem(folder, args[1], args[2], languageProps, executableProps, defaultLanguage);
+                polygon.Problem polygonProblem = polygon.Problem.parse(folder);
+                Problem pi = new Problem(polygonProblem, args[1], languageProps, executableProps);
                 File temporaryFile = new File(folder, "problem.xml.tmp");
                 PrintWriter pw = new PrintWriter(new FileWriter(temporaryFile));
                 pi.print(pw);
@@ -55,7 +58,8 @@ public class Main {
                     pi.copyToVFS(vfs, sysin, update);
                 }
             } else if (args[0].equals("challenge") || args[0].equals("contest")) {
-                Challenge ch = new Challenge(args[1], args[2], folder, languageProps, executableProps, defaultLanguage);
+                Contest contest = Contest.parse(folder);
+                Challenge ch = new Challenge(contest, args[1], args[2], folder, languageProps, executableProps, defaultLanguage);
                 try (PrintWriter pw = new PrintWriter(new FileWriter(new File(folder, "challenge.xml")))) {
                     ch.print(pw);
                     pw.close();
@@ -107,7 +111,7 @@ public class Main {
         }
     }
 
-    static Properties load(String fileName) throws IOException {
+    static Properties load1(String fileName) throws IOException {
         Properties props = new Properties();
         File propsFile;
         if (System.getenv().get("lib_home") != null) {
@@ -121,5 +125,39 @@ public class Main {
             in.close();
         }
         return props;
+    }
+
+    static Properties load(Properties props, String fileName) throws IOException {
+        File propsFile;
+        if (System.getenv().get("lib_home") != null) {
+            propsFile = new File(System.getenv().get("lib_home"), fileName);
+        } else {
+            propsFile = new File(fileName);
+        }
+        if (propsFile.exists()) {
+            InputStreamReader in = new InputStreamReader(new FileInputStream(propsFile), "UTF-8");
+            props.load(in);
+            in.close();
+        }
+        return props;
+    }
+
+
+    static Properties getDefaultLanguageProperties() {
+        Properties p = new Properties();
+        p.put("h", "cpp.gnu");
+        p.put("cpp", "cpp.gnu");
+        p.put("c", "c.gnu");
+        p.put("pas", "pascal.free");
+        p.put("java", "java");
+        return p;
+    }
+
+    static Properties getDefaultExecutableProperties() {
+        Properties p = new Properties();
+        p.put("exe.win32", "x86.exe.win32");
+        p.put("jar7", "java.check");
+        p.put("jar8", "java.check");
+        return p;
     }
 }

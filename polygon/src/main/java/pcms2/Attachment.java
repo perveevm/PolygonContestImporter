@@ -3,62 +3,43 @@ package pcms2;
 import org.w3c.dom.Element;
 
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Properties;
 
 /**
  * Created by Ilshat on 7/27/2016.
  */
 public class Attachment {
-    String href = "";
-    String languageId = "";
+    String href;
+    String languageId;
 
     public void print(PrintWriter pw, String tabs){
         pw.println(tabs + "<attachment language-id=\"" + languageId + "\" href=\"" + href + "\"/>");
 
     }
-    public static Attachment[] parse(Problem problem, Element el, Properties languagesProps) {
-        String atpath = el.getAttribute("path");
-        String ext = atpath.substring(atpath.lastIndexOf('.') + 1, atpath.length());
-        String fname = atpath.substring(atpath.lastIndexOf("/") + 1, atpath.lastIndexOf('.'));
-        //System.out.println("DEBUG: File name is '" + fname + "'");
-        if (fname.equals("Solver") || (fname.equals(problem.shortName) && !ext.equals("h"))) {
-            System.out.println("Skipping solution stub '" + fname + "." + ext + "'");
-            return null;
-        }
-        Attachment[] attachments;
-        if (languagesProps.getProperty(ext) != null) {
-            String[] langs = languagesProps.getProperty(ext).split(",");
-            attachments = new Attachment[langs.length];
-            for (int i = 0; i < langs.length; i++) {
-                Attachment attach = new Attachment();
-                attach.href = atpath;
-                attach.languageId = langs[i].trim();
-                attachments[i] = attach;
+    public static ArrayList<Attachment> parse(ArrayList<polygon.Attachment> attachments, Properties languagesProps, String shortName) {
+        ArrayList<Attachment> result = new ArrayList<>();
+        for (polygon.Attachment attachment : attachments) {
+            String atpath = attachment.getPath();
+            String ext = atpath.substring(atpath.lastIndexOf('.') + 1, atpath.length());
+            String fname = atpath.substring(atpath.lastIndexOf("/") + 1, atpath.lastIndexOf('.'));
+            //System.out.println("DEBUG: File name is '" + fname + "'");
+            if (fname.equals("Solver") || (fname.equals(shortName) && !ext.equals("h"))) {
+                System.out.println("Skipping solution stub '" + fname + "." + ext + "'");
+                continue;
             }
-        } else {
-            attachments = new Attachment[1];
-            Attachment attach = new Attachment();
-            attach.href = atpath;
 
-            if (ext.equals("h")) {
-                if (fname.endsWith("_c")) {
-                    attach.languageId = "c.gnu";
-                } else {
-                    attach.languageId = languagesProps.getProperty("cpp.gnu");
+            if (languagesProps.getProperty(ext) != null) {
+                String[] langs = languagesProps.getProperty(ext).split(",");
+
+                for (int i = 0; i < langs.length; i++) {
+                    Attachment attach = new Attachment();
+                    attach.href = atpath;
+                    attach.languageId = langs[i].trim();
+                    result.add(attach);
                 }
-            } else if (ext.equals("cpp")) {
-                attach.languageId = "cpp.gnu";
-            } else if (ext.equals("c")) {
-                attach.languageId = "c.gnu";
-            } else if (ext.equals("pas")) {
-                attach.languageId = "pascal.free";
-            } else if (ext.equals("java")) {
-                attach.languageId = "java";
-            } else {
-                attach = null;
             }
-            attachments[0] = attach;
         }
-        return attachments;
+        return result;
     }
 }

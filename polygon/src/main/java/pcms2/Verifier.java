@@ -1,6 +1,6 @@
 package pcms2;
 
-import org.w3c.dom.Element;
+import polygon.Checker;
 
 import java.io.PrintWriter;
 import java.util.Properties;
@@ -19,22 +19,11 @@ public class Verifier {
         pw.println(tabs + "</verifier>");
     }
 
-    public static Verifier parse(Element el, Properties executableProps) {
+    public static Verifier parse(Checker checker, Properties executableProps) {
         Verifier v = new Verifier();
-        v.type = el.getAttribute("type");
-        el = (Element) el.getElementsByTagName("binary").item(0);
-        v.executableId = el.getAttribute("type");
-        if (executableProps.getProperty(v.executableId) != null) {
-            v.executableId = executableProps.getProperty(v.executableId);
-        } else {
-            if (v.executableId.equals("exe.win32")) {
-                v.executableId = "x86." + v.executableId;
-            }
-            if (v.executableId.equals("jar7") || v.executableId.equals("jar8")) {
-                v.executableId = "java.check";
-            }
-        }
-        v.file = el.getAttribute("path");
+        v.type = checker.getType();
+        v.executableId = executableProps.getProperty(checker.getBinaryType());
+        v.file = checker.getBinaryPath();
         return v;
     }
 }

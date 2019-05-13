@@ -1,4 +1,4 @@
-package pcms2.properties;
+package polygon.properties;
 
 public enum SolutionTag {
     ACCEPTED("accepted"),
