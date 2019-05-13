@@ -1,6 +1,5 @@
 package pcms2;
 
-import org.w3c.dom.Element;
 import java.io.PrintWriter;
 import java.util.Properties;
 

@@ -18,6 +18,8 @@ public enum PointsPolicy {
         if (pointsPolicy == null) return null;
 
         switch (pointsPolicy) {
+            case "":
+                return null;
             case "each-test":
                 return PointsPolicy.EACH_TEST;
             case "complete-group":

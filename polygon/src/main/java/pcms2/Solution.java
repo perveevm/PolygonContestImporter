@@ -1,10 +1,5 @@
 package pcms2;
 
-import org.w3c.dom.NodeList;
-import polygon.properties.SolutionTag;
-
-import org.w3c.dom.Element;
-
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Properties;

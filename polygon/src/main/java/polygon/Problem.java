@@ -64,7 +64,7 @@ public class Problem {
 
         Element problemElement = doc.getDocumentElement();
         problem.shortName = problemElement.getAttribute("short-name");
-        System.out.println("\nparsing problem '" + problem.shortName + "'");
+        System.out.println("parsing problem '" + problem.shortName + "'");
 
         problem.url = problemElement.getAttribute("url");
 

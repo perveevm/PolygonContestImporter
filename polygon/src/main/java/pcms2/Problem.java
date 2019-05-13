@@ -51,6 +51,7 @@ public class Problem {
     }
 
     public void parse(polygon.Problem polygonProblem, Properties languageProps, Properties executableProps) throws Exception {
+        System.out.println("importing problem '" + shortName + "'");
         shortName = polygonProblem.getShortName();
 //        System.out.println("\nparsing problem '" + shortName + "'");
 

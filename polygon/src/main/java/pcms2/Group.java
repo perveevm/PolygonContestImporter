@@ -1,16 +1,11 @@
 package pcms2;
 
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
 import pcms2.properties.Feedback;
 import pcms2.properties.Scoring;
 import polygon.properties.FeedbackPolicy;
 import polygon.properties.PointsPolicy;
 
-import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.TreeMap;
@@ -42,47 +37,6 @@ public class Group {
         pw.println(tabs + "\trequire-groups = \"" + requireGroups + "\"");
         pw.println(tabs + ">");
     }
-
-//    public void parseIntPoints() {
-//        if (points == null || points.isEmpty()) {
-//            return;
-//        }
-////        System.out.println("DEBUG: parsing points '" + points + "'");
-//        int[] p = getNumbersArray(points);
-////        System.out.println("DEBUG: points parsed " + Arrays.toString(p));
-//        int nonZero = 0;
-//        for (int i = 0; i < p.length; i++) {
-//            if (p[i] > 0) nonZero++;
-//        }
-//        if (nonZero == 0) {
-//            return;
-//        }
-//
-//        if (p.length == 1 || scoring == Scoring.SUM && nonZero != p.length) {
-//            int tcount = last - first + 1;
-//            int total = Math.max(p[0], (int) pointsSum);
-//
-//            if (total < tcount) {
-//                System.out.println("WARNING: Could not parse 'points' parameter for group '" + name + "'. Tests count is bigger than points.");
-//                return;
-//            }
-//
-//            intPoints = new int[tcount];
-//            for (int i = 0; i < tcount - total % tcount; i++) {
-//                intPoints[i] = total / tcount;
-//            }
-//            for (int i = tcount - total % tcount; i < tcount; i++) {
-//                intPoints[i] = total / tcount + 1;
-//            }
-//            return;
-//        }
-//        if (last - first + 1 == p.length) {
-//            intPoints = p;
-//            return;
-//        }
-//
-//        System.out.println("WARNING: Could not parse 'points' parameter for group '" + name + "'");
-//    }
 
     public static Group parse(polygon.Group polygonGroup, Map<String, Integer> groupNameToId, boolean hasSampleTests, int firstTest, int lastTest) {
         String name = polygonGroup.getName();
