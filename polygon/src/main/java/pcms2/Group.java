@@ -167,9 +167,6 @@ public class Group {
         if (!requireGroups.isEmpty()) {
             sb.append("require-groups: ").append(requireGroups).append("\n");
         }
-        if (!points.isEmpty()) {
-            sb.append("points: ").append(points).append("\n");
-        }
         if (points != null) {
             sb.append("points: ").append(points).append("\n");
         }

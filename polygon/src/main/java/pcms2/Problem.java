@@ -70,7 +70,7 @@ public class Problem {
             if (group.points != null) {
                 int[] parsedPoints = Group.getNumbersArray(group.points);
                 if (tcount != parsedPoints.length && parsedPoints.length != 1) {
-                    System.out.printf("WARNING: Group points can't be distributed between tests correctly for group '%s'", pg);
+                    System.out.printf("WARNING: Group points in groups.txt can't be distributed between tests correctly for group '%s'\n", pg);
                     continue;
                 }
                 if (tcount == parsedPoints.length) {
@@ -82,16 +82,17 @@ public class Problem {
                 }
             } else if (pp == PointsPolicy.EACH_TEST) {
                 int zeroPoints = 0;
+                int sum = 0;
                 for (int i = group.first; i <= group.last; i++) {
+                    sum += maints.tests[i].points;
                     if (maints.tests[i].points == 0) {
                         zeroPoints++;
                     }
                 }
                 if (zeroPoints > 0) {
-                    int sum = (int) polygonProblem.getTestsets().get("tests").getGroups().get(pg).getPoints();
-
+//                    sum = (int) polygonProblem.getTestsets().get("tests").getGroups().get(pg).getPoints();
                     if (sum < tcount) {
-                        System.out.printf("WARNING: Group points can't be distributed between tests correctly for group '%s'", pg);
+                        System.out.printf("WARNING: Group points can't be distributed between tests correctly for group '%s' points '%d' test count '%d'\n", pg, sum, tcount);
                         continue;
                     }
 
