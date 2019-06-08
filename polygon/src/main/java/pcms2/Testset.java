@@ -138,16 +138,15 @@ public class Testset {
             //System.out.println("DEBUG: j = " + j);
             polygon.Test polTest = polygonTestset.getTests()[j];
             String comment = polTest.getMethod();
-            String groupName = "-1";
 
             if (polTest.getCmd() != null) {
                 comment += " cmd: '" + polTest.getCmd() + "'";
             }
 
             double points = 0;
-            if (polTest.getGroup() != null) {
+            if (!polTest.getGroup().isEmpty()) {
                 hasGroups = true;
-                groupName = polTest.getGroup();
+                String groupName = polTest.getGroup();
                 if (!ts.groupNameToId.containsKey(groupName)) {
                     Group group = new Group();
                     group.first = j;
