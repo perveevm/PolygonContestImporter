@@ -60,13 +60,18 @@ public class Problem {
 
         //testset
         //todo: null pointer if there is no testset named tests
-        Testset maints = Testset.parse(polygonProblem.getTestsets().get("tests"), input, output);
-
+        polygon.Testset tests = polygonProblem.getTestsets().get("tests");
+        Testset maints = Testset.parse(tests, input, output);
+//        System.out.printf("DEBUG: groups count = %d\n", maints.groups.size());
         for (Group group : maints.groups) {
+//            System.out.printf("DEBUG: Group info - %s\n", group.toString());
             if (group.hasSampleTests) continue;
             int tcount = group.last - group.first + 1;
-            String pg = polygonProblem.getTestsets().get("tests").getTests()[group.first].getGroup();
-            PointsPolicy pp = polygonProblem.getTestsets().get("tests").getGroups().get(pg).getPointsPolicy();
+            String pg = tests.getTests()[group.first].getGroup();
+            PointsPolicy pp = null;
+            if (tests.getGroups() != null && tests.getGroups().containsKey(pg)) {
+                pp = tests.getGroups().get(pg).getPointsPolicy();
+            }
             if (group.points != null) {
                 int[] parsedPoints = Group.getNumbersArray(group.points);
                 if (tcount != parsedPoints.length && parsedPoints.length != 1) {
@@ -80,7 +85,7 @@ public class Problem {
                 } else {
                     distributePoints(maints.tests, group.first, group.last, parsedPoints[0]);
                 }
-            } else if (pp == PointsPolicy.EACH_TEST) {
+            } else if (pp != null && pp == PointsPolicy.EACH_TEST) {
                 int zeroPoints = 0;
                 int sum = 0;
                 for (int i = group.first; i <= group.last; i++) {
