@@ -99,9 +99,10 @@ public class Main {
 
     static Properties load(Properties props, String fileName) throws IOException {
         File propsFile;
-        if (System.getenv().get("lib_home") != null) {
-            propsFile = new File(System.getenv().get("lib_home"), fileName);
-        } else {
+        String path = Main.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+        path = path.substring(0, path.lastIndexOf("/") + 1) + fileName;
+        propsFile = new File(path);
+        if (!propsFile.exists()) {
             propsFile = new File(fileName);
         }
         if (propsFile.exists()) {
