@@ -1,5 +1,7 @@
 package pcms2.properties;
 
+import polygon.properties.PointsPolicy;
+
 public enum Scoring {
     SUM("sum"),
     GROUP("group");
@@ -15,7 +17,33 @@ public enum Scoring {
         return word;
     }
 
-    public static Scoring parse(String word) {
+    /**
+     * Maps Polygon points policy to PCMS Scoring.
+     */
+    public static Scoring parse(String pointsPolicy) {
+        switch (pointsPolicy) {
+            case "each-test":
+                return Scoring.SUM;
+            case "complete-group":
+                return Scoring.GROUP;
+        }
+        throw new AssertionError("Couldn't parse scoring = '" + pointsPolicy + "'");
+    }
+
+    public static Scoring parse(PointsPolicy pointsPolicy) {
+        switch (pointsPolicy) {
+            case EACH_TEST:
+                return Scoring.SUM;
+            case COMPLETE_GROUP:
+                return Scoring.GROUP;
+        }
+        throw new AssertionError("Couldn't parse scoring = '" + pointsPolicy + "'");
+    }
+
+    /**
+     * Gets enum scoring from PCMS scoring.
+     */
+    public static Scoring getScoring(String word) {
         switch (word) {
             case "sum":
                 return Scoring.SUM;

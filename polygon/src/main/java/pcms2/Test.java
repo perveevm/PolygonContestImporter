@@ -7,13 +7,11 @@ import java.io.PrintWriter;
  */
 public class Test {
     String comment;
-    String group;
-    double points;
+    int points;
 
 
-    public Test(String comment, String group, double points) {
+    public Test(String comment, int points) {
         this.comment = comment;
-        this.group = group;
         this.points = points;
     }
 

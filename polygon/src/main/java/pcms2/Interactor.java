@@ -1,6 +1,5 @@
 package pcms2;
 
-import org.w3c.dom.Element;
 import java.io.PrintWriter;
 import java.util.Properties;
 
@@ -23,32 +22,14 @@ public class Interactor {
         writer.println(tabs + "</interactor>");
     }
 
-    public static Interactor parse(Element interactorNode, Properties executableProps) {
-        if (interactorNode == null) {
+    public static Interactor parse(polygon.Interactor interactor, Properties executableProps) {
+        if (interactor == null) {
             return null;
         }
+        String binaryPath = interactor.getBinaryPath();
+        String binaryType = interactor.getBinaryType();
 
-        Element el = (Element) interactorNode.getElementsByTagName("source").item(0);
-        String sourcePath = el.getAttribute("path");
-        String sourceType = el.getAttribute("type");
-        el = (Element) interactorNode.getElementsByTagName("binary").item(0);
-        String binaryPath = "";
-        String binaryType = "";
-        if (el != null) {
-            binaryPath = el.getAttribute("path");
-            binaryType = el.getAttribute("type");
-//            FileUtils.copyFile(new File(problemDirectory, sourcePath), new File(problemDirectory, "interact.cpp"));
-//            if (binaryPath != null) {
-//                FileUtils.copyFile(new File(problemDirectory, binaryPath), new File(problemDirectory, "interact.exe"));
-//            }
-        }
+        return new Interactor(executableProps.getProperty(binaryType), binaryPath);
 
-        if (!sourceType.startsWith("cpp")) {
-            System.err.println("WARNING: Only C++ interactors are supported, interact.cpp and [interact.exe] are created");
-        }
-        if (executableProps.getProperty(binaryType) != null) {
-            return new Interactor(executableProps.getProperty(binaryType), binaryPath);
-        }
-        return new Interactor("x86.exe.win32", binaryPath);
     }
 }

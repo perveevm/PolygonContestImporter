@@ -1,72 +1,48 @@
 package pcms2;
 
 import org.apache.commons.io.FileUtils;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
+import polygon.properties.PointsPolicy;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import java.io.*;
-import java.util.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Properties;
+import java.util.TreeMap;
 
 /**
  * Created by Ilshat on 11/22/2015.
  */
 public class Problem {
-    String xmlPath;
-    String groupsPath;
+    File directory;
+    File xmlFile;
     String id;
-    String scriptType;
-    String name;
-    //key - language, value - name
-    TreeMap <String, String> names;
     String shortName;
-    String url;
-    File problemDirectory;
-    String input;
-    String output;
+    //testset name -> testset
+    //possible testset names - preliminary, main
     TreeMap <String, Testset> testsets;
     ArrayList<Attachment> attachments;
+    ArrayList<Solution> solutions;
+
     Verifier verifier;
     Interactor interactor;
 
-    boolean hasPreliminary = false;
-    int sampleCount = 0;
-    BufferedReader groupstxt;
-
-    public Problem(String path, String idprefix, String type, Properties languageProps, Properties executableProps, String defaultLang) throws Exception {
-        problemDirectory = new File(path);
-        if (!problemDirectory.exists()) {
-            throw new AssertionError("Couldn't find directory");
-        }
-        xmlPath = path + "/problem.xml";
-        groupsPath = path + "/files/groups.txt";
+    public Problem(polygon.Problem polygonProblem, String idprefix, Properties languageProps, Properties executableProps) {
+        directory = polygonProblem.getDirectory();
+        xmlFile = new File(directory, "problem.xml");
         id = idprefix;
-        scriptType = type;
         testsets = new TreeMap<>();
-        names = new TreeMap<>();
-        parse(languageProps, executableProps, defaultLang);
+
+        parse(polygonProblem, languageProps, executableProps);
     }
 
-    public void parse(Properties languageProps, Properties executableProps, String defaultLang) throws Exception {
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder builder = factory.newDocumentBuilder();
-        Document doc = builder.parse(new File(xmlPath));
-        groupstxt = null;
-        if ((new File(groupsPath)).exists()) {
-            groupstxt = new BufferedReader(new FileReader(groupsPath));
-        }
-        //NodeList problem = doc.getDocumentElement().getChildNodes();
-        Element el = doc.getDocumentElement();
-        shortName = el.getAttribute("short-name");
+    public void parse(polygon.Problem polygonProblem, Properties languageProps, Properties executableProps) {
+        shortName = polygonProblem.getShortName();
+        System.out.println("importing problem '" + shortName + "'");
 
-        System.out.println("\nparsing problem '" + shortName + "'");
-
-        url = el.getAttribute("url");
         if (id.startsWith("com.codeforces.polygon") || id.equals("auto")) {
-            String[] t = url.split("/");
+            String[] t = polygonProblem.getUrl().split("/");
             String cflogin = t[t.length - 2];
             if (cflogin.contains(".")) {
                 System.out.println("WARNING: Problem owner login contains '.', replacing with '-'");
@@ -76,93 +52,109 @@ public class Problem {
         }
         id = id + "." + shortName;
 
-        //names
-        NodeList nodeList = ((Element) doc.getElementsByTagName("names").item(0)).getElementsByTagName("name");
-        for (int i = 0; i < nodeList.getLength(); i++) {
-            Node node = nodeList.item(i);
-            el = (Element) node;
-            names.put(el.getAttribute("language"), el.getAttribute("value"));
-        }
-        if (names.containsKey(defaultLang)) {
-            name = names.get(defaultLang);
-        } else {
-            name = names.firstEntry().getValue();
-            System.out.println("WARNING: Problem name for default language '" + defaultLang + "' not found! Using '" + names.firstKey() + "' name.");
-        }
-
         //judging
-        el = (Element) doc.getElementsByTagName("judging").item(0);
-        input = el.getAttribute("input-file");
+        String input = polygonProblem.getInput();
         if (input.isEmpty()) input = "*";
-        output = el.getAttribute("output-file");
+        String output = polygonProblem.getOutput();
         if (output.isEmpty()) output = "*";
 
         //testset
-        nodeList = el.getElementsByTagName("testset");
-        for (int i = 0; i < nodeList.getLength(); i++) {//testset
-            //System.out.println("DEBUG: testsets cnt = " + nl.getLength() + " i = " + i);
-            el = (Element) nodeList.item(i);
-            Testset ts = Testset.parse(this, el);
-            testsets.put(ts.name, ts);
-            //System.out.println("testset finished");
-        }
-        if (!hasPreliminary) {
-            System.out.println("INFO: No preliminary testset, getting sample tests");
-            Test[] temp = new Test[sampleCount];
-            for (int i = 0; i < sampleCount; i++) {
-                temp[i] = testsets.get("tests").tests[i];
+        //todo: null pointer if there is no testset named tests
+        polygon.Testset tests = polygonProblem.getTestsets().get("tests");
+        Testset maints = Testset.parse(tests, input, output);
+//        System.out.printf("DEBUG: groups count = %d\n", maints.groups.size());
+        for (Group group : maints.groups) {
+//            System.out.printf("DEBUG: Group info - %s\n", group.toString());
+            if (group.hasSampleTests) continue;
+            int tcount = group.last - group.first + 1;
+            String pg = tests.getTests()[group.first].getGroup();
+            PointsPolicy pp = null;
+            if (tests.getGroups() != null && tests.getGroups().containsKey(pg)) {
+                pp = tests.getGroups().get(pg).getPointsPolicy();
             }
-            Testset preliminary = new Testset();
-            preliminary.tests = temp;
-            preliminary.name = "preliminary";
-            preliminary.inputName = testsets.get("tests").inputName;
-            preliminary.outputName = testsets.get("tests").outputName;
-            preliminary.inputHref = testsets.get("tests").inputHref;
-            preliminary.outputHref = testsets.get("tests").outputHref;
-            preliminary.memoryLimit = testsets.get("tests").memoryLimit;
-            preliminary.timeLimit = testsets.get("tests").timeLimit;
-            testsets.put("preliminary", preliminary);
-        }
-
-        //parse groups.txt
-        if (testsets.get("tests").groups.size() != 0) {
-            Group.parseGroupstxt(groupstxt, testsets.get("tests").groups, testsets.get("tests").groupNameToId);
-        }
-
-        //files attachments
-        el = (Element)
-                ((Element) doc.getElementsByTagName("files").item(0))
-                .getElementsByTagName("attachments").item(0);
-        attachments = new ArrayList<>();
-        if (el != null) {
-            nodeList = el.getElementsByTagName("file");
-            for (int i = 0; i < nodeList.getLength(); i++) {
-                el = (Element) nodeList.item(i);
-                Attachment[] attachs = Attachment.parse(this, el, languageProps);
-                if (attachs != null) {
-                    for (Attachment attach : attachs) {
-                        if (attach != null) {
-                            attachments.add(attach);
-                        }
+            if (group.points != null) {
+                int[] parsedPoints = Group.getNumbersArray(group.points);
+                if (tcount != parsedPoints.length && parsedPoints.length != 1) {
+                    System.out.printf("WARNING: Group points in groups.txt can't be distributed between tests correctly for group '%s'\n", pg);
+                    continue;
+                }
+                if (tcount == parsedPoints.length) {
+                    for (int i = group.first; i <= group.last ; i++) {
+                        maints.tests[i].points = parsedPoints[i - group.first];
                     }
+                } else {
+                    distributePoints(maints.tests, group.first, group.last, parsedPoints[0]);
+                }
+            } else if (pp != null && pp == PointsPolicy.EACH_TEST) {
+                int zeroPoints = 0;
+                int sum = 0;
+                for (int i = group.first; i <= group.last; i++) {
+                    sum += maints.tests[i].points;
+                    if (maints.tests[i].points == 0) {
+                        zeroPoints++;
+                    }
+                }
+                if (zeroPoints > 0) {
+//                    sum = (int) polygonProblem.getTestsets().get("tests").getGroups().get(pg).getPoints();
+                    if (sum < tcount) {
+                        System.out.printf("WARNING: Group points can't be distributed between tests correctly for group '%s' points '%d' test count '%d'\n", pg, sum, tcount);
+                        continue;
+                    }
+
+                    distributePoints(maints.tests, group.first, group.last, sum);
                 }
             }
         }
+        testsets.put("main", maints);
+
+        Testset preliminary;
+        if (polygonProblem.getTestsets().containsKey("preliminary")) {
+            preliminary = Testset.parse(polygonProblem.getTestsets().get("preliminary"), input, output);
+        } else {
+            System.out.println("INFO: No preliminary testset, getting sample tests");
+            int sampleCount = polygonProblem.getTestsets().get("tests").getSampleTestCount();
+            Test[] temp = new Test[sampleCount];
+            for (int i = 0; i < sampleCount; i++) {
+                temp[i] = maints.tests[i];
+            }
+            preliminary = new Testset();
+            preliminary.tests = temp;
+            preliminary.name = "preliminary";
+            preliminary.inputName = maints.inputName;
+            preliminary.outputName = maints.outputName;
+            preliminary.inputHref = maints.inputHref;
+            preliminary.outputHref = maints.outputHref;
+            preliminary.memoryLimit = maints.memoryLimit;
+            preliminary.timeLimit = maints.timeLimit;
+        }
+        testsets.put("preliminary", preliminary);
+
+        //files attachments
+        attachments = Attachment.parse(polygonProblem.getAttachments(), languageProps, shortName);
 
         //assets (checker)
-        el = (Element) ((Element) doc.getElementsByTagName("assets").item(0)).getElementsByTagName("checker").item(0);
-        verifier = Verifier.parse(el, executableProps);
-        el = (Element) ((Element) doc.getElementsByTagName("assets").item(0)).
-                getElementsByTagName("interactor").item(0);
-        interactor = Interactor.parse(el, executableProps);
+        verifier = Verifier.parse(polygonProblem.getChecker(), executableProps);
+
+        interactor = Interactor.parse(polygonProblem.getInteractor(), executableProps);
         if (interactor != null) {
             for (Testset e : testsets.values()) {
                 e.inputName = shortName + ".in";
                 e.outputName = shortName + ".out";
             }
         }
+
+        solutions = Solution.parse(polygonProblem.getSolutions());
     }
 
+    private static void distributePoints(Test[] tests, int first, int last, int sum) {
+        int tcount = last - first + 1;
+        for (int i = first; i < first + tcount - sum % tcount; i++) {
+            tests[i].points = sum / tcount;
+        }
+        for (int i = first + tcount - sum % tcount; i <= last; i++) {
+            tests[i].points = sum / tcount + 1;
+        }
+    }
     public void print(PrintWriter pw) {
         pw.println("<?xml version = \"1.0\" encoding=\"UTF-8\"?>");
         pw.println("<problem");
@@ -173,7 +165,7 @@ public class Problem {
 
         pw.println("\t\t<script type = \"%" + "icpc" + "\">");
 
-        Testset testset = testsets.get("tests");
+        Testset testset = testsets.get("main");
         if (testset != null) {
             testset.print(pw, "\t\t\t", "icpc");
         } else {
@@ -194,7 +186,7 @@ public class Problem {
         if (testset != null) {
             testset.print(pw, "\t\t\t", "ioi");
         }
-        testset = testsets.get("tests");
+        testset = testsets.get("main");
         if (testset != null) {
             testset.print(pw, "\t\t\t", "ioi");
         } else {
@@ -214,8 +206,15 @@ public class Problem {
         pw.println("</problem>");
     }
 
+    void printSolutions(PrintWriter pw, String sessionId, String problemAlias, Properties languageProperties, String vfs) {
+        for (Solution sol : solutions) {
+            sol.print(pw, sessionId, problemAlias, languageProperties,
+                    vfs + "/problems/" + id.replaceAll("\\.", "/"));
+        }
+    }
+
     public boolean copyToVFS(String vfs, BufferedReader in, boolean update) throws IOException {
-        File src = (new File(xmlPath)).getParentFile();
+        File src = xmlFile.getParentFile();
         File dest = new File(vfs + "/problems/" + id.replaceAll("\\.", "/"));
         //System.out.println("DEBUG: src = '" + src.getAbsolutePath() + " dest = '" + dest.getAbsolutePath() + "'");
         if (dest.exists()) {
