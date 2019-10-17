@@ -111,17 +111,18 @@ public class Challenge {
         return update;
     }
 
-    public void copyToWEB(String webroot, BufferedReader in) throws IOException {
+    public void copyToWEB(String webroot, BufferedReader in, boolean update) throws IOException {
         File src = new File(path, "statements/" + language + "/statements.pdf");
         File dest = new File(webroot + "/statements/" + id.replaceAll("\\.", "/") + "/statements.pdf");
         //System.out.println("DEBUG: src = '" + src.getAbsolutePath() + " dest = '" + dest.getAbsolutePath() + "'");
         if (src.exists()) {
             System.out.println("Statements '" + src.getAbsolutePath() + "' exists.");
             String yn = "n";
-            System.out.println("Do You want to publish it?\n(y - yes, n - no)");
-            yn = in.readLine();
-
-            if (yn.equals("y")) {
+            if (!update) {
+                System.out.println("Do You want to publish it?\n(y - yes, n - no)");
+                yn = in.readLine();
+            }
+            if (update || yn.equals("y")) {
                 System.out.println("Publishing...");
                 FileUtils.copyFileToDirectory(src, dest.getParentFile());
             } else {

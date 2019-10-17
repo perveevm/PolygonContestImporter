@@ -8,17 +8,66 @@ import java.util.Properties;
 
 public class Main {
 
+    static int PROBLEM = 1;
+    static int CONTEST = 2;
+
     public static void main(String[] args) {
         // args description
         // 0 - contest or problem
         // 1 - challenge id in pcms
         // 2 - challenge type ioi or icpc
         // 3 - path to folder contest.xml or problem.xml, empty if launched in same folder
-        if (args.length < 2 || args.length < 3 && !args[0].equals("problem")) {
-            System.out.println("usage\n <contest or problem> <challenge id> <ioi or icpc> [path to contest.xml or problem.xml folder]");
-            return;
+        int type = 0;
+        String challengeId = null;
+        String challengeType = null;
+        String folder = ".";
+        boolean updateAll = false;
+        int index = -1;
+        for (String arg : args) {
+            if (arg.startsWith("--")) {
+                if (arg.equals("--y")) {
+                    updateAll = true;
+                } else {
+                    usage();
+                }
+            } else {
+                index++;
+                switch (index) {
+                    case 0:
+                        if (arg.equals("contest") || arg.equals("challenge")) {
+                            type = CONTEST;
+                        } else if (arg.equals("problem")) {
+                            type = PROBLEM;
+                        } else {
+                            usage();
+                        }
+                        break;
+                    case 1:
+                        challengeId = arg;
+                        break;
+                    case 2:
+                        if (type == CONTEST) {
+                            challengeType = arg;
+                        } else if (type == PROBLEM) {
+                            folder = arg;
+                        }
+                        break;
+                    case 3:
+                        if (type == CONTEST) {
+                            folder = arg;
+                        } else {
+                            usage();
+                        }
+                        break;
+                    default:
+                        usage();
+                }
+            }
         }
-        String folder = (args.length > 3 ? args[3] : ".");
+
+        if (type == 0 || challengeId == null || type == CONTEST && challengeType == null) {
+            usage();
+        }
 
         try {
             Properties props = load(new Properties(), "import.properties");
@@ -29,13 +78,13 @@ public class Main {
             Properties languageProps = load(getDefaultLanguageProperties(), "language.properties");
             Properties executableProps = load(getDefaultExecutableProperties(), "executable.properties");
 
-            Boolean update = false;
+
 
             BufferedReader sysin = new BufferedReader(new InputStreamReader(System.in));
 
-            if (args[0].equals("problem")) {
+            if (type == PROBLEM) {
                 polygon.Problem polygonProblem = polygon.Problem.parse(folder);
-                Problem pi = new Problem(polygonProblem, args[1], languageProps, executableProps);
+                Problem pi = new Problem(polygonProblem, challengeId, languageProps, executableProps);
                 File temporaryFile = new File(folder, "problem.xml.tmp");
                 PrintWriter pw = new PrintWriter(new FileWriter(temporaryFile));
                 pi.print(pw);
@@ -43,17 +92,17 @@ public class Main {
 
                 File f = new File(folder, "problem.xml");
                 f.delete();
-                if (!temporaryFile.renameTo(f)){
+                if (!temporaryFile.renameTo(f)) {
                     System.out.println("ERROR: '" + temporaryFile.getAbsolutePath() + "' couldn't be renamed to 'problem.xml' ");
                     return;
                 }
 
                 if (vfs != null) {
-                    pi.copyToVFS(vfs, sysin, update);
+                    pi.copyToVFS(vfs, sysin, updateAll);
                 }
-            } else if (args[0].equals("challenge") || args[0].equals("contest")) {
+            } else if (type == CONTEST) {
                 Contest contest = Contest.parse(folder);
-                Challenge ch = new Challenge(contest, args[1], args[2], folder, languageProps, executableProps, defaultLanguage);
+                Challenge ch = new Challenge(contest, challengeId, challengeType, folder, languageProps, executableProps, defaultLanguage);
                 try (PrintWriter pw = new PrintWriter(new FileWriter(new File(folder, "challenge.xml")))) {
                     ch.print(pw);
                 }
@@ -66,15 +115,16 @@ public class Main {
                 }
                 File submitFile = new File(folder, "submit.lst");
                 PrintWriter submit = new PrintWriter(new FileWriter(submitFile));
-                for (Map.Entry<String, Problem> entry : ch.problems.entrySet()){
-                //for (Problem pr : ch.problems.values()) {
+                boolean update = updateAll;
+                for (Map.Entry<String, Problem> entry : ch.problems.entrySet()) {
+                    //for (Problem pr : ch.problems.values()) {
                     Problem pr = entry.getValue();
                     File f = new File(folder, "problems/" + pr.shortName + "/problem.xml");
                     File temporaryFile = new File(f.getAbsolutePath() + ".tmp");
                     if (f.exists()) {
                         f.delete();
                     }
-                    if (!temporaryFile.renameTo(f)){
+                    if (!temporaryFile.renameTo(f)) {
                         System.out.println("ERROR: '" + temporaryFile.getAbsolutePath() + "' couldn't be renamed to 'problem.xml' ");
                         return;
                     }
@@ -89,12 +139,19 @@ public class Main {
                     ch.copyToVFS(vfs, sysin, update);
                 }
                 if (webroot != null) {
-                    ch.copyToWEB(webroot, sysin);
+                    ch.copyToWEB(webroot, sysin, updateAll);
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    static void usage() {
+        System.out.println("Usage\n" +
+                "    Importing contest: contest <challenge id | auto> <ioi | icpc> [path to contest.xml folder] [--y]\n" +
+                "    Importing problem: problem <challenge id | auto> [path to contest.xml folder] [--y]");
+        System.exit(1);
     }
 
     static Properties load(Properties props, String fileName) throws IOException {
