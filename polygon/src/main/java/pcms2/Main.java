@@ -73,7 +73,7 @@ public class Main {
             Properties props = load(new Properties(), "import.properties");
             String vfs = props.getProperty("vfs", null);
             String webroot = props.getProperty("webroot", null);
-            String defaultLanguage = props.getProperty("defaultLanguage");
+            String defaultLanguage = props.getProperty("defaultLanguage", "english");
 
             Properties languageProps = load(getDefaultLanguageProperties(), "language.properties");
             Properties executableProps = load(getDefaultExecutableProperties(), "executable.properties");

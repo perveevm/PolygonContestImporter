@@ -1,1 +1,1 @@
-java -cp polygon.jar pcms2.Main %1 %2 %3 %4
+java -cp * -Dfile.encoding=utf-8 pcms2.Main %*

@@ -66,19 +66,17 @@ public class Challenge {
     }
 
     public void print(PrintWriter pw) {
-        pw.println("<?xml version = \"1.0\" encoding = \"windows-1251\" ?>");
+        pw.println("<?xml version = \"1.0\" encoding = \"utf-8\" ?>");
         pw.println("<challenge");
-        pw.println("\tid = \"" + id + "\"");
-        pw.println("\tname = \"" + name + "\"");
-        pw.println("\tscoring-model = \"%" + type + "\"");
+        pw.printf("\tid = \"%s\"\n", id);
+        pw.printf("\tname = \"%s\"\n", name);
+        pw.printf("\tscoring-model = \"%%%s\"\n", type);
         pw.println("\tscoring-mode = \"group-max\"");
         pw.println("\txmlai-process = \"http://neerc.ifmo.ru/develop/pcms2/xmlai/default-rules.xml\"");
         pw.println(">");
         for (Map.Entry<String, Problem> e : problems.entrySet()) {
-            pw.println("\t<problem-ref alias = \"" + e.getKey().toUpperCase() + "\" " +
-                    "id = \"" + e.getKey() + "\" " +
-                    "problem-id = \"" + e.getValue().id + "\" " +
-                    "name = \"" + problemNames.get(e.getKey()) + "\"/>");
+            pw.printf("\t<problem-ref id = \"%s\" problem-id = \"%s\" name = \"%s\"/>\n",
+                    e.getKey().toUpperCase(), e.getValue().id, problemNames.get(e.getKey()));
         }
         pw.println("</challenge>");
 
