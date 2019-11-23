@@ -10,6 +10,7 @@ import java.io.PrintWriter;
 import java.util.Map;
 import java.util.Properties;
 import java.util.TreeMap;
+import org.apache.commons.text.StringEscapeUtils;
 
 /**
  * Created by Ilshat on 11/24/2015.
@@ -54,6 +55,7 @@ public class Challenge {
             name = contest.getNames().get(defaultLang);
         } else {
             name = contest.getNames().firstEntry().getValue();
+            name = StringEscapeUtils.escapeXml11(name);
             System.out.println("WARNING: Challenge name for default language '" + defaultLang + "' not found! Using '" + contest.getNames().firstKey() + "' name.");
         }
 
@@ -61,7 +63,10 @@ public class Challenge {
             String index = entry.getKey();
             Problem p = new Problem(entry.getValue(), id, languageProps, executableProps);
             problems.put(index, p);
-            problemNames.put(index, entry.getValue().getNames().getOrDefault(defaultLang, entry.getValue().getNames().get(contest.getNames().firstKey())));
+            String problemName = entry.getValue().getNames().getOrDefault(defaultLang,
+                    entry.getValue().getNames().get(contest.getNames().firstKey()));
+            problemName = StringEscapeUtils.escapeXml11(problemName);
+            problemNames.put(index, problemName);
         }
     }
 
