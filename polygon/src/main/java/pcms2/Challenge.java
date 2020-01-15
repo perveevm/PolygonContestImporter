@@ -32,7 +32,7 @@ public class Challenge {
         path = "";
     }
 
-    public Challenge(Contest contest, String ID, String Type, String Path, Properties languageProps, Properties executableProps, String defaultLang) throws Exception {
+    public Challenge(Contest contest, String ID, String Type, String Path, Properties languageProps, Properties executableProps, String defaultLang) {
         problems = new TreeMap<>();
         problemNames = new TreeMap<>();
         path = Path;
@@ -42,7 +42,7 @@ public class Challenge {
         parse(contest, languageProps, executableProps, defaultLang);
     }
 
-    void parse(Contest contest, Properties languageProps, Properties executableProps, String defaultLang) throws Exception {
+    void parse(Contest contest, Properties languageProps, Properties executableProps, String defaultLang) {
 
         String url = contest.getUrl();
         if (id.equals("auto")) {
