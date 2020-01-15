@@ -239,4 +239,8 @@ public class Problem {
         }
         return update;
     }
+
+    public File getDirectory() {
+        return directory;
+    }
 }

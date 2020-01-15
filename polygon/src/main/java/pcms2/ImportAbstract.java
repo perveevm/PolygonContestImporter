@@ -38,6 +38,58 @@ abstract class ImportAbstract implements Callable<Integer> {
 
     abstract protected void makeImport() throws IOException, ParserConfigurationException, SAXException;
 
+    /**
+     * Takes extracted polygon package directory and converts it to PCMS2 problem directory.
+     * Copies problem to VFS if needed.
+     * @param problemIdPrefix prefix to construct PCMS2 problem-id
+     * @param folder polygon package directory to process
+     * @throws IOException
+     * @throws ParserConfigurationException
+     * @throws SAXException
+     */
+    protected void importProblem(String problemIdPrefix, String folder) throws IOException, ParserConfigurationException, SAXException {
+        Problem pi = new Problem(polygon.Problem.parse(folder), problemIdPrefix, languageProps, executableProps);
+        generateTemporaryProblemXML(pi);
+        finalizeImportingProblem(pi, updateAll);
+    }
+
+    /**
+     * Generates temporary problem.xml from given {@link pcms2.Problem} object
+     * @param problem the problem to process
+     * @throws IOException
+     */
+    protected void generateTemporaryProblemXML(Problem problem) throws IOException {
+        File temporaryFile = getTemporaryProblemXMLFile(problem);
+        try (PrintWriter pw = new PrintWriter(new FileWriter(temporaryFile))) {
+            problem.print(pw);
+        }
+    }
+
+    /**
+     * Moves temporary problem.xml files to primary problem.xml
+     * Copies problem to PCMS2 VFS
+     * @param problem the problem to process
+     * @param update whether to copy to VFS without asking
+     * @return true, if update all was requested by user
+     * @throws IOException
+     */
+    protected boolean finalizeImportingProblem(Problem problem, boolean update) throws IOException {
+        File temporaryFile = getTemporaryProblemXMLFile(problem);
+        File f = new File(problem.getDirectory(), "problem.xml");
+        f.delete();
+        if (!temporaryFile.renameTo(f)) {
+            System.out.println("ERROR: '" + temporaryFile.getAbsolutePath() + "' couldn't be renamed to 'problem.xml' ");
+        }
+        if (vfs != null) {
+            update = problem.copyToVFS(vfs, sysin, update);
+        }
+        return update;
+    }
+
+    private File getTemporaryProblemXMLFile(Problem problem) {
+        return new File(problem.getDirectory(), "problem.xml.tmp");
+    }
+
     private static Properties load(Properties props, String fileName) throws IOException {
         File propsFile;
         String path = Main.class.getProtectionDomain().getCodeSource().getLocation().getPath();

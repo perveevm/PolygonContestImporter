@@ -30,36 +30,26 @@ public class ImportChallenge extends ImportAbstract {
         }
 
         for (Problem pr : ch.problems.values()) {
-            File temporaryFile = new File(folder, "problems/" + pr.shortName + "/problem.xml.tmp");
-            try (PrintWriter pw = new PrintWriter(new FileWriter(temporaryFile))) {
-                pr.print(pw);
-            }
+            generateTemporaryProblemXML(pr);
         }
-        File submitFile = new File(folder, "submit.lst");
-        PrintWriter submit = new PrintWriter(new FileWriter(submitFile));
+
         boolean update = updateAll;
-        for (Map.Entry<String, Problem> entry : ch.problems.entrySet()) {
-            //for (Problem pr : ch.problems.values()) {
-            Problem pr = entry.getValue();
-            File f = new File(folder, "problems/" + pr.shortName + "/problem.xml");
-            File temporaryFile = new File(f.getAbsolutePath() + ".tmp");
-            if (f.exists()) {
-                f.delete();
-            }
-            if (!temporaryFile.renameTo(f)) {
-                System.out.println("ERROR: '" + temporaryFile.getAbsolutePath() + "' couldn't be renamed to 'problem.xml' ");
-                return;
-            }
-            if (vfs != null) {
-                update = pr.copyToVFS(vfs, sysin, update);
-                pr.printSolutions(submit, ch.id + ".0", entry.getKey().toUpperCase(), languageProps, vfs);
+        for (Problem problem : ch.problems.values()) {
+            update = finalizeImportingProblem(problem, update);
+        }
+
+        if (vfs != null) {
+            try (PrintWriter submit = new PrintWriter(new File(folder, "submit.lst"))) {
+                for (Map.Entry<String, Problem> entry : ch.problems.entrySet()) {
+                    entry.getValue().printSolutions(submit, ch.id + ".0", entry.getKey().toUpperCase(), languageProps, vfs);
+                }
             }
         }
-        submit.close();
 
         if (vfs != null) {
             ch.copyToVFS(vfs, sysin, update);
         }
+
         if (webroot != null) {
             ch.copyToWEB(webroot, sysin, updateAll);
         }
