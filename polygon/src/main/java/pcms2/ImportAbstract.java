@@ -2,6 +2,7 @@ package pcms2;
 
 import org.xml.sax.SAXException;
 import picocli.CommandLine.Option;
+import polygon.ProblemDescriptor;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
@@ -17,6 +18,9 @@ abstract class ImportAbstract implements Callable<Integer> {
     String defaultLanguage;
     String webroot;
     BufferedReader sysin;
+    String login;
+    String password;
+    PackageDownloader downloader;
 
     @Override
     public Integer call() {
@@ -24,10 +28,13 @@ abstract class ImportAbstract implements Callable<Integer> {
             Properties props = load(new Properties(), "import.properties");
             vfs = props.getProperty("vfs", null);
             webroot = props.getProperty("webroot", null);
+            login = props.getProperty("polygonLogin", null);
+            password = props.getProperty("polygonPassword", null);
             defaultLanguage = props.getProperty("defaultLanguage", "english");
             languageProps = load(getDefaultLanguageProperties(), "language.properties");
             executableProps = load(getDefaultExecutableProperties(), "executable.properties");
             sysin = new BufferedReader(new InputStreamReader(System.in));
+            downloader = new PackageDownloader(login, password);
             makeImport();
             return 0;
         } catch (Exception e) {
@@ -48,7 +55,7 @@ abstract class ImportAbstract implements Callable<Integer> {
      * @throws SAXException
      */
     protected void importProblem(String problemIdPrefix, String folder) throws IOException, ParserConfigurationException, SAXException {
-        Problem pi = new Problem(polygon.Problem.parse(folder), problemIdPrefix, languageProps, executableProps);
+        Problem pi = new Problem(ProblemDescriptor.parse(folder), problemIdPrefix, languageProps, executableProps);
         generateTemporaryProblemXML(pi);
         finalizeImportingProblem(pi, updateAll);
     }

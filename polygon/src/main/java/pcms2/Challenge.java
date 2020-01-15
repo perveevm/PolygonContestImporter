@@ -1,16 +1,18 @@
 package pcms2;
 
 import org.apache.commons.io.FileUtils;
-import polygon.Contest;
+import polygon.ContestDescriptor;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Map;
+import java.util.NavigableMap;
 import java.util.Properties;
 import java.util.TreeMap;
 import org.apache.commons.text.StringEscapeUtils;
+import polygon.ProblemDescriptor;
 
 /**
  * Created by Ilshat on 11/24/2015.
@@ -32,17 +34,18 @@ public class Challenge {
         path = "";
     }
 
-    public Challenge(Contest contest, String ID, String Type, String Path, Properties languageProps, Properties executableProps, String defaultLang) {
+    public Challenge(ContestDescriptor contest, NavigableMap<String, ProblemDescriptor> contestProblems,
+                     String ID, String Type, String Path, Properties languageProps, Properties executableProps, String defaultLang) {
         problems = new TreeMap<>();
         problemNames = new TreeMap<>();
         path = Path;
         id = ID;
         type = Type;
         language = defaultLang;
-        parse(contest, languageProps, executableProps, defaultLang);
+        parse(contest, contestProblems, languageProps, executableProps, defaultLang);
     }
 
-    void parse(Contest contest, Properties languageProps, Properties executableProps, String defaultLang) {
+    void parse(ContestDescriptor contest, NavigableMap<String, ProblemDescriptor> contestProblems, Properties languageProps, Properties executableProps, String defaultLang) {
 
         String url = contest.getUrl();
         if (id.equals("auto")) {
@@ -51,20 +54,20 @@ public class Challenge {
         }
 
         //names
-        if (contest.getNames().containsKey(defaultLang)) {
-            name = contest.getNames().get(defaultLang);
+        if (contest.getContestNames().containsKey(defaultLang)) {
+            name = contest.getContestNames().get(defaultLang);
         } else {
-            name = contest.getNames().firstEntry().getValue();
+            name = contest.getContestNames().firstEntry().getValue();
             name = StringEscapeUtils.escapeXml11(name);
-            System.out.println("WARNING: Challenge name for default language '" + defaultLang + "' not found! Using '" + contest.getNames().firstKey() + "' name.");
+            System.out.println("WARNING: Challenge name for default language '" + defaultLang + "' not found! Using '" + contest.getContestNames().firstKey() + "' name.");
         }
 
-        for (Map.Entry<String, polygon.Problem> entry : contest.getProblems().entrySet()) {
+        for (Map.Entry<String, ProblemDescriptor> entry : contestProblems.entrySet()) {
             String index = entry.getKey();
             Problem p = new Problem(entry.getValue(), id, languageProps, executableProps);
             problems.put(index, p);
             String problemName = entry.getValue().getNames().getOrDefault(defaultLang,
-                    entry.getValue().getNames().get(contest.getNames().firstKey()));
+                    entry.getValue().getNames().get(contest.getContestNames().firstKey()));
             problemName = StringEscapeUtils.escapeXml11(problemName);
             problemNames.put(index, problemName);
         }
@@ -90,33 +93,41 @@ public class Challenge {
     public boolean copyToVFS(String vfs, BufferedReader in, boolean update) throws IOException {
         String[] files = {"challenge.xml", "submit.lst"};
         for (String f : files) {
-            File src = new File(path, f);
-            File dest = new File(vfs + "/etc/" + id.replaceAll("\\.", "/") + "/" + f);
-            //System.out.println("DEBUG: src = '" + src.getAbsolutePath() + " dest = '" + dest.getAbsolutePath() + "'");
-            if (dest.exists()) {
-                System.out.println(f + " '" + dest.getAbsolutePath() + "' exists.");
-                String yn = "n";
-                if (!update) {
-                    System.out.println("Do You want to update it?\n(y - yes, n - no)");
-                    yn = in.readLine();
-                }
-                if (update || yn.equals("y")) {
-                    System.out.println("Updating...");
-                    FileUtils.copyFileToDirectory(src, dest.getParentFile());
-                } else {
-                    System.out.println("Skipping...");
-                }
-            } else {
-                System.out.println("Copying " + f + " to '" + dest.getAbsolutePath() + "'.");
-                FileUtils.copyFileToDirectory(src, dest.getParentFile());
-            }
+            copyFileToVFS(vfs, in, update, new File(path, f));
         }
         return update;
     }
 
+    public void copyFileToVFS(String vfs, BufferedReader in, boolean update, File src) throws IOException {
+        String fileName = src.getName();
+        File dest = new File(vfs + "/etc/" + id.replace(".", "/") + "/" + fileName);
+        //System.out.println("DEBUG: src = '" + src.getAbsolutePath() + " dest = '" + dest.getAbsolutePath() + "'");
+        if (dest.exists()) {
+            System.out.println(fileName + " '" + dest.getAbsolutePath() + "' exists.");
+            String yn = "n";
+            if (!update) {
+                System.out.println("Do You want to update it?\n(y - yes, n - no)");
+                yn = in.readLine();
+            }
+            if (update || yn.equals("y")) {
+                System.out.println("Updating...");
+                FileUtils.copyFileToDirectory(src, dest.getParentFile());
+            } else {
+                System.out.println("Skipping...");
+            }
+        } else {
+            System.out.println("Copying " + fileName + " to '" + dest.getAbsolutePath() + "'.");
+            FileUtils.copyFileToDirectory(src, dest.getParentFile());
+        }
+    }
+
     public void copyToWEB(String webroot, BufferedReader in, boolean update) throws IOException {
         File src = new File(path, "statements/" + language + "/statements.pdf");
-        File dest = new File(webroot + "/statements/" + id.replaceAll("\\.", "/") + "/statements.pdf");
+        copyStatement(webroot, in, update, src);
+    }
+
+    public void copyStatement(String webroot, BufferedReader in, boolean update, File src) throws IOException {
+        File dest = new File(webroot + "/statements/" + id.replace(".", "/") + "/statements.pdf");
         //System.out.println("DEBUG: src = '" + src.getAbsolutePath() + " dest = '" + dest.getAbsolutePath() + "'");
         if (src.exists()) {
             System.out.println("Statements '" + src.getAbsolutePath() + "' exists.");

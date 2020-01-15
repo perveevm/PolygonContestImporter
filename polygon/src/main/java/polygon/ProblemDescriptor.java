@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.TreeMap;
 
-public class Problem {
+public class ProblemDescriptor {
 
     File directory;
     File xmlFile;
@@ -33,7 +33,7 @@ public class Problem {
     ArrayList<Attachment> attachments;
     ArrayList<Solution> solutions;
 
-    private Problem(String path) {
+    private ProblemDescriptor(String path) {
         directory = new File(path);
         if (!directory.exists()) {
             throw new AssertionError("ERROR: Couldn't find directory '" + path + "'");
@@ -56,8 +56,8 @@ public class Problem {
         solutions = new ArrayList<>();
     }
 
-    public static Problem parse(String path) throws ParserConfigurationException, IOException, SAXException {
-        Problem problem = new Problem(path);
+    public static ProblemDescriptor parse(String path) throws ParserConfigurationException, IOException, SAXException {
+        ProblemDescriptor problem = new ProblemDescriptor(path);
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder = factory.newDocumentBuilder();
         Document doc = builder.parse(problem.xmlFile);

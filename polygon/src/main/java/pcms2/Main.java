@@ -9,7 +9,9 @@ import java.util.concurrent.Callable;
 @Command(name = "polygon-contest-importer", description = "Imports polygon package to PCMS2",
         subcommands = {
             ImportChallenge.class,
-            ImportProblem.class
+            ImportProblem.class,
+            DownloadProblem.class,
+            DownloadContest.class
         },
         mixinStandardHelpOptions = true,
         version = "PolygonContestImporter 1.1"
