@@ -20,7 +20,6 @@ abstract class ImportAbstract implements Callable<Integer> {
 
     @Override
     public Integer call() {
-        System.err.println("here");
         try {
             Properties props = load(new Properties(), "import.properties");
             vfs = props.getProperty("vfs", null);
