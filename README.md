@@ -21,10 +21,10 @@ You can use something else instead auto, i.e. `demo.icpc`, then `challenge-id = 
 Main properties are located in `import.properties` file.
 This file should be located in the same directory as PolygonContestImporter `jar` file.
 Properties that can be used in `import.properties`:
- - `vfs` -- path to PCMS2 vfs, if defined and non-null, then importer will copy problem files to PCMS2 vfs.
+ - `vfs` — path to PCMS2 vfs, if defined and non-null, then importer will copy problem files to PCMS2 vfs.
 If the files are already in vfs, importer will ask to replace
- - `webroot` -- path to statements root directory, if defined and non-null, then importer will copy problem statements there
- - `defaultLanguage` -- the problem names are extracted in this language by default
+ - `webroot` — path to statements root directory, if defined and non-null, then importer will copy problem statements there
+ - `defaultLanguage` — the problem names are extracted in this language by default
  
 
 #### import.properties example
