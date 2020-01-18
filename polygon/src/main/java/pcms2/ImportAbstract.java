@@ -1,5 +1,6 @@
 package pcms2;
 
+import net.lingala.zip4j.exception.ZipException;
 import org.xml.sax.SAXException;
 import picocli.CommandLine.Option;
 import polygon.ProblemDescriptor;
@@ -21,6 +22,7 @@ abstract class ImportAbstract implements Callable<Integer> {
     String login;
     String password;
     PackageDownloader downloader;
+    TemporaryFileManager fileManager = new TemporaryFileManager();
 
     @Override
     public Integer call() {
@@ -40,6 +42,19 @@ abstract class ImportAbstract implements Callable<Integer> {
         } catch (Exception e) {
             e.printStackTrace();
             return 1;
+        } finally {
+            try {
+                System.out.println("Remove all created temporary files and directories?\n(y - yes, n - no)");
+                String line = sysin.readLine();
+                if (line.equals("y")) {
+                    fileManager.removeAll();
+                } else {
+                    System.out.println("Skipping...");
+                }
+            } catch (IOException e) {
+                System.err.println("Exception happened, while reading from console");
+                System.out.println("Skipping...");
+            }
         }
     }
 
@@ -129,5 +144,23 @@ abstract class ImportAbstract implements Callable<Integer> {
         p.put("jar7", "java.check");
         p.put("jar8", "java.check");
         return p;
+    }
+
+    protected String downloadProblemDirectory(String polygonUrl, File probDir) throws IOException {
+        File zipFile = fileManager.createTemporaryFile("__archive", ".zip");
+        boolean fullPackage = true;
+        if (!downloader.downloadPackage(polygonUrl, "windows", zipFile)) {
+            fullPackage = false;
+            if (!downloader.downloadPackage(polygonUrl, null, zipFile)) {
+                throw new AssertionError("Couldn't download any package");
+            }
+        }
+        try {
+            Utils.archiveToDirectory(zipFile, probDir, !fullPackage);
+            fileManager.remove(zipFile);
+            return probDir.getAbsolutePath();
+        } catch (ZipException e) {
+            throw new AssertionError(e);
+        }
     }
 }

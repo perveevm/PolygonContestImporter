@@ -48,6 +48,6 @@ public abstract class ImportContestAbstract extends ImportAbstract {
             challenge.copyToWEB(webroot, sysin, updateAll);
         }
 
-        System.out.println("Contest imported to " + contestDirectory.getAbsolutePath());
+        System.out.println("Contest directory: " + contestDirectory.getAbsolutePath());
     }
 }

@@ -24,27 +24,6 @@ public class Utils {
         }
     }
 
-    public static String downloadProblemDirectory(String polygonUrl, File probDir, PackageDownloader downloader) throws IOException {
-        File zipFile = File.createTempFile("__archive", ".zip");
-        boolean fullPackage = true;
-        if (!downloader.downloadPackage(polygonUrl, "windows", zipFile)) {
-            fullPackage = false;
-            if (!downloader.downloadPackage(polygonUrl, null, zipFile)) {
-                throw new AssertionError("Couldn't download any package");
-            }
-        }
-        try {
-            archiveToDirectory(zipFile, probDir, !fullPackage);
-            System.out.println("Removing zip file " + zipFile.getAbsolutePath());
-            if (!zipFile.delete()) {
-                System.err.println("Couldn't remove " + zipFile.getAbsolutePath());
-            }
-            return probDir.getAbsolutePath();
-        } catch (ZipException e) {
-            throw new AssertionError(e);
-        }
-    }
-
     public static void archiveToDirectory(File zipFile, File probDir, boolean runDoAll) throws IOException, ZipException {
 
         System.out.println("Unzipping " + zipFile.getAbsolutePath());

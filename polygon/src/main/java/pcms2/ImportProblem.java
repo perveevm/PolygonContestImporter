@@ -7,7 +7,6 @@ import picocli.CommandLine.Command;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 
 @Command(name = "problem", description = "Imports single problem using problem.xml")
 public class ImportProblem extends ImportProblemAbstract {
@@ -21,7 +20,7 @@ public class ImportProblem extends ImportProblemAbstract {
         if (!f.isDirectory()) {
             System.out.println(f.getAbsolutePath() + " is not a directory, trying to unzip");
             try {
-                File probDir = Files.createTempDirectory("__problem").toFile();
+                File probDir = fileManager.createTemporaryDirectory("__problem");
                 Utils.archiveToDirectory(f, probDir, runDoAll);
                 return probDir.getAbsolutePath();
             } catch (ZipException e) {
