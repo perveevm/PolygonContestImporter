@@ -8,51 +8,51 @@ import polygon.ProblemDescriptor;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
 import java.util.Properties;
+import java.util.Scanner;
 import java.util.concurrent.Callable;
 
 abstract class ImportAbstract implements Callable<Integer> {
 
     @Option(names = "--y", description = "Update all files") boolean updateAll;
-    String vfs;
+    File vfs;
     Properties languageProps;
     Properties executableProps;
     String defaultLanguage;
-    String webroot;
-    BufferedReader sysin;
+    File webroot;
+    Scanner sysin = new Scanner(System.in);
     String login;
     String password;
     PackageDownloader downloader;
     TemporaryFileManager fileManager = new TemporaryFileManager();
+    Asker asker;
+
+    static File readFileFromProperties(Properties props, String key) {
+        String pathName = props.getProperty(key, null);
+        return pathName == null ? null : new File(pathName);
+    }
 
     @Override
     public Integer call() {
+        asker = new ScannerPrinterAsker(sysin, System.out, false, updateAll);
         try {
             Properties props = load(new Properties(), "import.properties");
-            vfs = props.getProperty("vfs", null);
-            webroot = props.getProperty("webroot", null);
+            vfs = readFileFromProperties(props, "vfs");
+            webroot = readFileFromProperties(props, "webroot");
             login = props.getProperty("polygonLogin", null);
             password = props.getProperty("polygonPassword", null);
             defaultLanguage = props.getProperty("defaultLanguage", "english");
             languageProps = load(getDefaultLanguageProperties(), "language.properties");
             executableProps = load(getDefaultExecutableProperties(), "executable.properties");
-            sysin = new BufferedReader(new InputStreamReader(System.in));
             downloader = new PackageDownloader(login, password);
             makeImport();
             return 0;
-        } catch (Exception e) {
+        } catch (Throwable e) {
             e.printStackTrace();
             return 1;
         } finally {
-            try {
-                System.out.println("Remove all created temporary files and directories?\n(y - yes, n - no)");
-                String line = sysin.readLine();
-                if (line.equals("y")) {
-                    fileManager.removeAll();
-                } else {
-                    System.out.println("Skipping...");
-                }
-            } catch (IOException e) {
-                System.err.println("Exception happened, while reading from console");
+            if (asker.askForUpdate("Remove all created temporary files and directories?")) {
+                fileManager.removeAll();
+            } else {
                 System.out.println("Skipping...");
             }
         }
@@ -69,10 +69,10 @@ abstract class ImportAbstract implements Callable<Integer> {
      * @throws ParserConfigurationException
      * @throws SAXException
      */
-    protected void importProblem(String problemIdPrefix, String folder) throws IOException, ParserConfigurationException, SAXException {
+    protected void importProblem(String problemIdPrefix, String folder, Asker asker) throws IOException, ParserConfigurationException, SAXException {
         Problem pi = new Problem(ProblemDescriptor.parse(folder), problemIdPrefix, languageProps, executableProps);
         generateTemporaryProblemXML(pi);
-        finalizeImportingProblem(pi, updateAll);
+        finalizeImportingProblem(pi, asker);
     }
 
     /**
@@ -91,11 +91,11 @@ abstract class ImportAbstract implements Callable<Integer> {
      * Moves temporary problem.xml files to primary problem.xml
      * Copies problem to PCMS2 VFS
      * @param problem the problem to process
-     * @param update whether to copy to VFS without asking
+     * @param asker an object that handles user interaction to confirm actions
      * @return true, if update all was requested by user
      * @throws IOException
      */
-    protected boolean finalizeImportingProblem(Problem problem, boolean update) throws IOException {
+    protected void finalizeImportingProblem(Problem problem, Asker asker) throws IOException {
         File temporaryFile = getTemporaryProblemXMLFile(problem);
         File f = new File(problem.getDirectory(), "problem.xml");
         f.delete();
@@ -103,9 +103,8 @@ abstract class ImportAbstract implements Callable<Integer> {
             System.out.println("ERROR: '" + temporaryFile.getAbsolutePath() + "' couldn't be renamed to 'problem.xml' ");
         }
         if (vfs != null) {
-            update = problem.copyToVFS(vfs, sysin, update);
+            Utils.copyToVFS(problem, vfs, asker);
         }
-        return update;
     }
 
     private File getTemporaryProblemXMLFile(Problem problem) {

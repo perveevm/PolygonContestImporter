@@ -27,25 +27,27 @@ public abstract class ImportContestAbstract extends ImportAbstract {
             generateTemporaryProblemXML(problem);
         }
 
-        boolean update = updateAll;
+        Asker copyToVfsAsker = asker.copyAsker();
+        copyToVfsAsker.setAskForAll(true);
         for (Problem problem : challenge.problems.values()) {
-            update = finalizeImportingProblem(problem, update);
+            finalizeImportingProblem(problem, copyToVfsAsker);
         }
         if (vfs != null) {
             File submitListFile = new File(contestDirectory, "submit.lst");
             try (PrintWriter submit = new PrintWriter(submitListFile)) {
                 for (Map.Entry<String, Problem> entry : challenge.problems.entrySet()) {
-                    entry.getValue().printSolutions(submit, challenge.id + ".0", entry.getKey().toUpperCase(), languageProps, vfs);
+                    entry.getValue().printSolutions(submit, challenge.id + ".0",
+                            entry.getKey().toUpperCase(), languageProps, vfs.getAbsolutePath());
                 }
             }
         }
 
         if (vfs != null) {
-            challenge.copyToVFS(vfs, sysin, update);
+            Utils.copyToVFS(challenge, vfs, copyToVfsAsker);
         }
 
         if (webroot != null) {
-            challenge.copyToWEB(webroot, sysin, updateAll);
+            Utils.copyToWEB(challenge, webroot, asker);
         }
 
         System.out.println("Contest directory: " + contestDirectory.getAbsolutePath());

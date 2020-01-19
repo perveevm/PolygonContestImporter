@@ -28,11 +28,6 @@ public class Challenge {
     //problem index -> problem name
     TreeMap<String, String> problemNames;
 
-    public Challenge() {
-        problems = new TreeMap<>();
-        problemNames = new TreeMap<>();
-        path = "";
-    }
 
     public Challenge(ContestDescriptor contest, NavigableMap<String, ProblemDescriptor> contestProblems,
                      String ID, String Type, String Path, Properties languageProps, Properties executableProps, String defaultLang) {
@@ -90,58 +85,4 @@ public class Challenge {
 
     }
 
-    public boolean copyToVFS(String vfs, BufferedReader in, boolean update) throws IOException {
-        String[] files = {"challenge.xml", "submit.lst"};
-        for (String f : files) {
-            copyFileToVFS(vfs, in, update, new File(path, f));
-        }
-        return update;
-    }
-
-    public void copyFileToVFS(String vfs, BufferedReader in, boolean update, File src) throws IOException {
-        String fileName = src.getName();
-        File dest = new File(vfs + "/etc/" + id.replace(".", "/") + "/" + fileName);
-        //System.out.println("DEBUG: src = '" + src.getAbsolutePath() + " dest = '" + dest.getAbsolutePath() + "'");
-        if (dest.exists()) {
-            System.out.println(fileName + " '" + dest.getAbsolutePath() + "' exists.");
-            String yn = "n";
-            if (!update) {
-                System.out.println("Do You want to update it?\n(y - yes, n - no)");
-                yn = in.readLine();
-            }
-            if (update || yn.equals("y")) {
-                System.out.println("Updating...");
-                FileUtils.copyFileToDirectory(src, dest.getParentFile());
-            } else {
-                System.out.println("Skipping...");
-            }
-        } else {
-            System.out.println("Copying " + fileName + " to '" + dest.getAbsolutePath() + "'.");
-            FileUtils.copyFileToDirectory(src, dest.getParentFile());
-        }
-    }
-
-    public void copyToWEB(String webroot, BufferedReader in, boolean update) throws IOException {
-        File src = new File(path, "statements/" + language + "/statements.pdf");
-        copyStatement(webroot, in, update, src);
-    }
-
-    public void copyStatement(String webroot, BufferedReader in, boolean update, File src) throws IOException {
-        File dest = new File(webroot + "/statements/" + id.replace(".", "/") + "/statements.pdf");
-        //System.out.println("DEBUG: src = '" + src.getAbsolutePath() + " dest = '" + dest.getAbsolutePath() + "'");
-        if (src.exists()) {
-            System.out.println("Statements '" + src.getAbsolutePath() + "' exists.");
-            String yn = "n";
-            if (!update) {
-                System.out.println("Do You want to publish it?\n(y - yes, n - no)");
-                yn = in.readLine();
-            }
-            if (update || yn.equals("y")) {
-                System.out.println("Publishing...");
-                FileUtils.copyFileToDirectory(src, dest.getParentFile());
-            } else {
-                System.out.println("Skipping...");
-            }
-        }
-    }
 }

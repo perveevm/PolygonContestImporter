@@ -210,36 +210,10 @@ public class Problem {
     void printSolutions(PrintWriter pw, String sessionId, String problemAlias, Properties languageProperties, String vfs) {
         for (Solution sol : solutions) {
             sol.print(pw, sessionId, problemAlias, languageProperties,
-                    vfs + "/problems/" + id.replaceAll("\\.", "/"));
+                    vfs + "/problems/" + id.replace(".", "/"));
         }
     }
 
-    public boolean copyToVFS(String vfs, BufferedReader in, boolean update) throws IOException {
-        File src = xmlFile.getParentFile();
-        File dest = new File(vfs + "/problems/" + id.replaceAll("\\.", "/"));
-        //System.out.println("DEBUG: src = '" + src.getAbsolutePath() + " dest = '" + dest.getAbsolutePath() + "'");
-        if (dest.exists()) {
-            System.out.println("Problem '" + dest.getAbsolutePath() + "' exists.");
-            String yn = "n";
-            if (!update) {
-                System.out.println("Do You want to update it?\n(y - yes, yy - yes to all, n - no)");
-                yn = in.readLine();
-                if (yn.equals("yy")) {
-                    update = true;
-                }
-            }
-            if (update || yn.equals("y")) {
-                System.out.println("Updating...");
-                FileUtils.copyDirectory(src, dest);
-            } else {
-                System.out.println("Skipping...");
-            }
-        } else {
-            System.out.println("Copying problem '" + dest.getAbsolutePath() + "'.");
-            FileUtils.copyDirectory(src, dest);
-        }
-        return update;
-    }
 
     public File getDirectory() {
         return directory;

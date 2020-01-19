@@ -13,7 +13,7 @@ public abstract class ImportProblemAbstract extends ImportAbstract {
 
     @Override
     protected void makeImport() throws IOException, ParserConfigurationException, SAXException {
-        importProblem(problemIdPrefix, prepareProblemDirectory());
+        importProblem(problemIdPrefix, prepareProblemDirectory(), asker);
     }
 
     abstract String prepareProblemDirectory() throws IOException;
