@@ -30,7 +30,7 @@ If the files are already in vfs, importer will ask to replace
 #### import.properties example
 
 ```
-vfs = R:\pcms\vfs
-webroot = C:\Programs\tomcat\www\root\statements
+vfs = R:/pcms/vfs
+webroot = C:/Programs/tomcat/www/root/statements
 defaultLanguage = russian
 ```
