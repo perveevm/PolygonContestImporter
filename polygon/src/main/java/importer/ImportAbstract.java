@@ -19,7 +19,7 @@ abstract class ImportAbstract implements Callable<Integer> {
     @Option(names = {"-u", "--user"}, description = "Polygon login")
     String login;
     @Option(names = {"-p", "--password"}, description = "Polygon password", interactive = true)
-    char[] password;
+    String password;
 
     File vfs;
     Properties languageProps;
@@ -43,10 +43,16 @@ abstract class ImportAbstract implements Callable<Integer> {
             Properties props = load(new Properties(), "import.properties");
             vfs = readFileFromProperties(props, "vfs");
             webroot = readFileFromProperties(props, "webroot");
+            if (login == null) {
+                login = props.getProperty("polygonLogin", null);
+            }
+            if (password == null) {
+                password = props.getProperty("polygonPassword", null);
+            }
             defaultLanguage = props.getProperty("defaultLanguage", "english");
             languageProps = load(getDefaultLanguageProperties(), "language.properties");
             executableProps = load(getDefaultExecutableProperties(), "executable.properties");
-            downloader = new PackageDownloader(login, password == null ? null : new String(password));
+            downloader = new PackageDownloader(login, password);
             makeImport();
             return 0;
         } catch (Throwable e) {
