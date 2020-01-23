@@ -8,9 +8,11 @@ import polygon.ProblemDescriptor;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
+import java.util.Arrays;
 import java.util.Properties;
 import java.util.Scanner;
 import java.util.concurrent.Callable;
+import java.util.stream.Collectors;
 
 abstract class ImportAbstract implements Callable<Integer> {
 
@@ -59,10 +61,14 @@ abstract class ImportAbstract implements Callable<Integer> {
             e.printStackTrace();
             return 1;
         } finally {
-            if (asker.askForUpdate("Remove all created temporary files and directories?")) {
-                fileManager.removeAll();
-            } else {
-                System.out.println("Skipping...");
+            File[] toRemove = fileManager.filesToRemove();
+            if (toRemove.length > 0) {
+                String list = Arrays.stream(toRemove).map(x -> " - " + x).collect(Collectors.joining("\n"));
+                if (asker.askForUpdate("Remove all created temporary files and directories?\n" + list)) {
+                    fileManager.removeAll();
+                } else {
+                    System.out.println("Skipping...");
+                }
             }
         }
     }

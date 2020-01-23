@@ -54,6 +54,10 @@ public class TemporaryFileManager {
         registered.forEach(this::remove);
     }
 
+    public File[] filesToRemove() {
+        return registered.stream().filter(x -> !removed.contains(x) && x.exists()).toArray(File[]::new);
+    }
+
     public File createTemporaryDirectory(String prefix, File directory) throws IOException {
         File result = (directory == null ?
                 Files.createTempDirectory(prefix) :
