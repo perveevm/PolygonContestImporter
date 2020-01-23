@@ -21,8 +21,8 @@ public class DownloadContest extends ImportContestAbstract {
     protected void makeImport() throws IOException, ParserConfigurationException, SAXException {
         File contestDirectory = fileManager.createTemporaryDirectory("contest-" + uid + "-");
         File contestXMLFile = new File(contestDirectory, "contest.xml");
-        if (login == null || password == null) {
-            throw new AssertionError("Polygon login or password is not set");
+        if (username == null || password == null) {
+            throw new AssertionError("Polygon username or password is not set");
         }
         if (!downloader.downloadContestXml(uid, contestXMLFile)) {
             throw new AssertionError("Couldn't download contest.xml for contest " + uid);

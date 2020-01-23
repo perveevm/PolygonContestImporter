@@ -19,11 +19,11 @@ import java.util.List;
 public class PackageDownloader {
     private final CloseableHttpClient httpClient = HttpClients.createDefault();
 
-    private final String login;
+    private final String username;
     private final String password;
 
-    public PackageDownloader(String login, String password) {
-        this.login = login;
+    public PackageDownloader(String username, String password) {
+        this.username = username;
         this.password = password;
     }
 
@@ -72,7 +72,7 @@ public class PackageDownloader {
     private HttpPost getPostRequest(String url, String type) throws UnsupportedEncodingException {
         HttpPost postRequest = new HttpPost(url);
         List<NameValuePair> params = new ArrayList<>();
-        params.add(new BasicNameValuePair("login", login));
+        params.add(new BasicNameValuePair("login", username));
         params.add(new BasicNameValuePair("password", password));
         if (type != null) {
             params.add(new BasicNameValuePair("type", type));

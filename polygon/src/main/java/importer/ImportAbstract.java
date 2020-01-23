@@ -18,8 +18,8 @@ abstract class ImportAbstract implements Callable<Integer> {
 
     @Option(names = "--y", description = "Update all files")
     boolean updateAll;
-    @Option(names = {"-u", "--user"}, description = "Polygon login")
-    String login;
+    @Option(names = {"-u", "--user"}, description = "Polygon username")
+    String username;
     @Option(names = {"-p", "--password"}, description = "Polygon password", interactive = true)
     String password;
 
@@ -45,8 +45,8 @@ abstract class ImportAbstract implements Callable<Integer> {
             Properties props = load(new Properties(), "import.properties");
             vfs = readFileFromProperties(props, "vfs");
             webroot = readFileFromProperties(props, "webroot");
-            if (login == null) {
-                login = props.getProperty("polygonLogin", null);
+            if (username == null) {
+                username = props.getProperty("polygonUsername", null);
             }
             if (password == null) {
                 password = props.getProperty("polygonPassword", null);
@@ -54,7 +54,7 @@ abstract class ImportAbstract implements Callable<Integer> {
             defaultLanguage = props.getProperty("defaultLanguage", "english");
             languageProps = load(getDefaultLanguageProperties(), "language.properties");
             executableProps = load(getDefaultExecutableProperties(), "executable.properties");
-            downloader = new PackageDownloader(login, password);
+            downloader = new PackageDownloader(username, password);
             makeImport();
             return 0;
         } catch (Throwable e) {
@@ -166,8 +166,8 @@ abstract class ImportAbstract implements Callable<Integer> {
     protected String downloadProblemDirectory(String polygonUrl, File probDir) throws IOException {
         File zipFile = fileManager.createTemporaryFile("__archive", ".zip");
         boolean fullPackage = true;
-        if (login == null || password == null) {
-            throw new AssertionError("Polygon login or password is not set");
+        if (username == null || password == null) {
+            throw new AssertionError("Polygon username or password is not set");
         }
         if (!downloader.downloadPackage(polygonUrl, "windows", zipFile)) {
             fullPackage = false;
