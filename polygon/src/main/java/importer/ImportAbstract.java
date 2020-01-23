@@ -14,15 +14,19 @@ import java.util.concurrent.Callable;
 
 abstract class ImportAbstract implements Callable<Integer> {
 
-    @Option(names = "--y", description = "Update all files") boolean updateAll;
+    @Option(names = "--y", description = "Update all files")
+    boolean updateAll;
+    @Option(names = {"-u", "--user"}, description = "Polygon login")
+    String login;
+    @Option(names = {"-p", "--password"}, description = "Polygon password", interactive = true)
+    char[] password;
+
     File vfs;
     Properties languageProps;
     Properties executableProps;
     String defaultLanguage;
     File webroot;
     Scanner sysin = new Scanner(System.in);
-    String login;
-    String password;
     PackageDownloader downloader;
     TemporaryFileManager fileManager = new TemporaryFileManager();
     Asker asker;
@@ -39,12 +43,10 @@ abstract class ImportAbstract implements Callable<Integer> {
             Properties props = load(new Properties(), "import.properties");
             vfs = readFileFromProperties(props, "vfs");
             webroot = readFileFromProperties(props, "webroot");
-            login = props.getProperty("polygonLogin", null);
-            password = props.getProperty("polygonPassword", null);
             defaultLanguage = props.getProperty("defaultLanguage", "english");
             languageProps = load(getDefaultLanguageProperties(), "language.properties");
             executableProps = load(getDefaultExecutableProperties(), "executable.properties");
-            downloader = new PackageDownloader(login, password);
+            downloader = new PackageDownloader(login, password == null ? null : new String(password));
             makeImport();
             return 0;
         } catch (Throwable e) {
@@ -64,8 +66,9 @@ abstract class ImportAbstract implements Callable<Integer> {
     /**
      * Takes extracted polygon package directory and converts it to PCMS2 problem directory.
      * Copies problem to VFS if needed.
+     *
      * @param problemIdPrefix prefix to construct PCMS2 problem-id
-     * @param folder polygon package directory to process
+     * @param folder          polygon package directory to process
      * @throws IOException
      * @throws ParserConfigurationException
      * @throws SAXException
@@ -78,6 +81,7 @@ abstract class ImportAbstract implements Callable<Integer> {
 
     /**
      * Generates temporary problem.xml from given {@link pcms2.Problem} object
+     *
      * @param problem the problem to process
      * @throws IOException
      */
@@ -91,8 +95,9 @@ abstract class ImportAbstract implements Callable<Integer> {
     /**
      * Moves temporary problem.xml files to primary problem.xml
      * Copies problem to PCMS2 VFS
+     *
      * @param problem the problem to process
-     * @param asker an object that handles user interaction to confirm actions
+     * @param asker   an object that handles user interaction to confirm actions
      * @return true, if update all was requested by user
      * @throws IOException
      */
@@ -149,6 +154,9 @@ abstract class ImportAbstract implements Callable<Integer> {
     protected String downloadProblemDirectory(String polygonUrl, File probDir) throws IOException {
         File zipFile = fileManager.createTemporaryFile("__archive", ".zip");
         boolean fullPackage = true;
+        if (login == null || password == null) {
+            throw new AssertionError("Polygon login or password is not set");
+        }
         if (!downloader.downloadPackage(polygonUrl, "windows", zipFile)) {
             fullPackage = false;
             if (!downloader.downloadPackage(polygonUrl, null, zipFile)) {
