@@ -1,5 +1,7 @@
-package pcms2;
+package importer;
 
+import pcms2.Challenge;
+import pcms2.Problem;
 import picocli.CommandLine.Parameters;
 import polygon.ContestDescriptor;
 import polygon.ProblemDescriptor;
@@ -23,20 +25,20 @@ public abstract class ImportContestAbstract extends ImportAbstract {
             challenge.print(pw);
         }
 
-        for (Problem problem : challenge.problems.values()) {
+        for (Problem problem : challenge.getProblems().values()) {
             generateTemporaryProblemXML(problem);
         }
 
         Asker copyToVfsAsker = asker.copyAsker();
         copyToVfsAsker.setAskForAll(true);
-        for (Problem problem : challenge.problems.values()) {
+        for (Problem problem : challenge.getProblems().values()) {
             finalizeImportingProblem(problem, copyToVfsAsker);
         }
         if (vfs != null) {
             File submitListFile = new File(contestDirectory, "submit.lst");
             try (PrintWriter submit = new PrintWriter(submitListFile)) {
-                for (Map.Entry<String, Problem> entry : challenge.problems.entrySet()) {
-                    entry.getValue().printSolutions(submit, challenge.id + ".0",
+                for (Map.Entry<String, Problem> entry : challenge.getProblems().entrySet()) {
+                    entry.getValue().printSolutions(submit, challenge.getId() + ".0",
                             entry.getKey().toUpperCase(), languageProps, vfs.getAbsolutePath());
                 }
             }

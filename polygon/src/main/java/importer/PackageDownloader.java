@@ -1,4 +1,4 @@
-package pcms2;
+package importer;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.http.HttpEntity;

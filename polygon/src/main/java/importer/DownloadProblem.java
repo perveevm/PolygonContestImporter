@@ -1,4 +1,4 @@
-package pcms2;
+package importer;
 
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Parameters;

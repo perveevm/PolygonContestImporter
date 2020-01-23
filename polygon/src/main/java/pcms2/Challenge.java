@@ -85,4 +85,19 @@ public class Challenge {
 
     }
 
+    public String getPath() {
+        return path;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public String getLanguage() {
+        return language;
+    }
+
+    public TreeMap<String, Problem> getProblems() {
+        return problems;
+    }
 }

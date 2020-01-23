@@ -1,4 +1,4 @@
-package pcms2;
+package importer;
 
 import org.xml.sax.SAXException;
 import picocli.CommandLine.Parameters;

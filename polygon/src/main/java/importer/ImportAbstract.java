@@ -1,7 +1,8 @@
-package pcms2;
+package importer;
 
 import net.lingala.zip4j.exception.ZipException;
 import org.xml.sax.SAXException;
+import pcms2.Problem;
 import picocli.CommandLine.Option;
 import polygon.ProblemDescriptor;
 

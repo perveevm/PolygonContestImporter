@@ -207,7 +207,7 @@ public class Problem {
         pw.println("</problem>");
     }
 
-    void printSolutions(PrintWriter pw, String sessionId, String problemAlias, Properties languageProperties, String vfs) {
+    public void printSolutions(PrintWriter pw, String sessionId, String problemAlias, Properties languageProperties, String vfs) {
         for (Solution sol : solutions) {
             sol.print(pw, sessionId, problemAlias, languageProperties,
                     vfs + "/problems/" + id.replace(".", "/"));
@@ -217,5 +217,13 @@ public class Problem {
 
     public File getDirectory() {
         return directory;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public String getShortName() {
+        return shortName;
     }
 }
