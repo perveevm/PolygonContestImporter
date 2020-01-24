@@ -76,6 +76,14 @@ You have to provide polygon username and password for authentication. `polygonUs
 java -jar importer-jar-with-dependencies.jar download-contest auto ioi 3412 -u ACRush -p
 ```
 
+### Tests generation
+
+If the problem doesn't have full package generated for the revision that has a standard package, then standard package is downloaded. For standard packages importer runs `doall.bat` for windows (`doall.sh` for other OS), if the script fails, then the importing is terminated.
+
+### Generated contest statement downloading
+
+When downloading the contest, all problem statement pdf-files specified in `contest.xml` are downloaded. So, even if you don't have LaTeX installed, the problem statements can be uploaded.
+
 ### Contest downloading
 
 Currently for contest downloading only `https://polygon.codeforces.com` polygon instance is supported.
