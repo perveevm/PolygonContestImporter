@@ -76,6 +76,9 @@ You have to provide polygon username and password for authentication. `polygonUs
 java -jar importer-jar-with-dependencies.jar download-contest auto ioi 3412 -u ACRush -p
 ```
 
+### Contest downloading
+
+Currently for contest downloading only `https://polygon.codeforces.com` polygon instance is supported.
 
 ### Temporary files
 
