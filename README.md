@@ -42,7 +42,7 @@ defaultLanguage = russian
 
 For problem importing our importer parses `problem.xml`, and creates both `%ioi` and `%icpc` scripts inside PCMS2 problem.xml.
 
-First, importer looks for `problem.xml.polygon` file inside problem directory. If there is no such file, it looks for `problem.xml` file, and renames it to `problem.xml.polygon`. Then `problem.xml.polygon` file is getting parsed, creating `problem.xml` file, which is PCMS2 problem descriptor. So if anything failes during the import, importer can be run again.
+First, importer looks for `problem.xml.polygon` file inside problem directory. If there is no such file, it looks for `problem.xml` file, and renames it to `problem.xml.polygon`. Then `problem.xml.polygon` file is getting parsed, creating `problem.xml` file, which is PCMS2 problem descriptor. So if anything fails during the import, importer can be run again.
 
 #### IOI importing, groups, feedback
 
@@ -78,7 +78,7 @@ java -jar importer-jar-with-dependencies.jar download-contest auto ioi 3412 -u A
 
 ### Tests generation
 
-If the problem doesn't have full package generated for the revision that has a standard package, then standard package is downloaded. For standard packages importer runs `doall.bat` for windows (`doall.sh` for other OS), if the script fails, then the importing is terminated.
+If the problem doesn't have full package generated for the last revision that has a standard package, then standard package is downloaded. For standard packages importer runs `doall.bat` for windows (`doall.sh` for other OS), if the script fails, then the importing is terminated.
 
 ### Generated contest statement downloading
 
