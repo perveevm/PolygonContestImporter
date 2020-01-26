@@ -6,6 +6,7 @@ import xmlwrapper.XMLElement;
 
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 public class Group {
     String name;
@@ -27,10 +28,9 @@ public class Group {
 
         XMLElement depElement = groupElement.findFirstChild("dependencies");
         if (depElement.exists()) {
-            group.dependencies = new TreeSet<>();
-            for (XMLElement dep : depElement.findChildren("dependency")) {
-                group.dependencies.add(dep.getAttribute("group"));
-            }
+            group.dependencies = depElement.findChildrenStream("dependency")
+                    .map(x -> x.getAttribute("group"))
+                    .collect(Collectors.toCollection(TreeSet::new));
         }
         return group;
     }

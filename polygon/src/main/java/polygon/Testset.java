@@ -28,11 +28,10 @@ public class Testset {
         ts.outputPathPattern = testsetElement.findFirstChild("answer-path-pattern").getText();
 
         //tests
-        XMLElement testsElement = testsetElement.findFirstChild("tests");
-        XMLElement[] tests = testsElement.findChildren("test");
-        ts.tests = new Test[ts.testCount];
-        for (int j = 0; j < tests.length; j++) {
-            ts.tests[j] = Test.parse(tests[j]);
+        ts.tests = testsetElement.findFirstChild("tests").findChildrenStream("test").map(Test::parse).toArray(Test[]::new);
+        if (ts.tests.length != ts.testCount) {
+            System.err.println("WARNING: test-count = " + ts.testCount +
+                    " isn't equal to number of tests found = " + ts.tests.length);
         }
 
         //groups
@@ -40,8 +39,7 @@ public class Testset {
 //        System.out.println("DEBUG: " + groupsList + " " + groupsList.getLength());
         if (groupsElement.exists()) {
             ts.groups = new TreeMap<>();
-            XMLElement[] groupsList = groupsElement.findChildren("group");
-            for (XMLElement xmlElement : groupsList) {
+            for (XMLElement xmlElement : groupsElement.findChildren("group")) {
                 Group group = Group.parse(xmlElement);
                 ts.groups.put(group.name, group);
             }

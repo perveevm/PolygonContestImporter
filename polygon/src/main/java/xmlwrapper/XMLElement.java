@@ -43,7 +43,7 @@ public class XMLElement {
                 .map(x -> (Element) x);
     }
 
-    private Stream<XMLElement> findChildrenStream(String tagName) {
+    public Stream<XMLElement> findChildrenStream(String tagName) {
         return childrenStream()
                 .filter(x -> x.getNodeName().equals(tagName))
                 .map(XMLElement::new);
