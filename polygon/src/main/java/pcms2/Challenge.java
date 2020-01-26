@@ -1,12 +1,8 @@
 package pcms2;
 
-import org.apache.commons.io.FileUtils;
 import polygon.ContestDescriptor;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.util.Map;
 import java.util.NavigableMap;
 import java.util.Properties;
@@ -53,7 +49,6 @@ public class Challenge {
             name = contest.getContestNames().get(defaultLang);
         } else {
             name = contest.getContestNames().firstEntry().getValue();
-            name = StringEscapeUtils.escapeXml11(name);
             System.out.println("WARNING: Challenge name for default language '" + defaultLang + "' not found! Using '" + contest.getContestNames().firstKey() + "' name.");
         }
 
@@ -68,11 +63,18 @@ public class Challenge {
         }
     }
 
+    public void print(File file) throws FileNotFoundException, UnsupportedEncodingException {
+        String encoding = "utf-8";
+        try (PrintWriter pw = new PrintWriter(file, encoding)) {
+            pw.println(String.format("<?xml version = \"1.0\" encoding = \"%s\" ?>", encoding));
+            print(pw);
+        }
+    }
+
     public void print(PrintWriter pw) {
-        pw.println("<?xml version = \"1.0\" encoding = \"utf-8\" ?>");
         pw.println("<challenge");
         pw.printf("\tid = \"%s\"\n", id);
-        pw.printf("\tname = \"%s\"\n", name);
+        pw.printf("\tname = \"%s\"\n", StringEscapeUtils.escapeXml11(name));
         pw.printf("\tscoring-model = \"%%%s\"\n", type);
         pw.println("\tscoring-mode = \"group-max\"");
         pw.println("\txmlai-process = \"http://neerc.ifmo.ru/develop/pcms2/xmlai/default-rules.xml\"");

@@ -98,10 +98,7 @@ abstract class ImportAbstract implements Callable<Integer> {
      * @throws IOException
      */
     protected void generateTemporaryProblemXML(Problem problem) throws IOException {
-        File temporaryFile = getTemporaryProblemXMLFile(problem);
-        try (PrintWriter pw = new PrintWriter(new FileWriter(temporaryFile))) {
-            problem.print(pw);
-        }
+        problem.print(getTemporaryProblemXMLFile(problem));
     }
 
     /**
@@ -125,7 +122,7 @@ abstract class ImportAbstract implements Callable<Integer> {
         }
     }
 
-    private File getTemporaryProblemXMLFile(Problem problem) {
+    private static File getTemporaryProblemXMLFile(Problem problem) {
         return new File(problem.getDirectory(), "problem.xml.tmp");
     }
 

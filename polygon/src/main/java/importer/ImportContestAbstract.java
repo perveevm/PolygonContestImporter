@@ -21,9 +21,7 @@ public abstract class ImportContestAbstract extends ImportAbstract {
 
     protected void importContest(File contestDirectory, ContestDescriptor contest, NavigableMap<String, ProblemDescriptor> contestProblems) throws IOException {
         Challenge challenge = new Challenge(contest, contestProblems, challengeId, challengeType, contestDirectory.getAbsolutePath(), languageProps, executableProps, defaultLanguage);
-        try (PrintWriter pw = new PrintWriter(new File(contestDirectory, "challenge.xml"))) {
-            challenge.print(pw);
-        }
+        challenge.print(new File(contestDirectory, "challenge.xml"));
 
         for (Problem problem : challenge.getProblems().values()) {
             generateTemporaryProblemXML(problem);

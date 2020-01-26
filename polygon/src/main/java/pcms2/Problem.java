@@ -1,13 +1,9 @@
 package pcms2;
 
-import org.apache.commons.io.FileUtils;
 import polygon.ProblemDescriptor;
 import polygon.properties.PointsPolicy;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Properties;
 import java.util.TreeMap;
@@ -156,8 +152,16 @@ public class Problem {
             tests[i].points = sum / tcount + 1;
         }
     }
+
+    public void print(File file) throws FileNotFoundException, UnsupportedEncodingException {
+        String encoding = "utf-8";
+        try (PrintWriter pw = new PrintWriter(file, encoding)) {
+            pw.println(String.format("<?xml version = \"1.0\" encoding = \"%s\" ?>", encoding));
+            print(pw);
+        }
+    }
+
     public void print(PrintWriter pw) {
-        pw.println("<?xml version = \"1.0\" encoding=\"UTF-8\"?>");
         pw.println("<problem");
         pw.println("\tversion = \"1.0\"");
         pw.println("\tid = \"" + id + "\"");
