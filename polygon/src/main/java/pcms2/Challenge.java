@@ -58,7 +58,6 @@ public class Challenge {
             problems.put(index, p);
             String problemName = entry.getValue().getNames().getOrDefault(defaultLang,
                     entry.getValue().getNames().get(contest.getContestNames().firstKey()));
-            problemName = StringEscapeUtils.escapeXml11(problemName);
             problemNames.put(index, problemName);
         }
     }
@@ -81,7 +80,7 @@ public class Challenge {
         pw.println(">");
         for (Map.Entry<String, Problem> e : problems.entrySet()) {
             pw.printf("\t<problem-ref id = \"%s\" problem-id = \"%s\" name = \"%s\"/>\n",
-                    e.getKey().toUpperCase(), e.getValue().id, problemNames.get(e.getKey()));
+                    e.getKey().toUpperCase(), e.getValue().id, StringEscapeUtils.escapeXml11(problemNames.get(e.getKey())));
         }
         pw.println("</challenge>");
 
