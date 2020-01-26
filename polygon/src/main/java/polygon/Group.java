@@ -1,9 +1,8 @@
 package polygon;
 
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
 import polygon.properties.FeedbackPolicy;
 import polygon.properties.PointsPolicy;
+import xmlwrapper.XMLElement;
 
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -17,7 +16,7 @@ public class Group {
     //parameters from groups.txt
     TreeMap<String, String> parameters;
 
-    public static Group parse(Element groupElement) {
+    public static Group parse(XMLElement groupElement) {
         Group group = new Group();
         group.name = groupElement.getAttribute("name");
         group.pointsPolicy = PointsPolicy.parse(groupElement.getAttribute("points-policy"));
@@ -26,13 +25,10 @@ public class Group {
             group.points = Double.parseDouble(groupElement.getAttribute("points"));
         }
 
-        NodeList dependencies = groupElement.getElementsByTagName("dependencies");
-        if (dependencies != null && dependencies.getLength() > 0) {
+        XMLElement depElement = groupElement.findFirstChild("dependencies");
+        if (depElement.exists()) {
             group.dependencies = new TreeSet<>();
-            dependencies = ((Element) dependencies.item(0))
-                    .getElementsByTagName("dependency");
-            for (int i = 0; i < dependencies.getLength(); i++) {
-                Element dep = (Element) dependencies.item(i);
+            for (XMLElement dep : depElement.findChildren("dependency")) {
                 group.dependencies.add(dep.getAttribute("group"));
             }
         }

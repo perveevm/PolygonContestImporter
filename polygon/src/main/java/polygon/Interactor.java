@@ -1,6 +1,6 @@
 package polygon;
 
-import org.w3c.dom.Element;
+import xmlwrapper.XMLElement;
 
 public class Interactor {
     String binaryPath;
@@ -8,21 +8,21 @@ public class Interactor {
     String sourcePath;
     String sourceType;
 
-    public static Interactor parse(Element interactorNode) {
-        if (interactorNode == null) {
+    public static Interactor parse(XMLElement interactorElement) {
+        if (!interactorElement.exists()) {
             return null;
         }
 
-        Element el = (Element) interactorNode.getElementsByTagName("binary").item(0);
+        XMLElement binaryElement = interactorElement.findFirstChild("binary");
         Interactor interactor = new Interactor();
-        if (el != null) {
-            interactor.binaryPath = el.getAttribute("path");
-            interactor.binaryType = el.getAttribute("type");
+        if (binaryElement.exists()) {
+            interactor.binaryPath = binaryElement.getAttribute("path");
+            interactor.binaryType = binaryElement.getAttribute("type");
         }
 
-        el = (Element) interactorNode.getElementsByTagName("source").item(0);
-        interactor.sourcePath = el.getAttribute("path");
-        interactor.sourceType = el.getAttribute("type");
+        XMLElement sourceElement = interactorElement.findFirstChild("source");
+        interactor.sourcePath = sourceElement.getAttribute("path");
+        interactor.sourceType = sourceElement.getAttribute("type");
         return interactor;
     }
 

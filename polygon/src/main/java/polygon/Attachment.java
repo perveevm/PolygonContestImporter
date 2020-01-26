@@ -1,6 +1,6 @@
 package polygon;
 
-import org.w3c.dom.Element;
+import xmlwrapper.XMLElement;
 
 public class Attachment {
     String path;
@@ -14,7 +14,7 @@ public class Attachment {
         return type;
     }
 
-    public static Attachment parse(Element el) {
+    public static Attachment parse(XMLElement el) {
         Attachment attachment = new Attachment();
         attachment.path = el.getAttribute("path");
         attachment.type = el.getAttribute("type");

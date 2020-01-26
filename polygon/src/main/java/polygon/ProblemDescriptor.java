@@ -1,12 +1,8 @@
 package polygon;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
+import xmlwrapper.XMLElement;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
 import java.util.ArrayList;
@@ -58,61 +54,45 @@ public class ProblemDescriptor {
 
     public static ProblemDescriptor parse(String path) throws ParserConfigurationException, IOException, SAXException {
         ProblemDescriptor problem = new ProblemDescriptor(path);
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder builder = factory.newDocumentBuilder();
-        Document doc = builder.parse(problem.xmlFile);
+        XMLElement problemElement = XMLElement.getRoot(problem.xmlFile);
 
-        Element problemElement = doc.getDocumentElement();
         problem.shortName = problemElement.getAttribute("short-name");
         System.out.println("parsing problem '" + problem.shortName + "'");
 
         problem.url = problemElement.getAttribute("url");
 
         //names
-        NodeList nameNodes = ((Element) doc.getElementsByTagName("names").item(0)).getElementsByTagName("name");
-        for (int i = 0; i < nameNodes.getLength(); i++) {
-            Element nameElement = (Element) nameNodes.item(i);
+        for (XMLElement nameElement : problemElement.findFirstChild("names").findChildren("name")) {
             problem.names.put(nameElement.getAttribute("language"), nameElement.getAttribute("value"));
         }
 
         //judging
-        Element judgingElement = (Element) doc.getElementsByTagName("judging").item(0);
+        XMLElement judgingElement = problemElement.findFirstChild("judging");
         problem.input = judgingElement.getAttribute("input-file");
         problem.output = judgingElement.getAttribute("output-file");
 
         //testset
-        NodeList testsetNodes = judgingElement.getElementsByTagName("testset");
-        for (int i = 0; i < testsetNodes.getLength(); i++) {
-            Element testsetElement = (Element) testsetNodes.item(i);
+        for (XMLElement testsetElement : judgingElement.findChildren("testset")) {
             Testset ts = Testset.parse(testsetElement);
             problem.testsets.put(ts.name, ts);
         }
 
         //files attachments
-        Element attachmentsElement = (Element)
-                ((Element) doc.getElementsByTagName("files").item(0))
-                        .getElementsByTagName("attachments").item(0);
-        if (attachmentsElement != null) {
-            NodeList attachmentNodes = attachmentsElement.getElementsByTagName("file");
-            for (int i = 0; i < attachmentNodes.getLength(); i++) {
-                Element fileElement = (Element) attachmentNodes.item(i);
+        XMLElement attachmentsElement = problemElement.findFirstChild("files").findFirstChild("attachments");
+        if (attachmentsElement.exists()) {
+            for (XMLElement fileElement : attachmentsElement.findChildren("file")) {
                 Attachment attach = Attachment.parse(fileElement);
                 problem.attachments.add(attach);
             }
         }
 
         //assets (checker)
-        Element checkerElement = (Element) ((Element) doc.getElementsByTagName("assets").item(0)).
-                getElementsByTagName("checker").item(0);
-        problem.checker = Checker.parse(checkerElement);
+        XMLElement assetsElement = problemElement.findFirstChild("assets");
+        problem.checker = Checker.parse(assetsElement.findFirstChild("checker"));
         //assets (interactor)
-        Element interactorElement = (Element) ((Element) doc.getElementsByTagName("assets").item(0)).
-                getElementsByTagName("interactor").item(0);
-        problem.interactor = Interactor.parse(interactorElement);
+        problem.interactor = Interactor.parse(assetsElement.findFirstChild("interactor"));
         //assets (solutions)
-        Element solutionsElement = (Element) ((Element) doc.getElementsByTagName("assets").item(0)).
-                getElementsByTagName("solutions").item(0);
-        problem.solutions.addAll(Arrays.asList(Solution.parse(solutionsElement)));
+        problem.solutions.addAll(Arrays.asList(Solution.parse(assetsElement.findFirstChild("solutions"))));
 
         problem.parseGroupsTxt();
 

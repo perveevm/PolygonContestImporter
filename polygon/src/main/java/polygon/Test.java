@@ -1,6 +1,6 @@
 package polygon;
 
-import org.w3c.dom.Element;
+import xmlwrapper.XMLElement;
 
 public class Test {
     String group;
@@ -9,7 +9,7 @@ public class Test {
     double points;
     boolean sample;
 
-    public static Test parse(Element testEl) {
+    public static Test parse(XMLElement testEl) {
         Test test = new Test();
         test.method = testEl.getAttribute("method");
         test.cmd = testEl.getAttribute("cmd");
@@ -17,7 +17,7 @@ public class Test {
         if (!testEl.getAttribute("points").isEmpty()) {
             test.points = Double.parseDouble(testEl.getAttribute("points"));
         }
-        test.sample = Boolean.valueOf(testEl.getAttribute("sample"));
+        test.sample = Boolean.parseBoolean(testEl.getAttribute("sample"));
         test.group = testEl.getAttribute("group");
         return test;
     }

@@ -1,18 +1,18 @@
 package polygon;
 
-import org.w3c.dom.Element;
+import xmlwrapper.XMLElement;
 
 public class Checker {
     String type;
     String binaryPath;
     String binaryType;
 
-    public static Checker parse(Element el) {
+    public static Checker parse(XMLElement checkerElement) {
         Checker checker = new Checker();
-        checker.type = el.getAttribute("type");
-        el = (Element) el.getElementsByTagName("binary").item(0);
-        checker.binaryType = el.getAttribute("type");
-        checker.binaryPath = el.getAttribute("path");
+        checker.type = checkerElement.getAttribute("type");
+        XMLElement binaryElement = checkerElement.findFirstChild("binary");
+        checker.binaryType = binaryElement.getAttribute("type");
+        checker.binaryPath = binaryElement.getAttribute("path");
         return checker;
     }
 

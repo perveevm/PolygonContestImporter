@@ -1,9 +1,7 @@
 package polygon;
 
-import org.w3c.dom.NodeList;
-
-import org.w3c.dom.Element;
 import polygon.properties.SolutionTag;
+import xmlwrapper.XMLElement;
 
 public class Solution {
     SolutionTag tag;
@@ -19,14 +17,15 @@ public class Solution {
         ext = path.substring(path.lastIndexOf(".") + 1);
     }
 
-    public static Solution[] parse(Element el) {
-        NodeList nodeList = el.getElementsByTagName("solution");
-        Solution[] solutions = new Solution[nodeList.getLength()];
-        for (int i = 0; i < nodeList.getLength(); i++) {
-            Element sol = (Element) nodeList.item(i);
+    public static Solution[] parse(XMLElement el) {
+        XMLElement[] solutionsList = el.findChildren("solution");
+        Solution[] solutions = new Solution[solutionsList.length];
+        for (int i = 0; i < solutionsList.length; i++) {
+            XMLElement sol = solutionsList[i];
+            XMLElement source = sol.findFirstChild("source");
             solutions[i] = new Solution(sol.getAttribute("tag"),
-                    ((Element) sol.getElementsByTagName("source").item(0)).getAttribute("path"),
-                    ((Element) sol.getElementsByTagName("source").item(0)).getAttribute("type"));
+                    source.getAttribute("path"),
+                    source.getAttribute("type"));
         }
         return solutions;
     }

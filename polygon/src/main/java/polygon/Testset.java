@@ -1,7 +1,6 @@
 package polygon;
 
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
+import xmlwrapper.XMLElement;
 
 import java.util.*;
 
@@ -17,40 +16,33 @@ public class Testset {
     TreeMap<String, Group> groups;
     Test[] tests;
 
-    public static Testset parse(Element el) {
+    public static Testset parse(XMLElement testsetElement) {
         Testset ts = new Testset();
 
-        ts.name = el.getAttribute("name");
+        ts.name = testsetElement.getAttribute("name");
 
-        ts.timeLimit = Double.parseDouble(el.getElementsByTagName("time-limit").item(0).
-                getChildNodes().item(0).getNodeValue());
-        ts.memoryLimit = el.getElementsByTagName("memory-limit").item(0).
-                getChildNodes().item(0).getNodeValue();
-        ts.testCount = Integer.parseInt(el.getElementsByTagName("test-count").item(0).
-                getChildNodes().item(0).getNodeValue());
-        ts.inputPathPattern = el.getElementsByTagName("input-path-pattern").item(0).
-                getChildNodes().item(0).getNodeValue();
-        ts.outputPathPattern = el.getElementsByTagName("answer-path-pattern").item(0).
-                getChildNodes().item(0).getNodeValue();
+        ts.timeLimit = Double.parseDouble(testsetElement.findFirstChild("time-limit").getText());
+        ts.memoryLimit = testsetElement.findFirstChild("memory-limit").getText();
+        ts.testCount = Integer.parseInt(testsetElement.findFirstChild("test-count").getText());
+        ts.inputPathPattern = testsetElement.findFirstChild("input-path-pattern").getText();
+        ts.outputPathPattern = testsetElement.findFirstChild("answer-path-pattern").getText();
 
         //tests
-        NodeList testsNodeList = el.getElementsByTagName("tests");
-        testsNodeList = ((Element) testsNodeList.item(0)).getElementsByTagName("test");
+        XMLElement testsElement = testsetElement.findFirstChild("tests");
+        XMLElement[] tests = testsElement.findChildren("test");
         ts.tests = new Test[ts.testCount];
-        for (int j = 0; j < testsNodeList.getLength(); j++) {
-            Element testEl = (Element) testsNodeList.item(j);
-            ts.tests[j] = Test.parse(testEl);
+        for (int j = 0; j < tests.length; j++) {
+            ts.tests[j] = Test.parse(tests[j]);
         }
 
         //groups
-        NodeList groupsList = el.getElementsByTagName("groups");
+        XMLElement groupsElement = testsetElement.findFirstChild("groups");
 //        System.out.println("DEBUG: " + groupsList + " " + groupsList.getLength());
-        if (groupsList != null && groupsList.getLength() > 0) {
+        if (groupsElement.exists()) {
             ts.groups = new TreeMap<>();
-            groupsList = ((Element) groupsList.item(0)).getElementsByTagName("group");
-            for (int i = 0; i < groupsList.getLength(); i++) {
-                Element groupElement = (Element) groupsList.item(i);
-                Group group = Group.parse(groupElement);
+            XMLElement[] groupsList = groupsElement.findChildren("group");
+            for (XMLElement xmlElement : groupsList) {
+                Group group = Group.parse(xmlElement);
                 ts.groups.put(group.name, group);
             }
         }
