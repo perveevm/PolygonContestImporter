@@ -16,6 +16,7 @@ public class ProblemDescriptor {
     File groupsTxtFile;
 
     String shortName;
+    int revision;
     String url;
     String input;
     String output;
@@ -25,21 +26,26 @@ public class ProblemDescriptor {
     //key - language, value - name
     TreeMap<String, String> names;
     //key - testset name, value - testset
-    TreeMap <String, Testset> testsets;
+    TreeMap<String, Testset> testsets;
     ArrayList<Attachment> attachments;
     ArrayList<Solution> solutions;
 
-    private ProblemDescriptor(String path) {
-        directory = new File(path);
-        if (!directory.exists()) {
-            throw new AssertionError("ERROR: Couldn't find directory '" + path + "'");
+    private ProblemDescriptor(String path) throws FileNotFoundException {
+        File pathFile = new File(path);
+        if (!pathFile.exists()) {
+            throw new FileNotFoundException("ERROR: Couldn't find directory or file '" + path + "'");
         }
-        xmlFile = new File(directory, "problem.xml.polygon");
-        if (!xmlFile.exists()) {
-            if (!(new File(directory, "problem.xml")).renameTo(xmlFile)) {
-                System.out.println("ERROR: problem.xml not found in '" + directory + "'!");
-                return;
+        if (pathFile.isDirectory()) {
+            directory = pathFile;
+            xmlFile = new File(directory, "problem.xml.polygon");
+            if (!xmlFile.exists()) {
+                if (!(new File(directory, "problem.xml")).renameTo(xmlFile)) {
+                    throw new FileNotFoundException("ERROR: problem.xml not found in '" + directory + "'!");
+                }
             }
+        } else {
+            directory = pathFile.getParentFile();
+            xmlFile = pathFile;
         }
 
         groupsTxtFile = new File(path + "/files/groups.txt");
@@ -57,6 +63,7 @@ public class ProblemDescriptor {
         XMLElement problemElement = XMLElement.getRoot(problem.xmlFile);
 
         problem.shortName = problemElement.getAttribute("short-name");
+        problem.revision = Integer.parseInt(problemElement.getAttribute("revision"));
         System.out.println("parsing problem '" + problem.shortName + "'");
 
         problem.url = problemElement.getAttribute("url");
@@ -160,6 +167,10 @@ public class ProblemDescriptor {
 
     public String getShortName() {
         return shortName;
+    }
+
+    public int getRevision() {
+        return revision;
     }
 
     public String getUrl() {

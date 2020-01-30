@@ -69,6 +69,10 @@ public class PackageDownloader {
         return downloadFile(getPostRequest("https://polygon.codeforces.com/c/" + uid + "/contest.xml", null), contestXMLFile) == 200;
     }
 
+    public boolean downloadProblemXml(String url, File problemXmlFile) throws IOException {
+        return downloadFile(getPostRequest(url + "/problem.xml", null), problemXmlFile) == 200;
+    }
+
     private HttpPost getPostRequest(String url, String type) throws UnsupportedEncodingException {
         HttpPost postRequest = new HttpPost(url);
         List<NameValuePair> params = new ArrayList<>();

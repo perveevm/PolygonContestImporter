@@ -28,26 +28,40 @@ public class Problem {
     public Problem(ProblemDescriptor polygonProblem, String idprefix, Properties languageProps, Properties executableProps) {
         directory = polygonProblem.getDirectory();
         xmlFile = new File(directory, "problem.xml");
-        id = idprefix;
+        id = getProblemId(idprefix, polygonProblem.getUrl(), polygonProblem.getShortName());
         testsets = new TreeMap<>();
 
         parse(polygonProblem, languageProps, executableProps);
+    }
+
+    public static String getProblemId(String idPrefix, String problemUrl, String shortName) {
+        if (idPrefix.startsWith("com.codeforces.polygon") || idPrefix.equals("auto")) {
+            String[] t = problemUrl.split("/");
+            String cflogin = t[t.length - 2];
+            if (cflogin.contains(".")) {
+                System.out.println("WARNING: Problem owner login contains '.', replacing with '-'");
+                cflogin = cflogin.replaceAll("\\.", "-");
+            }
+            idPrefix = "com.codeforces.polygon." + cflogin;
+        }
+        idPrefix = idPrefix + "." + shortName;
+        return idPrefix;
     }
 
     public void parse(ProblemDescriptor polygonProblem, Properties languageProps, Properties executableProps) {
         shortName = polygonProblem.getShortName();
         System.out.println("importing problem '" + shortName + "'");
 
-        if (id.startsWith("com.codeforces.polygon") || id.equals("auto")) {
-            String[] t = polygonProblem.getUrl().split("/");
-            String cflogin = t[t.length - 2];
-            if (cflogin.contains(".")) {
-                System.out.println("WARNING: Problem owner login contains '.', replacing with '-'");
-                cflogin = cflogin.replaceAll("\\.", "-");
-            }
-            id = "com.codeforces.polygon." + cflogin;
-        }
-        id = id + "." + shortName;
+//        if (id.startsWith("com.codeforces.polygon") || id.equals("auto")) {
+//            String[] t = polygonProblem.getUrl().split("/");
+//            String cflogin = t[t.length - 2];
+//            if (cflogin.contains(".")) {
+//                System.out.println("WARNING: Problem owner login contains '.', replacing with '-'");
+//                cflogin = cflogin.replaceAll("\\.", "-");
+//            }
+//            id = "com.codeforces.polygon." + cflogin;
+//        }
+//        id = id + "." + shortName;
 
         //judging
         String input = polygonProblem.getInput();

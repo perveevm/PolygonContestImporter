@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 
 abstract class ImportAbstract implements Callable<Integer> {
 
-    @Option(names = "--y", description = "Update all files")
+    @Option(names = "--y", description = "Yes to all (non interactive)")
     boolean updateAll;
     @Option(names = {"-u", "--user"}, description = "Polygon username")
     String username;
@@ -24,6 +24,7 @@ abstract class ImportAbstract implements Callable<Integer> {
     String password;
 
     File vfs;
+    Properties importProps;
     Properties languageProps;
     Properties executableProps;
     String defaultLanguage;
@@ -42,16 +43,16 @@ abstract class ImportAbstract implements Callable<Integer> {
     public Integer call() {
         asker = new ScannerPrinterAsker(sysin, System.out, false, updateAll);
         try {
-            Properties props = load(new Properties(), "import.properties");
-            vfs = readFileFromProperties(props, "vfs");
-            webroot = readFileFromProperties(props, "webroot");
+            importProps = load(new Properties(), "import.properties");
+            vfs = readFileFromProperties(importProps, "vfs");
+            webroot = readFileFromProperties(importProps, "webroot");
             if (username == null) {
-                username = props.getProperty("polygonUsername", null);
+                username = importProps.getProperty("polygonUsername", null);
             }
             if (password == null) {
-                password = props.getProperty("polygonPassword", null);
+                password = importProps.getProperty("polygonPassword", null);
             }
-            defaultLanguage = props.getProperty("defaultLanguage", "english");
+            defaultLanguage = importProps.getProperty("defaultLanguage", "english");
             languageProps = load(getDefaultLanguageProperties(), "language.properties");
             executableProps = load(getDefaultExecutableProperties(), "executable.properties");
             downloader = new PackageDownloader(username, password);
