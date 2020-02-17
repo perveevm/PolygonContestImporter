@@ -55,6 +55,7 @@ public class DownloadContest extends ImportContestAbstract {
                     throw new AssertionError("Couldn't download problem.xml by url '" + url + "'");
                 }
                 newProblemDescriptor = ProblemDescriptor.parse(problemXmlFile);
+                fileManager.remove(problemXmlFile);
                 String problemId = Problem.getProblemId(challengeId, newProblemDescriptor.getUrl(), newProblemDescriptor.getShortName());
                 File vfsXml = new File(Utils.resolveProblemVfs(vfs, problemId), ProblemDirectory.POLYGON_XML_NAME);
                 try {
