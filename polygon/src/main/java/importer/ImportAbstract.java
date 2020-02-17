@@ -4,7 +4,7 @@ import net.lingala.zip4j.exception.ZipException;
 import org.xml.sax.SAXException;
 import pcms2.Problem;
 import picocli.CommandLine.Option;
-import polygon.ProblemDescriptor;
+import polygon.ProblemDirectory;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
@@ -87,7 +87,7 @@ abstract class ImportAbstract implements Callable<Integer> {
      * @throws SAXException
      */
     protected void importProblem(String problemIdPrefix, String folder, Asker asker) throws IOException, ParserConfigurationException, SAXException {
-        Problem pi = new Problem(ProblemDescriptor.parse(folder), problemIdPrefix, languageProps, executableProps);
+        Problem pi = new Problem(ProblemDirectory.parse(folder), problemIdPrefix, languageProps, executableProps);
         generateTemporaryProblemXML(pi);
         finalizeImportingProblem(pi, asker);
     }

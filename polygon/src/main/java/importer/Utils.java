@@ -48,11 +48,11 @@ public class Utils {
         new ZipFile(zipFile).extractAll(probDir.getAbsolutePath());
     }
 
-    static public void copyToVFS(Challenge challenge, File vfs, Asker asker) throws IOException {
+    static public void copyToVFS(File srcContestDir, Challenge challenge, File vfs, Asker asker) throws IOException {
         String[] files = {"challenge.xml", "submit.lst"};
         File vfsEtcDirectory = new File(vfs, "etc/" + challenge.getId().replace(".", "/"));
         for (String f : files) {
-            File src = new File(challenge.getPath(), f);
+            File src = new File(srcContestDir, f);
             File dest = new File(vfsEtcDirectory, f);
             System.out.println("Preparing to copy " + f + " to " + dest.getAbsolutePath());
             deployFile(src, dest, asker);
@@ -91,8 +91,8 @@ public class Utils {
         }
     }
 
-    static public void copyToWEB(Challenge challenge, File webroot, Asker asker) throws IOException {
-        File src = new File(challenge.getPath(), "statements/" + challenge.getLanguage() + "/statements.pdf");
+    static public void copyToWEB(File srcContestDir, Challenge challenge, File webroot, Asker asker) throws IOException {
+        File src = new File(srcContestDir, "statements/" + challenge.getLanguage() + "/statements.pdf");
         if (!src.exists()) {
             return;
         }
@@ -103,8 +103,12 @@ public class Utils {
 
     static public void copyToVFS(Problem problem, File vfs, Asker asker) throws IOException {
         File src = problem.getDirectory();
-        File dest = new File(vfs, "problems/" + problem.getId().replace(".", "/"));
+        File dest = resolveProblemVfs(vfs, problem.getId());
         System.out.println("Preparing to copy problem " + problem.getShortName() + " to " + dest.getAbsolutePath());
         deployFile(src, dest, asker);
+    }
+
+    static public File resolveProblemVfs(File vfs, String problemId) {
+        return new File(vfs, "problems/" + problemId.replace(".", "/"));
     }
 }

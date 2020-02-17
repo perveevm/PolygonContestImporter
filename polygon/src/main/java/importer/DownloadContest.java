@@ -6,7 +6,9 @@ import pcms2.Problem;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Parameters;
 import polygon.ContestDescriptor;
+import polygon.ContestXML;
 import polygon.ProblemDescriptor;
+import polygon.ProblemDirectory;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
@@ -38,45 +40,50 @@ public class DownloadContest extends ImportContestAbstract {
         if (downloadStrategy == null) {
             downloadStrategy = DownloadStrategy.valueOf(importProps.getProperty("download", "new").toUpperCase());
         }
-        ContestDescriptor contest = ContestDescriptor.parse(contestXMLFile);
-        NavigableMap<String, ProblemDescriptor> contestProblems = new TreeMap<>();
-        for (Map.Entry<String, String> entry : contest.getProblemLinks().entrySet()) {
+        ContestXML contestXML = ContestXML.parse(contestXMLFile);
+        NavigableMap<String, ProblemDirectory> problemDirs = new TreeMap<>();
+        NavigableMap<String, ProblemDescriptor> problemDescriptors = new TreeMap<>();
+        for (Map.Entry<String, String> entry : contestXML.getProblemLinks().entrySet()) {
             String index = entry.getKey();
             String url = entry.getValue();
             String pname = url.substring(url.lastIndexOf("/") + 1);
-            File problemDirectory = new File(problemsDirectory, pname);
             boolean download = true;
-            if (downloadStrategy == DownloadStrategy.NEW) {
-                File problemXmlFile = new File(problemDirectory, "problem.xml.polygon");
+            ProblemDescriptor newProblemDescriptor = null;
+            if (downloadStrategy == DownloadStrategy.NEW && vfs != null) {
+                File problemXmlFile = fileManager.createTemporaryFile("_p_" + entry.getKey() + "_", ".xml");
                 if (!downloader.downloadProblemXml(url, problemXmlFile)) {
                     throw new AssertionError("Couldn't download problem.xml by url '" + url + "'");
                 }
-                ProblemDescriptor problemDescriptor = ProblemDescriptor.parse(problemDirectory.getAbsolutePath());
+                newProblemDescriptor = ProblemDescriptor.parse(problemXmlFile);
+                String problemId = Problem.getProblemId(challengeId, newProblemDescriptor.getUrl(), newProblemDescriptor.getShortName());
+                File vfsXml = new File(Utils.resolveProblemVfs(vfs, problemId), ProblemDirectory.POLYGON_XML_NAME);
                 try {
-                    String problemId = Problem.getProblemId(challengeId, problemDescriptor.getUrl(), problemDescriptor.getShortName());
-                    ProblemDescriptor problemDescriptorVfs = ProblemDescriptor.parse(vfs + "/problems/" +
-                            problemId.replace(".", "/") + "/problem.xml.polygon");
-                    if (problemDescriptor.getRevision() == problemDescriptorVfs.getRevision()) {
+                    ProblemDescriptor problemDescriptorVfs = ProblemDescriptor.parse(vfsXml);
+                    if (newProblemDescriptor.getRevision() == problemDescriptorVfs.getRevision()) {
                         download = false;
                         System.out.println("INFO: VFS revision is same, skipping package download");
                     }
                 } catch (Exception ignored) {
                 }
                 if (download) {
-                    FileUtils.deleteQuietly(problemXmlFile);
                     System.out.println("INFO: VFS revision is different, downloading package");
                 }
             }
             if (download) {
+                File problemDirectory = new File(problemsDirectory, pname);
                 downloadProblemDirectory(url, problemDirectory);
+                ProblemDirectory problem = ProblemDirectory.parse(problemDirectory.getAbsolutePath());
+                problemDirs.put(index, problem);
+                problemDescriptors.put(index, problem);
+            } else {
+                problemDescriptors.put(index, newProblemDescriptor);
             }
-            contestProblems.put(index, ProblemDescriptor.parse(problemDirectory.getAbsolutePath()));
         }
         File statementDirectory = new File(contestDirectory, "statements");
         if (!statementDirectory.mkdir()) {
             throw new AssertionError("Couldn't create directory " + statementDirectory.getAbsolutePath());
         }
-        for (Map.Entry<String, String> entry : contest.getStatementLinks().entrySet()) {
+        for (Map.Entry<String, String> entry : contestXML.getStatementLinks().entrySet()) {
             File languageDirectory = new File(statementDirectory, entry.getKey());
             if (!languageDirectory.mkdir()) {
                 throw new AssertionError("Couldn't create directory " + languageDirectory.getAbsolutePath());
@@ -84,7 +91,7 @@ public class DownloadContest extends ImportContestAbstract {
             File statementFile = new File(languageDirectory, "statements.pdf");
             downloader.downloadByURL(entry.getValue(), statementFile);
         }
-        importContest(contestDirectory, contest, contestProblems);
+        importContest(contestDirectory, new ContestDescriptor(contestXMLFile, problemDescriptors), problemDirs);
     }
 
 }

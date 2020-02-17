@@ -1,6 +1,7 @@
 package pcms2;
 
 import polygon.ContestDescriptor;
+import polygon.ContestXML;
 
 import java.io.*;
 import java.util.Map;
@@ -9,34 +10,32 @@ import java.util.Properties;
 import java.util.TreeMap;
 import org.apache.commons.text.StringEscapeUtils;
 import polygon.ProblemDescriptor;
+import polygon.ProblemDirectory;
 
 /**
  * Created by Ilshat on 11/24/2015.
  */
 public class Challenge {
-    String path;
     String name;
     String id;
     String type;
     String language;
-    //problem index -> problem
-    TreeMap<String, Problem> problems;
+    //problem index -> problem id
+    NavigableMap<String, String> problemIds;
     //problem index -> problem name
-    TreeMap<String, String> problemNames;
+    NavigableMap<String, String> problemNames;
 
 
-    public Challenge(ContestDescriptor contest, NavigableMap<String, ProblemDescriptor> contestProblems,
-                     String ID, String Type, String Path, Properties languageProps, Properties executableProps, String defaultLang) {
-        problems = new TreeMap<>();
+    public Challenge(ContestDescriptor contest, String ID, String Type, String defaultLang) {
+        problemIds = new TreeMap<>();
         problemNames = new TreeMap<>();
-        path = Path;
         id = ID;
         type = Type;
         language = defaultLang;
-        parse(contest, contestProblems, languageProps, executableProps, defaultLang);
+        parse(contest, defaultLang);
     }
 
-    void parse(ContestDescriptor contest, NavigableMap<String, ProblemDescriptor> contestProblems, Properties languageProps, Properties executableProps, String defaultLang) {
+    void parse(ContestDescriptor contest, String defaultLang) {
 
         String url = contest.getUrl();
         if (id.equals("auto")) {
@@ -52,12 +51,12 @@ public class Challenge {
             System.out.println("WARNING: Challenge name for default language '" + defaultLang + "' not found! Using '" + contest.getContestNames().firstKey() + "' name.");
         }
 
-        for (Map.Entry<String, ProblemDescriptor> entry : contestProblems.entrySet()) {
+        for (Map.Entry<String, ProblemDescriptor> entry : contest.getProblems().entrySet()) {
             String index = entry.getKey();
-            Problem p = new Problem(entry.getValue(), id, languageProps, executableProps);
-            problems.put(index, p);
-            String problemName = entry.getValue().getNames().getOrDefault(defaultLang,
-                    entry.getValue().getNames().get(contest.getContestNames().firstKey()));
+            ProblemDescriptor probDesc = entry.getValue();
+            problemIds.put(index, Problem.getProblemId(id, probDesc.getUrl(), probDesc.getShortName()));
+            String problemName = probDesc.getNames().getOrDefault(defaultLang,
+                    probDesc.getNames().get(contest.getContestNames().firstKey()));
             problemNames.put(index, problemName);
         }
     }
@@ -78,16 +77,12 @@ public class Challenge {
         pw.println("\tscoring-mode = \"group-max\"");
         pw.println("\txmlai-process = \"http://neerc.ifmo.ru/develop/pcms2/xmlai/default-rules.xml\"");
         pw.println(">");
-        for (Map.Entry<String, Problem> e : problems.entrySet()) {
+        for (Map.Entry<String, String> e : problemIds.entrySet()) {
             pw.printf("\t<problem-ref id = \"%s\" problem-id = \"%s\" name = \"%s\"/>\n",
-                    e.getKey().toUpperCase(), e.getValue().id, StringEscapeUtils.escapeXml11(problemNames.get(e.getKey())));
+                    e.getKey().toUpperCase(), e.getValue(), StringEscapeUtils.escapeXml11(problemNames.get(e.getKey())));
         }
         pw.println("</challenge>");
 
-    }
-
-    public String getPath() {
-        return path;
     }
 
     public String getId() {
@@ -96,9 +91,5 @@ public class Challenge {
 
     public String getLanguage() {
         return language;
-    }
-
-    public TreeMap<String, Problem> getProblems() {
-        return problems;
     }
 }

@@ -1,6 +1,6 @@
 package pcms2;
 
-import polygon.ProblemDescriptor;
+import polygon.ProblemDirectory;
 import polygon.properties.PointsPolicy;
 
 import java.io.*;
@@ -25,7 +25,7 @@ public class Problem {
     Verifier verifier;
     Interactor interactor;
 
-    public Problem(ProblemDescriptor polygonProblem, String idprefix, Properties languageProps, Properties executableProps) {
+    public Problem(ProblemDirectory polygonProblem, String idprefix, Properties languageProps, Properties executableProps) {
         directory = polygonProblem.getDirectory();
         xmlFile = new File(directory, "problem.xml");
         id = getProblemId(idprefix, polygonProblem.getUrl(), polygonProblem.getShortName());
@@ -48,7 +48,7 @@ public class Problem {
         return idPrefix;
     }
 
-    public void parse(ProblemDescriptor polygonProblem, Properties languageProps, Properties executableProps) {
+    public void parse(ProblemDirectory polygonProblem, Properties languageProps, Properties executableProps) {
         shortName = polygonProblem.getShortName();
         System.out.println("importing problem '" + shortName + "'");
 
