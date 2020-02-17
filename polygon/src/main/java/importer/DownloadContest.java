@@ -1,6 +1,5 @@
 package importer;
 
-import org.apache.commons.io.FileUtils;
 import org.xml.sax.SAXException;
 import pcms2.Problem;
 import picocli.CommandLine.Command;
