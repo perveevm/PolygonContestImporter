@@ -49,41 +49,42 @@ public class ProblemDirectory extends ProblemDescriptor {
         if (groupsTxtFile == null) return;
         if (!testsets.containsKey("tests")) return;
 
-        BufferedReader br = new BufferedReader(new FileReader(groupsTxtFile));
-        Testset testset = testsets.get("tests");
-        if (testset.groups == null) {
-            testset.groups = new TreeMap<>();
-        }
-        boolean hasGroups = testset.groups.size() > 0;
-        String line;
-        while ((line = br.readLine()) != null) {
-            line = line.trim();
-            if (line.isEmpty()) continue;
-
-            String[] group_params = line.split("(\t;)|(\t)|(;)");
-            TreeMap<String, String> group_par = new TreeMap<>();
-            for (int ig = 0; ig < group_params.length; ig++) {
-                String[] kv = getKeyAndValue(group_params[ig]);
-                group_par.put(kv[0], kv[1]);
+        try (BufferedReader br = new BufferedReader(new FileReader(groupsTxtFile))) {
+            Testset testset = testsets.get("tests");
+            if (testset.groups == null) {
+                testset.groups = new TreeMap<>();
             }
+            boolean hasGroups = testset.groups.size() > 0;
+            String line;
+            while ((line = br.readLine()) != null) {
+                line = line.trim();
+                if (line.isEmpty()) continue;
 
-            if (!group_par.containsKey("group")) {
-                System.out.println("WARNING: Group id was not found! " +
-                        "Group parameters:'" + Arrays.toString(group_params) + "'. ");
-                continue;
-            }
+                String[] group_params = line.split("(\t;)|(\t)|(;)");
+                TreeMap<String, String> group_par = new TreeMap<>();
+                for (int ig = 0; ig < group_params.length; ig++) {
+                    String[] kv = getKeyAndValue(group_params[ig]);
+                    group_par.put(kv[0], kv[1]);
+                }
 
-            Group group = testset.groups.get(group_par.get("group"));
-            if (group == null) {
-                if (hasGroups) {
-                    System.out.printf("WARNING: It seems that there are no tests in group '%s', skipping\n", group_par.get("group"));
+                if (!group_par.containsKey("group")) {
+                    System.out.println("WARNING: Group id was not found! " +
+                            "Group parameters:'" + Arrays.toString(group_params) + "'. ");
                     continue;
                 }
-                group = new Group();
-                group.name = group_par.get("group");
-                testset.groups.put(group_par.get("group"), group);
+
+                Group group = testset.groups.get(group_par.get("group"));
+                if (group == null) {
+                    if (hasGroups) {
+                        System.out.printf("WARNING: It seems that there are no tests in group '%s', skipping\n", group_par.get("group"));
+                        continue;
+                    }
+                    group = new Group();
+                    group.name = group_par.get("group");
+                    testset.groups.put(group_par.get("group"), group);
+                }
+                group.parameters = group_par;
             }
-            group.parameters = group_par;
         }
     }
 
