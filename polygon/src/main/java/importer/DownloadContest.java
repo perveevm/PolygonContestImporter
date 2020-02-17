@@ -3,7 +3,6 @@ package importer;
 import org.apache.commons.io.FileUtils;
 import org.xml.sax.SAXException;
 import pcms2.Problem;
-import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Parameters;
 import polygon.ContestDescriptor;
@@ -12,9 +11,7 @@ import polygon.ProblemDescriptor;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
-import java.util.Map;
-import java.util.NavigableMap;
-import java.util.TreeMap;
+import java.util.*;
 
 import static picocli.CommandLine.*;
 
@@ -22,7 +19,7 @@ import static picocli.CommandLine.*;
 public class DownloadContest extends ImportContestAbstract {
     @Parameters(index = "2") String uid;
     @Option(names = "--download", description = "Defines download strategy: 'all' downloads all problem packages, " +
-            "'new' downloads only problem packages with different from vfs revision") String downloadStrategy;
+            "'new' downloads only problem packages with different from vfs revision") DownloadStrategy downloadStrategy;
 
     @Override
     protected void makeImport() throws IOException, ParserConfigurationException, SAXException {
@@ -39,7 +36,7 @@ public class DownloadContest extends ImportContestAbstract {
             throw new AssertionError("Couldn't create problems directory " + problemsDirectory.getAbsolutePath());
         }
         if (downloadStrategy == null) {
-            downloadStrategy = importProps.getProperty("download", "all");
+            downloadStrategy = DownloadStrategy.valueOf(importProps.getProperty("download", "new").toUpperCase());
         }
         ContestDescriptor contest = ContestDescriptor.parse(contestXMLFile);
         NavigableMap<String, ProblemDescriptor> contestProblems = new TreeMap<>();
@@ -49,7 +46,7 @@ public class DownloadContest extends ImportContestAbstract {
             String pname = url.substring(url.lastIndexOf("/") + 1);
             File problemDirectory = new File(problemsDirectory, pname);
             boolean download = true;
-            if (downloadStrategy.equals("new")) {
+            if (downloadStrategy == DownloadStrategy.NEW) {
                 File problemXmlFile = new File(problemDirectory, "problem.xml.polygon");
                 if (!downloader.downloadProblemXml(url, problemXmlFile)) {
                     throw new AssertionError("Couldn't download problem.xml by url '" + url + "'");

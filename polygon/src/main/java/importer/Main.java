@@ -27,6 +27,7 @@ public class Main implements Callable<Void> {
 
     public static void main(String[] args) {
         CommandLine commandLine = new CommandLine(new Main());
+        commandLine.setCaseInsensitiveEnumValuesAllowed(true);
         commandLine.setUsageHelpWidth(120);
         int exitCode = commandLine.execute(args);
         System.exit(exitCode);
