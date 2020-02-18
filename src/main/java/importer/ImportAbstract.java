@@ -4,6 +4,7 @@ import net.lingala.zip4j.exception.ZipException;
 import org.xml.sax.SAXException;
 import pcms2.Problem;
 import picocli.CommandLine.Option;
+import polygon.Checker;
 import polygon.ProblemDirectory;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -33,6 +34,7 @@ abstract class ImportAbstract implements Callable<Integer> {
     PackageDownloader downloader;
     TemporaryFileManager fileManager = new TemporaryFileManager();
     Asker asker;
+    boolean recompileCppChecker;
 
     static File readFileFromProperties(Properties props, String key) {
         String pathName = props.getProperty(key, null);
@@ -56,6 +58,7 @@ abstract class ImportAbstract implements Callable<Integer> {
             languageProps = load(getDefaultLanguageProperties(), "language.properties");
             executableProps = load(getDefaultExecutableProperties(), "executable.properties");
             downloader = new PackageDownloader(username, password);
+            recompileCppChecker = Boolean.parseBoolean(importProps.getProperty("recompileChecker", "false"));
             makeImport();
             return 0;
         } catch (Throwable e) {
@@ -88,7 +91,7 @@ abstract class ImportAbstract implements Callable<Integer> {
      */
     protected void importProblem(String problemIdPrefix, String folder, Asker asker) throws IOException, ParserConfigurationException, SAXException {
         Problem pi = new Problem(ProblemDirectory.parse(folder), problemIdPrefix, languageProps, executableProps);
-        generateTemporaryProblemXML(pi);
+        processProblem(pi);
         finalizeImportingProblem(pi, asker);
     }
 
@@ -98,7 +101,55 @@ abstract class ImportAbstract implements Callable<Integer> {
      * @param problem the problem to process
      * @throws IOException
      */
-    protected void generateTemporaryProblemXML(Problem problem) throws IOException {
+    protected void processProblem(Problem problem) throws IOException {
+        if (recompileCppChecker) {
+            Checker checker = problem.getPolygonProblem().getChecker();
+            if (System.getProperty("os.name").toLowerCase().startsWith("win")
+                    && checker.getType().equals("testlib") && checker.getSourceType().startsWith("cpp.g++")) {
+                String checkerSourceName = checker.getSource();
+                String checkerTmpExecutable = "__check.pcms.exe";
+                String checkerExecutable = checker.getBinaryPath();
+                ProcessBuilder processBuilder = new ProcessBuilder(
+                        "g++", "-o", checkerTmpExecutable, checkerSourceName,
+                        "-DPCMS2", "-O2", "-std=c++17", "-static", "-Ifiles");
+                System.out.println("INFO: Compiling checker " + processBuilder.command());
+                File probDir = problem.getDirectory();
+                processBuilder.directory(probDir);
+                processBuilder.inheritIO();
+                Process exec = processBuilder.start();
+                try {
+                    int exitCode = exec.waitFor();
+                    if (exitCode != 0) {
+                        System.out.println("WARNING: checker compilation failed, exit code " + exitCode);
+                    } else {
+                        File tmpFile = new File(probDir, checkerTmpExecutable);
+                        if (tmpFile.exists() && tmpFile.canRead() && tmpFile.canWrite()) {
+                            System.out.println("INFO: Checker compiled successfully");
+                            File checkExec = new File(probDir, checkerExecutable);
+                            File polygonCheckExec = new File(probDir, checkerExecutable + ".polygon");
+                            System.out.println("INFO: moving " + checkExec.getName() + " -> " + polygonCheckExec.getName());
+                            if (!checkExec.renameTo(polygonCheckExec)) {
+                                System.out.println("WARNING: old checker couldn't be moved");
+                            } else {
+                                System.out.println("INFO: moving " + tmpFile.getName() + " -> " + checkExec.getName());
+                                if (!tmpFile.renameTo(checkExec)) {
+                                    System.out.println("ERROR: new checker couldn't be moved");
+                                    throw new AssertionError("No checker for a problem");
+                                }
+                            }
+                        } else {
+                            System.out.println("WARNING: compilation succeeded, but checker binary" +
+                                    " doesn't exist or there are no rights");
+                        }
+                    }
+                } catch (InterruptedException e) {
+                    System.err.println("WARNING: the compilation was interrupted");
+                }
+            } else {
+                System.out.println("WARNING: checker compilation is supported only in Windows, " +
+                        "and only for testlib using g++ sources");
+            }
+        }
         problem.print(getTemporaryProblemXMLFile(problem));
     }
 

@@ -4,13 +4,11 @@ import pcms2.Challenge;
 import pcms2.Problem;
 import picocli.CommandLine.Parameters;
 import polygon.ContestDescriptor;
-import polygon.ContestXML;
 import polygon.ProblemDirectory;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
 import java.util.TreeMap;
@@ -30,7 +28,7 @@ public abstract class ImportContestAbstract extends ImportAbstract {
         NavigableMap<String, Problem> pcmsProblems = polygonProblems.entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, entry -> new Problem(entry.getValue(), challengeId, languageProps, executableProps), (x, y) -> y, TreeMap::new));
         for (Problem problem : pcmsProblems.values()) {
-            generateTemporaryProblemXML(problem);
+            processProblem(problem);
         }
 
         Asker copyToVfsAsker = asker.copyAsker();

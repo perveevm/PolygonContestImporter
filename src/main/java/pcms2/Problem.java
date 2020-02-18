@@ -25,7 +25,10 @@ public class Problem {
     Verifier verifier;
     Interactor interactor;
 
+    private final ProblemDirectory polygonProblem;
+
     public Problem(ProblemDirectory polygonProblem, String idprefix, Properties languageProps, Properties executableProps) {
+        this.polygonProblem = polygonProblem;
         directory = polygonProblem.getDirectory();
         xmlFile = new File(directory, "problem.xml");
         id = getProblemId(idprefix, polygonProblem.getUrl(), polygonProblem.getShortName());
@@ -243,5 +246,9 @@ public class Problem {
 
     public String getShortName() {
         return shortName;
+    }
+
+    public ProblemDirectory getPolygonProblem() {
+        return polygonProblem;
     }
 }
