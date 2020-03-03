@@ -6,8 +6,7 @@ import org.apache.commons.io.FileUtils;
 import pcms2.Challenge;
 import pcms2.Problem;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 
 public class Utils {
     public static int runDoAll(File probDir, boolean quiet) throws IOException {
@@ -110,5 +109,16 @@ public class Utils {
 
     static public File resolveProblemVfs(File vfs, String problemId) {
         return new File(vfs, "problems/" + problemId.replace(".", "/"));
+    }
+
+    static public boolean checkerQuitsPoints(File checker) throws IOException {
+        BufferedReader br = new BufferedReader(new FileReader(checker));
+        String line;
+        while ((line = br.readLine()) != null){
+            if (line.contains("_points") || line.contains("quitp")) {
+                return true;
+            }
+        }
+        return false;
     }
 }

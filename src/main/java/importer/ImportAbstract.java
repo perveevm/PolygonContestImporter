@@ -34,7 +34,7 @@ abstract class ImportAbstract implements Callable<Integer> {
     PackageDownloader downloader;
     TemporaryFileManager fileManager = new TemporaryFileManager();
     Asker asker;
-    boolean recompileCppChecker;
+    RecompileCheckerStrategy recompileCppChecker;
 
     static File readFileFromProperties(Properties props, String key) {
         String pathName = props.getProperty(key, null);
@@ -58,7 +58,8 @@ abstract class ImportAbstract implements Callable<Integer> {
             languageProps = load(getDefaultLanguageProperties(), "language.properties");
             executableProps = load(getDefaultExecutableProperties(), "executable.properties");
             downloader = new PackageDownloader(username, password);
-            recompileCppChecker = Boolean.parseBoolean(importProps.getProperty("recompileChecker", "false"));
+            recompileCppChecker = RecompileCheckerStrategy.valueOf(importProps.getProperty("recompileChecker", "never").toUpperCase());
+//            recompileCppChecker = Boolean.parseBoolean(importProps.getProperty("recompileChecker", "false"));
             makeImport();
             return 0;
         } catch (Throwable e) {
@@ -102,18 +103,21 @@ abstract class ImportAbstract implements Callable<Integer> {
      * @throws IOException
      */
     protected void processProblem(Problem problem) throws IOException {
-        if (recompileCppChecker) {
-            Checker checker = problem.getPolygonProblem().getChecker();
+        Checker checker = problem.getPolygonProblem().getChecker();
+        String checkerSourceName = checker.getSource();
+        File probDir = problem.getDirectory();
+        File checkerFile = new File(probDir, checkerSourceName);
+
+        if (recompileCppChecker == RecompileCheckerStrategy.ALWAYS ||
+                recompileCppChecker == RecompileCheckerStrategy.POINTS && Utils.checkerQuitsPoints(checkerFile)) {
             if (System.getProperty("os.name").toLowerCase().startsWith("win")
                     && checker.getType().equals("testlib") && checker.getSourceType().startsWith("cpp.g++")) {
-                String checkerSourceName = checker.getSource();
                 String checkerTmpExecutable = "__check.pcms.exe";
                 String checkerExecutable = checker.getBinaryPath();
                 ProcessBuilder processBuilder = new ProcessBuilder(
                         "g++", "-o", checkerTmpExecutable, checkerSourceName,
                         "-DPCMS2", "-O2", "-std=c++17", "-static", "-Ifiles");
                 System.out.println("INFO: Compiling checker " + processBuilder.command());
-                File probDir = problem.getDirectory();
                 processBuilder.directory(probDir);
                 processBuilder.inheritIO();
                 Process exec = processBuilder.start();
