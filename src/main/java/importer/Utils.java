@@ -7,6 +7,8 @@ import pcms2.Challenge;
 import pcms2.Problem;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.util.stream.Stream;
 
 public class Utils {
     public static int runDoAll(File probDir, boolean quiet) throws IOException {
@@ -112,13 +114,8 @@ public class Utils {
     }
 
     static public boolean checkerQuitsPoints(File checker) throws IOException {
-        BufferedReader br = new BufferedReader(new FileReader(checker));
-        String line;
-        while ((line = br.readLine()) != null){
-            if (line.contains("_points") || line.contains("quitp")) {
-                return true;
-            }
+        try (Stream<String> lines = Files.lines(checker.toPath())) {
+            return lines.anyMatch(line -> line.contains("_points") || line.contains("quitp"));
         }
-        return false;
     }
 }
