@@ -10,8 +10,8 @@ import java.util.Properties;
  * Created by Ilshat on 7/27/2016.
  */
 public class Attachment {
-    String href;
-    String languageId;
+    private final String href;
+    private final String languageId;
 
     private Attachment(String href, String languageId) {
         this.href = href;
@@ -20,8 +20,8 @@ public class Attachment {
 
     public void print(PrintWriter pw, String tabs){
         pw.println(tabs + "<attachment language-id=\"" + languageId + "\" href=\"" + href + "\"/>");
-
     }
+
     public static ArrayList<Attachment> parse(ArrayList<polygon.Attachment> attachments, Properties languagesProps, String shortName) {
         ArrayList<Attachment> result = new ArrayList<>();
         for (polygon.Attachment attachment : attachments) {
