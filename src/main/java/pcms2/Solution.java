@@ -1,29 +1,20 @@
 package pcms2;
 
-import java.io.PrintWriter;
+import org.apache.commons.io.FilenameUtils;
+
 import java.util.ArrayList;
-import java.util.Properties;
+import java.util.List;
 
 public class Solution {
-
-    String sourcePath;
-    String ext;
+    private final String sourcePath;
+    private final String extension;
 
     public Solution(String path) {
         sourcePath = path;
-        ext = path.substring(path.lastIndexOf(".") + 1);
+        extension = FilenameUtils.getExtension(FilenameUtils.getName(sourcePath));
     }
 
-    void print(PrintWriter pw, String sessionId, String problemAlias, Properties languageProperties, String problemPath) {
-        if (languageProperties.getProperty(ext) != null) {
-            String[] langs = languageProperties.getProperty(ext).split(",");
-            for (String lang : langs) {
-                pw.printf("%s %s %s 1s %s/%s\n", sessionId, problemAlias, lang, problemPath, sourcePath);
-            }
-        }
-    }
-
-    static ArrayList<Solution> parse(ArrayList<polygon.Solution> polygonSolutions) {
+    static ArrayList<Solution> parse(List<polygon.Solution> polygonSolutions) {
         if (polygonSolutions == null) return null;
 
         ArrayList<Solution> solutions = new ArrayList<>();

@@ -231,14 +231,6 @@ public class Problem {
         pw.println("</problem>");
     }
 
-    public void printSolutions(PrintWriter pw, String sessionId, String problemAlias, Properties languageProperties, String vfs) {
-        for (Solution sol : solutions) {
-            sol.print(pw, sessionId, problemAlias, languageProperties,
-                    vfs + "/problems/" + id.replace(".", "/"));
-        }
-    }
-
-
     public File getDirectory() {
         return directory;
     }

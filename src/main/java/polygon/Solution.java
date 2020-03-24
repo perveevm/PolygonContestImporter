@@ -4,11 +4,11 @@ import polygon.properties.SolutionTag;
 import xmlwrapper.XMLElement;
 
 public class Solution {
-    SolutionTag tag;
+    private final SolutionTag tag;
 
-    String sourcePath;
-    String sourceType;
-    String ext;
+    private final String sourcePath;
+    private final String sourceType;
+    private final String ext;
 
     public Solution(String tag, String path, String type) {
         this.tag = SolutionTag.parse(tag);

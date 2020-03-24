@@ -4,7 +4,9 @@ import pcms2.Challenge;
 import pcms2.Problem;
 import picocli.CommandLine.Parameters;
 import polygon.ContestDescriptor;
+import polygon.ProblemDescriptor;
 import polygon.ProblemDirectory;
+import polygon.Solution;
 
 import java.io.File;
 import java.io.IOException;
@@ -39,9 +41,18 @@ public abstract class ImportContestAbstract extends ImportAbstract {
         if (vfs != null) {
             File submitListFile = new File(contestDirectory, "submit.lst");
             try (PrintWriter submit = new PrintWriter(submitListFile)) {
-                for (Map.Entry<String, Problem> entry : pcmsProblems.entrySet()) {
-                    entry.getValue().printSolutions(submit, challenge.getId() + ".0",
-                            entry.getKey().toUpperCase(), languageProps, vfs.getAbsolutePath());
+                for (Map.Entry<String, ProblemDescriptor> entry : contest.getProblems().entrySet()) {
+                    ProblemDescriptor polygonProblem = entry.getValue();
+                    String problemId = Problem.getProblemId(challengeId, polygonProblem.getUrl(), polygonProblem.getShortName());
+                    String directory = vfs + "/problems/" + problemId.replace(".", "/");
+                    for (Solution sol : polygonProblem.getSolutions()) {
+                        String sourcePath = sol.getSourcePath();
+                        Utils.getLanguagesBySourcePath(sourcePath, languageProps).forEach(lang -> {
+                            String sessionId = challenge.getId() + ".0";
+                            String problemAlias = entry.getKey().toUpperCase();
+                            submit.printf("%s %s %s 1s %s/%s\n", sessionId, problemAlias, lang, directory, sourcePath);
+                        });
+                    }
                 }
             }
         }
