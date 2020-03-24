@@ -59,7 +59,6 @@ abstract class ImportAbstract implements Callable<Integer> {
             executableProps = load(getDefaultExecutableProperties(), "executable.properties");
             downloader = new PackageDownloader(username, password);
             recompileCppChecker = RecompileCheckerStrategy.valueOf(importProps.getProperty("recompileChecker", "never").toUpperCase());
-//            recompileCppChecker = Boolean.parseBoolean(importProps.getProperty("recompileChecker", "false"));
             makeImport();
             return 0;
         } catch (Throwable e) {

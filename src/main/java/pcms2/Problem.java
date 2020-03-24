@@ -48,24 +48,12 @@ public class Problem {
             }
             idPrefix = "com.codeforces.polygon." + cflogin;
         }
-        idPrefix = idPrefix + "." + shortName;
-        return idPrefix;
+        return idPrefix + "." + shortName;
     }
 
     private void parse(ProblemDirectory polygonProblem, Properties languageProps, Properties executableProps) {
         shortName = polygonProblem.getShortName();
         System.out.println("importing problem '" + shortName + "'");
-
-//        if (id.startsWith("com.codeforces.polygon") || id.equals("auto")) {
-//            String[] t = polygonProblem.getUrl().split("/");
-//            String cflogin = t[t.length - 2];
-//            if (cflogin.contains(".")) {
-//                System.out.println("WARNING: Problem owner login contains '.', replacing with '-'");
-//                cflogin = cflogin.replaceAll("\\.", "-");
-//            }
-//            id = "com.codeforces.polygon." + cflogin;
-//        }
-//        id = id + "." + shortName;
 
         //judging
         String input = polygonProblem.getInput();
