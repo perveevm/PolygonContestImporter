@@ -4,7 +4,7 @@ import polygon.ProblemDirectory;
 import polygon.properties.PointsPolicy;
 
 import java.io.*;
-import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 import java.util.TreeMap;
 
@@ -19,8 +19,8 @@ public class Problem {
     //testset name -> testset
     //possible testset names - preliminary, main
     TreeMap <String, Testset> testsets;
-    ArrayList<Attachment> attachments;
-    ArrayList<Solution> solutions;
+    List<Attachment> attachments;
+    List<Solution> solutions;
 
     Verifier verifier;
     Interactor interactor;
