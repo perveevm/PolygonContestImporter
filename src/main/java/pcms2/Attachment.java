@@ -1,11 +1,15 @@
 package pcms2;
 
 import org.apache.commons.io.FilenameUtils;
+import polygon.SolutionResource;
 
 import java.io.PrintWriter;
+import java.util.Arrays;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Properties;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Created by Ilshat on 7/27/2016.
@@ -21,6 +25,17 @@ public class Attachment {
 
     public void print(PrintWriter pw, String tabs){
         pw.println(tabs + "<attachment language-id=\"" + languageId + "\" href=\"" + href + "\"/>");
+    }
+
+    public static List<Attachment> parse(List<SolutionResource> resources, Properties languageProps) {
+        return resources.stream().flatMap(resource -> {
+            String ext = resource.getForTypes().split("\\.", 2)[0];
+            String languages = languageProps.getProperty(ext);
+            return languages == null ? Stream.empty() :
+                    Arrays.stream(languages.split(","))
+                            .map(String::trim)
+                            .map(lang -> new Attachment(resource.getPath(), lang));
+        }).collect(Collectors.toList());
     }
 
     public static List<Attachment> parse(List<polygon.Attachment> attachments, Properties languagesProps, String shortName) {

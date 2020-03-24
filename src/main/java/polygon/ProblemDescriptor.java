@@ -9,6 +9,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.TreeMap;
 
 public class ProblemDescriptor {
@@ -27,6 +28,7 @@ public class ProblemDescriptor {
     protected TreeMap<String, Testset> testsets;
     protected ArrayList<Attachment> attachments;
     protected ArrayList<Solution> solutions;
+    protected List<SolutionResource> solutionResources;
 
     protected ProblemDescriptor(File xmlFile) throws FileNotFoundException {
         if (!xmlFile.exists()) {
@@ -37,6 +39,7 @@ public class ProblemDescriptor {
         names = new TreeMap<>();
         attachments = new ArrayList<>();
         solutions = new ArrayList<>();
+        solutionResources = new ArrayList<>();
     }
 
     public static ProblemDescriptor parse(File xmlFile) throws IOException, ParserConfigurationException, SAXException {
@@ -76,6 +79,20 @@ public class ProblemDescriptor {
             for (XMLElement fileElement : attachmentsElement.findChildren("file")) {
                 Attachment attach = Attachment.parse(fileElement);
                 attachments.add(attach);
+            }
+        }
+
+        // resources, solution assets
+        XMLElement resourcesElement = problemElement.findFirstChild("files").findFirstChild("resources");
+        for (XMLElement fileElement : resourcesElement.findChildren("file")) {
+            XMLElement assets = fileElement.findFirstChild("assets");
+            if (assets.exists() && assets.findChildrenStream("asset")
+                                         .anyMatch(x -> "solution".equals(x.getAttribute("name")))) {
+                SolutionResource resource = new SolutionResource(
+                        fileElement.getAttribute("path"),
+                        fileElement.getAttribute("for-types"),
+                        fileElement.getAttribute("type"));
+                solutionResources.add(resource);
             }
         }
 
@@ -130,6 +147,10 @@ public class ProblemDescriptor {
 
     public Interactor getInteractor() {
         return interactor;
+    }
+
+    public List<SolutionResource> getSolutionResources() {
+        return solutionResources;
     }
 
 }

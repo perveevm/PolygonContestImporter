@@ -4,6 +4,7 @@ import polygon.ProblemDirectory;
 import polygon.properties.PointsPolicy;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.TreeMap;
@@ -51,7 +52,7 @@ public class Problem {
         return idPrefix;
     }
 
-    public void parse(ProblemDirectory polygonProblem, Properties languageProps, Properties executableProps) {
+    private void parse(ProblemDirectory polygonProblem, Properties languageProps, Properties executableProps) {
         shortName = polygonProblem.getShortName();
         System.out.println("importing problem '" + shortName + "'");
 
@@ -144,7 +145,9 @@ public class Problem {
         testsets.put("preliminary", preliminary);
 
         //files attachments
-        attachments = Attachment.parse(polygonProblem.getAttachments(), languageProps, shortName);
+        attachments = new ArrayList<>();
+        attachments.addAll(Attachment.parse(polygonProblem.getAttachments(), languageProps, shortName));
+        attachments.addAll(Attachment.parse(polygonProblem.getSolutionResources(), languageProps));
 
         //assets (checker)
         verifier = Verifier.parse(polygonProblem.getChecker(), executableProps);
