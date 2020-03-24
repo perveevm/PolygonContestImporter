@@ -3,6 +3,7 @@ package pcms2;
 import org.apache.commons.io.FilenameUtils;
 
 import java.io.PrintWriter;
+import java.util.List;
 import java.util.ArrayList;
 import java.util.Properties;
 
@@ -22,8 +23,8 @@ public class Attachment {
         pw.println(tabs + "<attachment language-id=\"" + languageId + "\" href=\"" + href + "\"/>");
     }
 
-    public static ArrayList<Attachment> parse(ArrayList<polygon.Attachment> attachments, Properties languagesProps, String shortName) {
-        ArrayList<Attachment> result = new ArrayList<>();
+    public static List<Attachment> parse(List<polygon.Attachment> attachments, Properties languagesProps, String shortName) {
+        List<Attachment> result = new ArrayList<>();
         for (polygon.Attachment attachment : attachments) {
             String atpath = attachment.getPath();
             String atname = FilenameUtils.getName(atpath);
