@@ -1,5 +1,8 @@
 package importer;
 
+import me.tongfei.progressbar.ProgressBar;
+import me.tongfei.progressbar.ProgressBarBuilder;
+import me.tongfei.progressbar.ProgressBarStyle;
 import org.apache.commons.io.FileUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.NameValuePair;
@@ -55,7 +58,14 @@ public class PackageDownloader {
             HttpEntity entity = response.getEntity();
             long fileSize = entity.getContentLength();
             System.out.println("Downloading file " + postRequest.getURI().toString() + " (" + fileSize + " bytes) -> " + destFile.getAbsolutePath());
-            FileUtils.copyInputStreamToFile(entity.getContent(), destFile);
+            ProgressBarBuilder pbb = new ProgressBarBuilder()
+                    .setInitialMax(fileSize)
+                    .showSpeed()
+                    .setTaskName(destFile.getName())
+                    .setStyle(ProgressBarStyle.ASCII)
+                    .setUpdateIntervalMillis(100)
+                    .setUnit("MiB", 1L << 20);
+            FileUtils.copyInputStreamToFile(ProgressBar.wrap(entity.getContent(), pbb), destFile);
             if (fileSize >= 0 && fileSize != destFile.length()) {
                 throw new AssertionError("Couldn't download file"); // TODO
             } else {
