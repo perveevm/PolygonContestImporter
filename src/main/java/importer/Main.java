@@ -14,7 +14,7 @@ import java.util.concurrent.Callable;
             DownloadContest.class
         },
         mixinStandardHelpOptions = true,
-        version = "PolygonContestImporter 1.2.3"
+        version = "PolygonContestImporter 1.2.4b"
 )
 public class Main implements Callable<Void> {
 

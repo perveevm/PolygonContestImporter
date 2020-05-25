@@ -10,10 +10,12 @@ import polygon.ProblemDirectory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Scanner;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 abstract class ImportAbstract implements Callable<Integer> {
 
@@ -23,6 +25,8 @@ abstract class ImportAbstract implements Callable<Integer> {
     String username;
     @Option(names = {"-p", "--password"}, description = "Polygon password", interactive = true)
     String password;
+    @Option(names = {"--import-props"}, description = "import.properties file path")
+    String importPropsPath;
 
     File vfs;
     Properties importProps;
@@ -45,7 +49,7 @@ abstract class ImportAbstract implements Callable<Integer> {
     public Integer call() {
         asker = new ScannerPrinterAsker(sysin, System.out, false, updateAll);
         try {
-            importProps = load(new Properties(), "import.properties");
+            importProps = loadPropertiesOrDefault(new Properties(), "import.properties", importPropsPath);
             vfs = readFileFromProperties(importProps, "vfs");
             webroot = readFileFromProperties(importProps, "webroot");
             if (username == null) {
@@ -55,8 +59,8 @@ abstract class ImportAbstract implements Callable<Integer> {
                 password = importProps.getProperty("polygonPassword", null);
             }
             defaultLanguage = importProps.getProperty("defaultLanguage", "english");
-            languageProps = load(getDefaultLanguageProperties(), "language.properties");
-            executableProps = load(getDefaultExecutableProperties(), "executable.properties");
+            languageProps = loadPropertiesOrDefault(getDefaultLanguageProperties(), "language.properties");
+            executableProps = loadPropertiesOrDefault(getDefaultExecutableProperties(), "executable.properties");
             downloader = new PackageDownloader(username, password);
             recompileCppChecker = RecompileCheckerStrategy.valueOf(importProps.getProperty("recompileChecker", "never").toUpperCase());
             makeImport();
@@ -181,18 +185,36 @@ abstract class ImportAbstract implements Callable<Integer> {
         return new File(problem.getDirectory(), "problem.xml.tmp");
     }
 
-    private static Properties load(Properties props, String fileName) throws IOException {
-        File propsFile;
-        String path = Main.class.getProtectionDomain().getCodeSource().getLocation().getPath();
-        path = path.substring(0, path.lastIndexOf("/") + 1) + fileName;
-        propsFile = new File(path);
-        if (!propsFile.exists()) {
-            propsFile = new File(fileName);
-        }
+    private static Properties loadPropertiesOrDefault(Properties defaultProps, String fileName, String... filesToTry) {
+        Stream<File> defaultFiles = Stream.of(getPropertiesDefault(fileName), new File(fileName));
+        Stream<File> filesToTryStream = Arrays.stream(filesToTry).filter(Objects::nonNull).map(File::new);
+        return Stream.concat(filesToTryStream, defaultFiles).map(file -> {
+            try {
+                return loadFile(file);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }).filter(Objects::nonNull).findFirst().orElse(defaultProps);
+    }
+
+    private static Properties loadFile(File file) throws IOException {
+        return !file.exists() ? null : loadPropertiesFromFile(file);
+    }
+
+    private static File getPropertiesDefaultDirectory() {
+        return new File(Main.class.getProtectionDomain().getCodeSource().getLocation().getPath());
+    }
+
+    private static File getPropertiesDefault(String fileName) {
+        return new File(getPropertiesDefaultDirectory(), fileName);
+    }
+
+    private static Properties loadPropertiesFromFile(File propsFile) throws IOException {
+        Properties props = new Properties();
         if (propsFile.exists()) {
-            InputStreamReader in = new InputStreamReader(new FileInputStream(propsFile), "UTF-8");
-            props.load(in);
-            in.close();
+            try (InputStreamReader in = new InputStreamReader(new FileInputStream(propsFile), "UTF-8")) {
+                props.load(in);
+            }
         }
         return props;
     }
