@@ -1,6 +1,7 @@
 package importer;
 
 import org.xml.sax.SAXException;
+import pcms2.Problem;
 import picocli.CommandLine.Parameters;
 import picocli.CommandLine.Command;
 import polygon.ContestDescriptor;
@@ -25,20 +26,21 @@ public class ImportChallenge extends ImportContestAbstract {
         File contestXMLFile = new File(contestDirectory, "contest.xml");
         ContestXML contest = ContestXML.parse(contestXMLFile);
         //problem index maps to problem
-        NavigableMap<String, ProblemDirectory> problems = new TreeMap<>();
+        NavigableMap<String, Problem> pcmsProblems = new TreeMap<>();
         NavigableMap<String, ProblemDescriptor> problemDescriptors = new TreeMap<>();
         for (Map.Entry<String, String> entry : contest.getProblemLinks().entrySet()) {
             String purl = entry.getValue();
             String index = entry.getKey();
             String pname = purl.substring(purl.lastIndexOf("/") + 1);
-            ProblemDirectory problem = ProblemDirectory.parse(new File(contestDirectory, "problems/" + pname).getAbsolutePath());
-            if (!problem.getUrl().equals(purl)) {
-                System.out.println("ERROR: Problem URL do not match! Contest problem = '" + purl + "' problems.xml = '" + problem.getUrl() + "'");
+            Problem pcmsProblem = converter.convertProblem(new File(contestDirectory, "problems/" + pname), challengeId, false);
+            ProblemDirectory polygonProblem = pcmsProblem.getPolygonProblem();
+            if (!polygonProblem.getUrl().equals(purl)) {
+                System.out.println("ERROR: Problem URL do not match! Contest problem = '" + purl + "' problems.xml = '" + polygonProblem.getUrl() + "'");
                 System.exit(1);
             }
-            problems.put(index, problem);
-            problemDescriptors.put(index, problem);
+            pcmsProblems.put(index, pcmsProblem);
+            problemDescriptors.put(index, polygonProblem);
         }
-        importContest(contestDirectory, new ContestDescriptor(contestXMLFile, problemDescriptors), problems);
+        importContest(contestDirectory, new ContestDescriptor(contestXMLFile, problemDescriptors), pcmsProblems);
     }
 }

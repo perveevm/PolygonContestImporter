@@ -1,4 +1,4 @@
-package importer;
+package converter;
 
 public enum RecompileCheckerStrategy {
     ALWAYS,

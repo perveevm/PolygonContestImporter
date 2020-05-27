@@ -8,45 +8,11 @@ import pcms2.Challenge;
 import pcms2.Problem;
 
 import java.io.*;
-import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Properties;
 import java.util.stream.Stream;
 
 public class Utils {
-    public static int runDoAll(File probDir, boolean quiet) throws IOException {
-        ProcessBuilder processBuilder = System.getProperty("os.name").toLowerCase().startsWith("win") ?
-                new ProcessBuilder("cmd", "/c", "doall.bat") :
-                new ProcessBuilder("/bin/bash", "-c", "find -name '*.sh' | xargs chmod +x && ./doall.sh");
-        processBuilder.directory(probDir);
-        if (!quiet) {
-            processBuilder.inheritIO();
-        }
-        Process exec = processBuilder.start();
-        try {
-            return exec.waitFor();
-        } catch (InterruptedException e) {
-            System.err.println("The process was interrupted");
-            return 130;
-        }
-    }
-
-    public static void archiveToDirectory(File zipFile, File probDir, boolean runDoAll) throws IOException, ZipException {
-
-        System.out.println("Unzipping " + zipFile.getAbsolutePath());
-        unzip(zipFile, probDir);
-
-        System.out.println("Problem downloaded to " + probDir.getAbsolutePath());
-        if (runDoAll) {
-            System.out.println("Standard package, initiating test generation");
-            int exitCode = Utils.runDoAll(probDir, false);
-            if (exitCode != 0) {
-                throw new AssertionError("doall failed with exit code " + exitCode);
-            } else {
-                System.out.println("Tests generated successfully in " + probDir.getAbsolutePath());
-            }
-        }
-    }
 
     static public void unzip(File zipFile, File probDir) throws ZipException {
         new ZipFile(zipFile).extractAll(probDir.getAbsolutePath());
@@ -114,12 +80,6 @@ public class Utils {
 
     static public File resolveProblemVfs(File vfs, String problemId) {
         return new File(vfs, "problems/" + problemId.replace(".", "/"));
-    }
-
-    static public boolean checkerQuitsPoints(File checker) throws IOException {
-        try (Stream<String> lines = Files.lines(checker.toPath())) {
-            return lines.anyMatch(line -> line.contains("_points") || line.contains("quitp"));
-        }
     }
 
     static public Stream<String> getLanguagesBySourcePath(String sourcePath, Properties langProperties) {

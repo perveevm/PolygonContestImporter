@@ -23,21 +23,14 @@ public abstract class ImportContestAbstract extends ImportAbstract {
                     "and 'com.codeforces.polygon.{problem owner}.{problem short name}' for problem-id"}) String challengeId;
     @Parameters(index = "1", paramLabel = "<type>", description = "Use ioi or icpc") String challengeType;
 
-    protected void importContest(File contestDirectory, ContestDescriptor contest, NavigableMap<String, ProblemDirectory> polygonProblems) throws IOException {
-        Challenge challenge = new Challenge(contest, challengeId, challengeType, defaultLanguage);
-        challenge.print(new File(contestDirectory, "challenge.xml"));
-
-        NavigableMap<String, Problem> pcmsProblems = polygonProblems.entrySet().stream()
-                .collect(Collectors.toMap(Map.Entry::getKey, entry -> new Problem(entry.getValue(), challengeId, languageProps, executableProps), (x, y) -> y, TreeMap::new));
-        for (Problem problem : pcmsProblems.values()) {
-            processProblem(problem);
-        }
-
+    protected void importContest(File contestDirectory, ContestDescriptor contest, NavigableMap<String, Problem> pcmsProblems) throws IOException {
         Asker copyToVfsAsker = asker.copyAsker();
         copyToVfsAsker.setAskForAll(true);
         for (Problem problem : pcmsProblems.values()) {
-            finalizeImportingProblem(problem, copyToVfsAsker);
+            copyProblemToVfs(problem, copyToVfsAsker);
         }
+        Challenge challenge = new Challenge(contest, challengeId, challengeType, defaultLanguage);
+        challenge.print(new File(contestDirectory, "challenge.xml"));
         if (vfs != null) {
             File submitListFile = new File(contestDirectory, "submit.lst");
             try (PrintWriter submit = new PrintWriter(submitListFile)) {

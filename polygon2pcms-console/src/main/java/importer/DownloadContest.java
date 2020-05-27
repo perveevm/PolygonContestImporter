@@ -1,5 +1,6 @@
 package importer;
 
+import importer.properties.PolygonPackageType;
 import org.xml.sax.SAXException;
 import pcms2.Problem;
 import picocli.CommandLine.Command;
@@ -40,8 +41,8 @@ public class DownloadContest extends ImportContestAbstract {
             downloadStrategy = DownloadStrategy.valueOf(importProps.getProperty("download", "new").toUpperCase());
         }
         ContestXML contestXML = ContestXML.parse(contestXMLFile);
-        NavigableMap<String, ProblemDirectory> problemDirs = new TreeMap<>();
         NavigableMap<String, ProblemDescriptor> problemDescriptors = new TreeMap<>();
+        NavigableMap<String, Problem> pcmsProblems = new TreeMap<>();
         for (Map.Entry<String, String> entry : contestXML.getProblemLinks().entrySet()) {
             String index = entry.getKey();
             String url = entry.getValue();
@@ -71,10 +72,10 @@ public class DownloadContest extends ImportContestAbstract {
             }
             if (download) {
                 File problemDirectory = new File(problemsDirectory, pname);
-                downloadProblemDirectory(url, problemDirectory);
-                ProblemDirectory problem = ProblemDirectory.parse(problemDirectory.getAbsolutePath());
-                problemDirs.put(index, problem);
-                problemDescriptors.put(index, problem);
+                PolygonPackageType packageType = downloadProblemDirectory(url, problemDirectory);
+                Problem pcmsProblem = converter.convertProblem(problemDirectory, challengeId, packageType == PolygonPackageType.STANDARD);
+                pcmsProblems.put(index, pcmsProblem);
+                problemDescriptors.put(index, pcmsProblem.getPolygonProblem());
             } else {
                 problemDescriptors.put(index, newProblemDescriptor);
             }
@@ -91,7 +92,7 @@ public class DownloadContest extends ImportContestAbstract {
             File statementFile = new File(languageDirectory, "statements.pdf");
             downloader.downloadByURL(entry.getValue(), statementFile);
         }
-        importContest(contestDirectory, new ContestDescriptor(contestXMLFile, problemDescriptors), problemDirs);
+        importContest(contestDirectory, new ContestDescriptor(contestXMLFile, problemDescriptors), pcmsProblems);
     }
 
 }

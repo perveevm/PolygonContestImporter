@@ -1,16 +1,13 @@
 package pcms2;
 
 import polygon.ContestDescriptor;
-import polygon.ContestXML;
 
 import java.io.*;
 import java.util.Map;
 import java.util.NavigableMap;
-import java.util.Properties;
 import java.util.TreeMap;
 import org.apache.commons.text.StringEscapeUtils;
 import polygon.ProblemDescriptor;
-import polygon.ProblemDirectory;
 
 /**
  * Created by Ilshat on 11/24/2015.
