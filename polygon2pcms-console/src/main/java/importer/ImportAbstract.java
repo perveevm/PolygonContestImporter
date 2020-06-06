@@ -28,12 +28,13 @@ abstract class ImportAbstract implements Callable<Integer> {
     String password;
     @Option(names = {"--import-props"}, description = "import.properties file path")
     String importPropsPath;
+    @Option(names = {"--language"}, description = "Language for problem names and problem statements")
+    String defaultLanguage;
 
     File vfs;
     Properties importProps;
     Properties languageProps;
     Properties executableProps;
-    String defaultLanguage;
     File webroot;
     Scanner sysin = new Scanner(System.in);
     PackageDownloader downloader;
@@ -59,7 +60,9 @@ abstract class ImportAbstract implements Callable<Integer> {
             if (password == null) {
                 password = importProps.getProperty("polygonPassword", null);
             }
-            defaultLanguage = importProps.getProperty("defaultLanguage", "english");
+            if (defaultLanguage == null) {
+                defaultLanguage = importProps.getProperty("defaultLanguage", "english");
+            }
             languageProps = loadPropertiesOrDefault(getDefaultLanguageProperties(), "language.properties");
             executableProps = loadPropertiesOrDefault(getDefaultExecutableProperties(), "executable.properties");
             downloader = new PackageDownloader(username, password);
