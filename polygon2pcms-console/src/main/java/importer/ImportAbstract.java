@@ -119,7 +119,7 @@ abstract class ImportAbstract implements Callable<Integer> {
     }
 
     private static File getPropertiesDefaultDirectory() {
-        return new File(Main.class.getProtectionDomain().getCodeSource().getLocation().getPath());
+        return new File(Main.class.getProtectionDomain().getCodeSource().getLocation().getPath()).getParentFile();
     }
 
     private static File getPropertiesDefault(String fileName) {
