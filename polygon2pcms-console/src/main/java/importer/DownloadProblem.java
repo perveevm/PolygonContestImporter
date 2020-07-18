@@ -1,6 +1,6 @@
 package importer;
 
-import importer.properties.PolygonPackageType;
+import polygon.download.PolygonPackageType;
 import org.xml.sax.SAXException;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Parameters;
@@ -15,7 +15,7 @@ public class DownloadProblem extends ImportProblemAbstract {
     @Override
     protected void makeImport() throws IOException, ParserConfigurationException, SAXException {
         File probDir = fileManager.createTemporaryDirectory("__problem");
-        PolygonPackageType packageType = downloadProblemDirectory(polygonUrl, probDir);
+        PolygonPackageType packageType = downloader.downloadProblemDirectory(polygonUrl, probDir, fileManager);
         convertAndCopy(problemIdPrefix, probDir, asker, packageType == PolygonPackageType.STANDARD);
     }
 }

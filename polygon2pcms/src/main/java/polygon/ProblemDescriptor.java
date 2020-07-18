@@ -4,16 +4,13 @@ import org.xml.sax.SAXException;
 import xmlwrapper.XMLElement;
 
 import javax.xml.parsers.ParserConfigurationException;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.TreeMap;
 
 public class ProblemDescriptor {
-    protected File xmlFile;
     protected String shortName;
     protected int revision;
     protected String url;
@@ -30,11 +27,7 @@ public class ProblemDescriptor {
     protected ArrayList<Solution> solutions;
     protected List<SolutionResource> solutionResources;
 
-    protected ProblemDescriptor(File xmlFile) throws FileNotFoundException {
-        if (!xmlFile.exists()) {
-            throw new FileNotFoundException("ERROR: Couldn't find directory or file '" + xmlFile + "'");
-        }
-        this.xmlFile = xmlFile;
+    protected ProblemDescriptor() {
         testsets = new TreeMap<>();
         names = new TreeMap<>();
         attachments = new ArrayList<>();
@@ -43,13 +36,28 @@ public class ProblemDescriptor {
     }
 
     public static ProblemDescriptor parse(File xmlFile) throws IOException, ParserConfigurationException, SAXException {
-        ProblemDescriptor p = new ProblemDescriptor(xmlFile);
-        p.parseDescriptor();
+        ProblemDescriptor p = new ProblemDescriptor();
+        p.parseDescriptor(xmlFile);
         return p;
     }
 
-    protected void parseDescriptor() throws IOException, SAXException, ParserConfigurationException {
-        XMLElement problemElement = XMLElement.getRoot(xmlFile);
+    public static ProblemDescriptor parse(InputStream stream) throws ParserConfigurationException, SAXException, IOException {
+        ProblemDescriptor p = new ProblemDescriptor();
+        p.parseDescriptor(stream);
+        return p;
+    }
+
+    protected void parseDescriptor(File xmlFile) throws IOException, SAXException, ParserConfigurationException {
+        if (!xmlFile.exists()) {
+            throw new FileNotFoundException("ERROR: Couldn't find directory or file '" + xmlFile + "'");
+        }
+        try (FileInputStream stream = new FileInputStream(xmlFile)) {
+            parseDescriptor(stream);
+        }
+    }
+
+    protected void parseDescriptor(InputStream stream) throws IOException, SAXException, ParserConfigurationException {
+        XMLElement problemElement = XMLElement.getRoot(stream);
 
         shortName = problemElement.getAttribute("short-name");
         revision = Integer.parseInt(problemElement.getAttribute("revision"));
@@ -87,7 +95,7 @@ public class ProblemDescriptor {
         for (XMLElement fileElement : resourcesElement.findChildren("file")) {
             XMLElement assets = fileElement.findFirstChild("assets");
             if (assets.exists() && assets.findChildrenStream("asset")
-                                         .anyMatch(x -> "solution".equals(x.getAttribute("name")))) {
+                    .anyMatch(x -> "solution".equals(x.getAttribute("name")))) {
                 SolutionResource resource = new SolutionResource(
                         fileElement.getAttribute("path"),
                         fileElement.getAttribute("for-types"),
@@ -103,6 +111,7 @@ public class ProblemDescriptor {
         interactor = Interactor.parse(assetsElement.findFirstChild("interactor"));
         //assets (solutions)
         solutions.addAll(Arrays.asList(Solution.parse(assetsElement.findFirstChild("solutions"))));
+
     }
 
     public String getShortName() {

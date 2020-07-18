@@ -2,11 +2,13 @@ package importer;
 
 import converter.Converter;
 import converter.RecompileCheckerStrategy;
-import importer.properties.PolygonPackageType;
-import net.lingala.zip4j.exception.ZipException;
+import pcms2.deployer.Deployer;
 import org.xml.sax.SAXException;
+import pcms2.deployer.DeployerConfig;
 import pcms2.Problem;
 import picocli.CommandLine.Option;
+import polygon.download.PackageDownloader;
+import tempfilemanager.TemporaryFileManager;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
@@ -41,6 +43,7 @@ abstract class ImportAbstract implements Callable<Integer> {
     TemporaryFileManager fileManager = new TemporaryFileManager();
     Asker asker;
     Converter converter;
+    Deployer deployer;
 
     static File readFileFromProperties(Properties props, String key) {
         String pathName = props.getProperty(key, null);
@@ -67,7 +70,8 @@ abstract class ImportAbstract implements Callable<Integer> {
             executableProps = loadPropertiesOrDefault(getDefaultExecutableProperties(), "executable.properties");
             downloader = new PackageDownloader(username, password);
             converter = new Converter(RecompileCheckerStrategy.valueOf(importProps.getProperty("recompileChecker", "never").toUpperCase()),
-                                      languageProps, executableProps);
+                                      languageProps, executableProps, System.out);
+            deployer = new Deployer(vfs, webroot, System.out);
             makeImport();
             return 0;
         } catch (Throwable e) {
@@ -92,13 +96,13 @@ abstract class ImportAbstract implements Callable<Integer> {
      * Copies problem to PCMS2 VFS
      *
      * @param problem the problem to process
-     * @param asker   an object that handles user interaction to confirm actions
+     * @param config   an object that handles user interaction to confirm actions
      * @return true, if update all was requested by user
      * @throws IOException
      */
-    protected void copyProblemToVfs(Problem problem, Asker asker) throws IOException {
+    protected void copyProblemToVfs(Problem problem, DeployerConfig config) throws IOException {
         if (vfs != null) {
-            Utils.copyToVFS(problem, vfs, asker);
+            deployer.copyToVFS(problem, config);
         }
     }
 
@@ -152,30 +156,5 @@ abstract class ImportAbstract implements Callable<Integer> {
         p.put("jar7", "java.check");
         p.put("jar8", "java.check");
         return p;
-    }
-
-    protected PolygonPackageType downloadProblemDirectory(String polygonUrl, File probDir) throws IOException {
-        try {
-            File zipFile = fileManager.createTemporaryFile("__archive", ".zip");
-            PolygonPackageType fullPackage = downloadProblemPackage(polygonUrl, zipFile);
-            Utils.unzip(zipFile, probDir);
-            fileManager.remove(zipFile);
-            return fullPackage;
-        } catch (ZipException e) {
-            throw new AssertionError(e);
-        }
-    }
-
-    private PolygonPackageType downloadProblemPackage(String polygonUrl, File zipFile) throws IOException {
-        if (username == null || password == null) {
-            throw new AssertionError("Polygon username or password is not set");
-        }
-        if (downloader.downloadPackage(polygonUrl, "windows", zipFile)) {
-            return PolygonPackageType.WINDOWS;
-        }
-        if (downloader.downloadPackage(polygonUrl, null, zipFile)) {
-            return PolygonPackageType.STANDARD;
-        }
-        throw new AssertionError("Couldn't download any package");
     }
 }

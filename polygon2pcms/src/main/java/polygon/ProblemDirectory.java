@@ -29,8 +29,7 @@ public class ProblemDirectory extends ProblemDescriptor {
         return xmlFile;
     }
 
-    private ProblemDirectory(String path) throws FileNotFoundException {
-        super(findProblemXML(path));
+    private ProblemDirectory(String path) {
         directory = new File(path);
         groupsTxtFile = new File(path + "/files/groups.txt");
         if (!groupsTxtFile.exists()) {
@@ -40,7 +39,7 @@ public class ProblemDirectory extends ProblemDescriptor {
 
     public static ProblemDirectory parse(String path) throws ParserConfigurationException, IOException, SAXException {
         ProblemDirectory problem = new ProblemDirectory(path);
-        problem.parseDescriptor();
+        problem.parseDescriptor(findProblemXML(path));
         problem.parseGroupsTxt();
         return problem;
     }

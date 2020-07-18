@@ -1,6 +1,6 @@
 package importer;
 
-import importer.properties.PolygonPackageType;
+import polygon.download.PolygonPackageType;
 import org.xml.sax.SAXException;
 import pcms2.Problem;
 import picocli.CommandLine.Command;
@@ -57,14 +57,9 @@ public class DownloadContest extends ImportContestAbstract {
                 newProblemDescriptor = ProblemDescriptor.parse(problemXmlFile);
                 fileManager.remove(problemXmlFile);
                 String problemId = Problem.getProblemId(challengeId, newProblemDescriptor.getUrl(), newProblemDescriptor.getShortName());
-                File vfsXml = new File(Utils.resolveProblemVfs(vfs, problemId), ProblemDirectory.POLYGON_XML_NAME);
-                try {
-                    ProblemDescriptor problemDescriptorVfs = ProblemDescriptor.parse(vfsXml);
-                    if (newProblemDescriptor.getRevision() == problemDescriptorVfs.getRevision()) {
-                        download = false;
-                        System.out.println("INFO: VFS revision is same, skipping package download");
-                    }
-                } catch (Exception ignored) {
+                if (newProblemDescriptor.getRevision() == deployer.getVfsProblemRevision(problemId)) {
+                    download = false;
+                    System.out.println("INFO: VFS revision is same, skipping package download");
                 }
                 if (download) {
                     System.out.println("INFO: VFS revision is different, downloading package");
@@ -72,7 +67,7 @@ public class DownloadContest extends ImportContestAbstract {
             }
             if (download) {
                 File problemDirectory = new File(problemsDirectory, pname);
-                PolygonPackageType packageType = downloadProblemDirectory(url, problemDirectory);
+                PolygonPackageType packageType = downloader.downloadProblemDirectory(url, problemDirectory, fileManager);
                 Problem pcmsProblem = converter.convertProblem(problemDirectory, challengeId, packageType == PolygonPackageType.STANDARD);
                 pcmsProblems.put(index, pcmsProblem);
                 problemDescriptors.put(index, pcmsProblem.getPolygonProblem());

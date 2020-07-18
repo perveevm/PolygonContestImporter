@@ -1,11 +1,11 @@
 package importer;
 
+import pcms2.deployer.DeployerConfig;
 import pcms2.Challenge;
 import pcms2.Problem;
 import picocli.CommandLine.Parameters;
 import polygon.ContestDescriptor;
 import polygon.ProblemDescriptor;
-import polygon.ProblemDirectory;
 import polygon.Solution;
 
 import java.io.File;
@@ -13,8 +13,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Map;
 import java.util.NavigableMap;
-import java.util.TreeMap;
-import java.util.stream.Collectors;
 
 public abstract class ImportContestAbstract extends ImportAbstract {
     @Parameters(index = "0", paramLabel = "<challenge-id>",
@@ -26,11 +24,18 @@ public abstract class ImportContestAbstract extends ImportAbstract {
     protected void importContest(File contestDirectory, ContestDescriptor contest, NavigableMap<String, Problem> pcmsProblems) throws IOException {
         Asker copyToVfsAsker = asker.copyAsker();
         copyToVfsAsker.setAskForAll(true);
+        DeployerConfig copyToVfsConfig = new DeployConfigAsker(copyToVfsAsker);
         for (Problem problem : pcmsProblems.values()) {
-            copyProblemToVfs(problem, copyToVfsAsker);
+            copyProblemToVfs(problem, copyToVfsConfig);
         }
+
         Challenge challenge = new Challenge(contest, challengeId, challengeType, defaultLanguage);
-        challenge.print(new File(contestDirectory, "challenge.xml"));
+        File challengeXMLFile = new File(contestDirectory, "challenge.xml");
+        challenge.print(challengeXMLFile);
+        if (vfs != null) {
+            deployer.deployChallengeXML(challengeXMLFile, challenge.getId(), copyToVfsConfig);
+        }
+
         if (vfs != null) {
             File submitListFile = new File(contestDirectory, "submit.lst");
             try (PrintWriter submit = new PrintWriter(submitListFile)) {
@@ -48,14 +53,11 @@ public abstract class ImportContestAbstract extends ImportAbstract {
                     }
                 }
             }
-        }
-
-        if (vfs != null) {
-            Utils.copyToVFS(contestDirectory, challenge, vfs, copyToVfsAsker);
+            deployer.deploySubmitLst(submitListFile, challenge.getId(), copyToVfsConfig);
         }
 
         if (webroot != null) {
-            Utils.copyToWEB(contestDirectory, challenge, webroot, asker);
+            deployer.copyToWEB(contestDirectory, challenge, new DeployConfigAsker(asker));
         }
 
         System.out.println("Contest directory: " + contestDirectory.getAbsolutePath());

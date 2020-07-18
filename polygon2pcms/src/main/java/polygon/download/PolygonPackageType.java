@@ -1,4 +1,4 @@
-package importer.properties;
+package polygon.download;
 
 public enum PolygonPackageType {
     STANDARD,

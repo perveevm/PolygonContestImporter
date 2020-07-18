@@ -10,7 +10,9 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -18,9 +20,13 @@ public class XMLElement {
     private final Element element;
 
     public static XMLElement getRoot(File xmlFile) throws ParserConfigurationException, IOException, SAXException {
+        return getRoot(new FileInputStream(xmlFile));
+    }
+
+    public static XMLElement getRoot(InputStream inputStream) throws ParserConfigurationException, IOException, SAXException {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder = factory.newDocumentBuilder();
-        Document document = builder.parse(xmlFile);
+        Document document = builder.parse(inputStream);
         return new XMLElement(document.getDocumentElement());
     }
 

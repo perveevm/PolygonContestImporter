@@ -5,7 +5,9 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.NavigableMap;
+import java.util.function.Function;
 
 public class ContestDescriptor extends ContestXML {
     protected NavigableMap<String, ProblemDescriptor> problems;
@@ -13,7 +15,13 @@ public class ContestDescriptor extends ContestXML {
     public ContestDescriptor(File xmlFile, NavigableMap<String, ProblemDescriptor> problems) throws IOException, SAXException, ParserConfigurationException {
         super(xmlFile);
         this.problems = problems;
-        parseXML();
+    }
+
+    public ContestDescriptor(InputStream stream,
+                             Function<ContestXML, NavigableMap<String, ProblemDescriptor>> getProblems)
+            throws IOException, SAXException, ParserConfigurationException {
+        super(stream);
+        this.problems = getProblems.apply(this);
     }
 
     public NavigableMap<String, ProblemDescriptor> getProblems() {

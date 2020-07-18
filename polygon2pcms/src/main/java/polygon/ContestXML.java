@@ -4,14 +4,11 @@ import org.xml.sax.SAXException;
 import xmlwrapper.XMLElement;
 
 import javax.xml.parsers.ParserConfigurationException;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.util.NavigableMap;
 import java.util.TreeMap;
 
 public class ContestXML {
-    protected File xmlFile;
-
     protected String url;
     //language -> name
     protected NavigableMap<String, String> contestNames;
@@ -20,19 +17,12 @@ public class ContestXML {
     // language -> statement link
     protected NavigableMap<String, String> statementLinks;
 
-    protected ContestXML(File xmlFile) throws ParserConfigurationException, SAXException, IOException {
-        this.xmlFile = xmlFile;
+    protected ContestXML(File xmlFile) throws IOException, SAXException, ParserConfigurationException {
+        this(new FileInputStream(xmlFile));
     }
 
-    public static ContestXML parse(File xmlFile) throws ParserConfigurationException, IOException, SAXException {
-        System.out.println("parsing contest.xml ...");
-        ContestXML contestXML = new ContestXML(xmlFile);
-        contestXML.parseXML();
-        return contestXML;
-    }
-
-    protected void parseXML() throws IOException, SAXException, ParserConfigurationException {
-        XMLElement contestElement = XMLElement.getRoot(xmlFile);
+    protected ContestXML(InputStream inputStream) throws ParserConfigurationException, SAXException, IOException {
+        XMLElement contestElement = XMLElement.getRoot(inputStream);
 
         url = contestElement.getAttribute("url");
 
@@ -53,6 +43,14 @@ public class ContestXML {
         for (XMLElement problemElement : contestElement.findFirstChild("problems").findChildren("problem")) {
             problemLinks.put(problemElement.getAttribute("index"), problemElement.getAttribute("url"));
         }
+    }
+
+    public static ContestXML parse(File xmlFile) throws ParserConfigurationException, IOException, SAXException {
+        return ContestXML.parse(new FileInputStream(xmlFile));
+    }
+
+    public static ContestXML parse(InputStream inputStream) throws ParserConfigurationException, SAXException, IOException {
+        return new ContestXML(inputStream);
     }
 
     public String getUrl() {

@@ -25,6 +25,6 @@ public abstract class ImportProblemAbstract extends ImportAbstract {
      */
     protected void convertAndCopy(String problemIdPrefix, File folder, Asker asker, boolean runDoAll) throws IOException, ParserConfigurationException, SAXException {
         Problem pi = converter.convertProblem(folder, problemIdPrefix, runDoAll);
-        copyProblemToVfs(pi, asker);
+        copyProblemToVfs(pi, new DeployConfigAsker(asker));
     }
 }
