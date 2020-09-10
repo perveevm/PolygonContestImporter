@@ -114,7 +114,7 @@ public class Testset {
         pw.println(tabs + "</testset>");
     }
 
-    public static Testset parse(polygon.Testset polygonTestset, String input, String output) {
+    public static Testset parse(polygon.Testset polygonTestset, String input, String output, double multiplier) {
         //System.out.println("DEBUG: testsets cnt = " + nl.getLength() + " i = " + i);
         Testset ts = new Testset();
 
@@ -126,7 +126,7 @@ public class Testset {
         }
         ts.inputName = input;
         ts.outputName = output;
-        ts.timeLimit = polygonTestset.getTimeLimit() / 1000;
+        ts.timeLimit = polygonTestset.getTimeLimit() / 1000 * multiplier;
         ts.memoryLimit = polygonTestset.getMemoryLimit();
         int tc = polygonTestset.getTestCount();
         ts.inputHref = formatHref(polygonTestset.getInputPathPattern());

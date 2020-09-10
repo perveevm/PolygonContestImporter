@@ -28,7 +28,7 @@ public abstract class ImportContestAbstract extends ImportAbstract {
         challenge.print(new File(contestDirectory, "challenge.xml"));
 
         NavigableMap<String, Problem> pcmsProblems = polygonProblems.entrySet().stream()
-                .collect(Collectors.toMap(Map.Entry::getKey, entry -> new Problem(entry.getValue(), challengeId, languageProps, executableProps), (x, y) -> y, TreeMap::new));
+                .collect(Collectors.toMap(Map.Entry::getKey, entry -> new Problem(entry.getValue(), challengeId, languageProps, executableProps, importProps), (x, y) -> y, TreeMap::new));
         for (Problem problem : pcmsProblems.values()) {
             processProblem(problem);
         }

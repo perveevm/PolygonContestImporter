@@ -90,7 +90,7 @@ abstract class ImportAbstract implements Callable<Integer> {
      * @throws SAXException
      */
     protected void importProblem(String problemIdPrefix, String folder, Asker asker) throws IOException, ParserConfigurationException, SAXException {
-        Problem pi = new Problem(ProblemDirectory.parse(folder), problemIdPrefix, languageProps, executableProps);
+        Problem pi = new Problem(ProblemDirectory.parse(folder), problemIdPrefix, languageProps, executableProps, importProps);
         processProblem(pi);
         finalizeImportingProblem(pi, asker);
     }
