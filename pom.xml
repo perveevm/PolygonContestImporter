@@ -11,7 +11,6 @@
     <modules>
         <module>polygon2pcms</module>
         <module>polygon2pcms-console</module>
-        <module>polygon2pcms-web</module>
     </modules>
 
     <properties>
