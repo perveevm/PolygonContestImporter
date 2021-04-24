@@ -179,6 +179,10 @@ public class Testset {
         if (polGroups != null) {
             for (polygon.Group polGroup : polGroups.values()) {
 //                System.out.println("DEBUG: " + polGroup.getName());
+                if (!ts.groupNameToId.containsKey(polGroup.getName())) {
+                    System.out.printf("WARNING: No tests in group '%s'!\n", polGroup.getName());
+                    continue;
+                }
                 int index = ts.groupNameToId.get(polGroup.getName());
                 Group other = ts.groups.get(index - 1);
                 Group group = Group.parse(polGroup, ts.groupNameToId, other.hasSampleTests, other.first, other.last);
