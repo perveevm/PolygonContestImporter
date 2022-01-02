@@ -115,7 +115,7 @@ abstract class ImportAbstract implements Callable<Integer> {
                 String checkerExecutable = checker.getBinaryPath();
                 ProcessBuilder processBuilder = new ProcessBuilder(
                         "g++", "-o", checkerTmpExecutable, checkerSourceName,
-                        "-DPCMS2", "-O2", "-std=c++17", "-static", "-Ifiles");
+                        "-DPCMS2", "-O2", "-std=c++17", "-static", "-Ifiles", "-Wl,--stack=2560000000");
                 System.out.println("INFO: Compiling checker " + processBuilder.command());
                 processBuilder.directory(probDir);
                 processBuilder.inheritIO();
