@@ -28,14 +28,14 @@ public class Problem {
 
     private final ProblemDirectory polygonProblem;
 
-    public Problem(ProblemDirectory polygonProblem, String idprefix, Properties languageProps, Properties executableProps) {
+    public Problem(ProblemDirectory polygonProblem, String idprefix, Properties languageProps, Properties executableProps, Properties importProps) {
         this.polygonProblem = polygonProblem;
         directory = polygonProblem.getDirectory();
         xmlFile = new File(directory, "problem.xml");
         id = getProblemId(idprefix, polygonProblem.getUrl(), polygonProblem.getShortName());
         testsets = new TreeMap<>();
 
-        parse(polygonProblem, languageProps, executableProps);
+        parse(polygonProblem, languageProps, executableProps, importProps);
     }
 
     public static String getProblemId(String idPrefix, String problemUrl, String shortName) {
@@ -51,7 +51,7 @@ public class Problem {
         return idPrefix + "." + shortName;
     }
 
-    private void parse(ProblemDirectory polygonProblem, Properties languageProps, Properties executableProps) {
+    private void parse(ProblemDirectory polygonProblem, Properties languageProps, Properties executableProps, Properties importProps) {
         shortName = polygonProblem.getShortName();
         System.out.println("importing problem '" + shortName + "'");
 
@@ -64,7 +64,8 @@ public class Problem {
         //testset
         //todo: null pointer if there is no testset named tests
         polygon.Testset tests = polygonProblem.getTestsets().get("tests");
-        Testset maints = Testset.parse(tests, input, output);
+        double multiplier = Double.parseDouble(importProps.getProperty("timeLimitMultiplier", "1.0"));
+        Testset maints = Testset.parse(tests, input, output, multiplier);
 //        System.out.printf("DEBUG: groups count = %d\n", maints.groups.size());
         for (Group group : maints.groups) {
 //            System.out.printf("DEBUG: Group info - %s\n", group.toString());
@@ -112,7 +113,7 @@ public class Problem {
 
         Testset preliminary;
         if (polygonProblem.getTestsets().containsKey("preliminary")) {
-            preliminary = Testset.parse(polygonProblem.getTestsets().get("preliminary"), input, output);
+            preliminary = Testset.parse(polygonProblem.getTestsets().get("preliminary"), input, output, multiplier);
         } else {
             System.out.println("INFO: No preliminary testset, getting sample tests");
             int sampleCount = polygonProblem.getTestsets().get("tests").getSampleTestCount();

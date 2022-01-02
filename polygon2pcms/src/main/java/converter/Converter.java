@@ -15,16 +15,16 @@ import java.util.Properties;
 import java.util.stream.Stream;
 
 public class Converter {
-    private final RecompileCheckerStrategy recompileCppChecker;
+    private final Properties importProps;
     private final Properties languageProps;
     private final Properties executableProps;
     private final PrintStream logger;
 
-    public Converter(RecompileCheckerStrategy recompileCppChecker,
+    public Converter(Properties importProps,
                      Properties languageProps,
                      Properties executableProps,
                      PrintStream logger) {
-        this.recompileCppChecker = recompileCppChecker;
+        this.importProps = importProps;
         this.languageProps = languageProps;
         this.executableProps = executableProps;
         this.logger = logger;
@@ -70,7 +70,7 @@ public class Converter {
      */
     public Problem convertProblem(File problemDir, String problemIdPrefix, boolean runDoAll) throws IOException, ParserConfigurationException, SAXException {
         ProblemDirectory problemDirectory = ProblemDirectory.parse(problemDir.getAbsolutePath());
-        Problem problem = new Problem(problemDirectory, problemIdPrefix, languageProps, executableProps);
+        Problem problem = new Problem(problemDirectory, problemIdPrefix, languageProps, executableProps, importProps);
         if (runDoAll) {
             problemDoAll(problem);
         }
@@ -78,6 +78,7 @@ public class Converter {
         String checkerSourceName = checker.getSource();
         File probDir = problem.getDirectory();
         File checkerFile = new File(probDir, checkerSourceName);
+        RecompileCheckerStrategy recompileCppChecker = RecompileCheckerStrategy.valueOf(importProps.getProperty("recompileChecker", "never").toUpperCase());
         if (recompileCppChecker == RecompileCheckerStrategy.ALWAYS ||
                 recompileCppChecker == RecompileCheckerStrategy.POINTS && checkerQuitsPoints(checkerFile)) {
             if (System.getProperty("os.name").toLowerCase().startsWith("win")

@@ -69,8 +69,7 @@ abstract class ImportAbstract implements Callable<Integer> {
             languageProps = loadPropertiesOrDefault(getDefaultLanguageProperties(), "language.properties");
             executableProps = loadPropertiesOrDefault(getDefaultExecutableProperties(), "executable.properties");
             downloader = new PackageDownloader(username, password);
-            converter = new Converter(RecompileCheckerStrategy.valueOf(importProps.getProperty("recompileChecker", "never").toUpperCase()),
-                                      languageProps, executableProps, System.out);
+            converter = new Converter(importProps, languageProps, executableProps, System.out);
             deployer = new Deployer(vfs, webroot, System.out);
             makeImport();
             return 0;

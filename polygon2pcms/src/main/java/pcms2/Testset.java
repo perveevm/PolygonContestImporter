@@ -113,7 +113,7 @@ public class Testset {
         pw.println(tabs + "</testset>");
     }
 
-    public static Testset parse(polygon.Testset polygonTestset, String input, String output) {
+    public static Testset parse(polygon.Testset polygonTestset, String input, String output, double multiplier) {
         //System.out.println("DEBUG: testsets cnt = " + nl.getLength() + " i = " + i);
         Testset ts = new Testset();
 
@@ -125,7 +125,7 @@ public class Testset {
         }
         ts.inputName = input;
         ts.outputName = output;
-        ts.timeLimit = polygonTestset.getTimeLimit() / 1000;
+        ts.timeLimit = polygonTestset.getTimeLimit() / 1000 * multiplier;
         ts.memoryLimit = polygonTestset.getMemoryLimit();
         int tc = polygonTestset.getTestCount();
         ts.inputHref = formatHref(polygonTestset.getInputPathPattern());
@@ -178,6 +178,10 @@ public class Testset {
         if (polGroups != null) {
             for (polygon.Group polGroup : polGroups.values()) {
 //                System.out.println("DEBUG: " + polGroup.getName());
+                if (!ts.groupNameToId.containsKey(polGroup.getName())) {
+                    System.out.printf("WARNING: No tests in group '%s'!\n", polGroup.getName());
+                    continue;
+                }
                 int index = ts.groupNameToId.get(polGroup.getName());
                 Group other = ts.groups.get(index - 1);
                 Group group = Group.parse(polGroup, ts.groupNameToId, other.hasSampleTests, other.first, other.last);
