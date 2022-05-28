@@ -1,11 +1,7 @@
 package importer;
 
-import net.lingala.zip4j.core.ZipFile;
-import net.lingala.zip4j.exception.ZipException;
-import org.apache.commons.io.FileUtils;
+import net.lingala.zip4j.ZipFile;
 import org.apache.commons.io.FilenameUtils;
-import pcms2.Challenge;
-import pcms2.Problem;
 
 import java.io.*;
 import java.util.Arrays;
@@ -14,8 +10,10 @@ import java.util.stream.Stream;
 
 public class Utils {
 
-    static public void unzip(File zipFile, File probDir) throws ZipException {
-        new ZipFile(zipFile).extractAll(probDir.getAbsolutePath());
+    static public void unzip(File zipFile, File probDir) throws IOException {
+        try (ZipFile zip = new ZipFile(zipFile)) {
+            zip.extractAll(probDir.getAbsolutePath());
+        }
     }
 
     static public Stream<String> getLanguagesBySourcePath(String sourcePath, Properties langProperties) {
