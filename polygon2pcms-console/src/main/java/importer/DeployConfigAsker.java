@@ -3,7 +3,7 @@ package importer;
 import pcms2.deployer.DeployerConfig;
 
 public class DeployConfigAsker implements DeployerConfig {
-    private Asker asker;
+    private final Asker asker;
 
     public DeployConfigAsker(Asker asker) {
         this.asker = asker;

@@ -5,15 +5,31 @@ import org.apache.commons.io.FileUtils;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Set;
 
 public class TemporaryFileManager {
     Set<File> registered = new HashSet<>();
     Set<File> removed = new HashSet<>();
+    File tempDir;
+
+    public TemporaryFileManager(File tempDir) throws IOException {
+        this.tempDir = tempDir;
+        if (tempDir != null) {
+            Path path = tempDir.toPath();
+            if (!Files.exists(path)) {
+                Files.createDirectory(path);
+            } else if (!Files.isDirectory(path)) {
+                throw new RuntimeException(String.format("The file %s is not a directory", tempDir.getAbsolutePath()));
+            } else if (!Files.isWritable(path)) {
+                throw new RuntimeException(String.format("No rights to write in %s directory", tempDir.getAbsolutePath()));
+            }
+        }
+    }
 
     public File createTemporaryFile(String prefix, String suffix) throws IOException {
-        return createTemporaryFile(prefix, suffix, null);
+        return createTemporaryFile(prefix, suffix, tempDir);
     }
 
     public File createTemporaryFile(String prefix, String suffix, File directory) throws IOException {
@@ -42,6 +58,11 @@ public class TemporaryFileManager {
             } else {
                 if (!file.delete()) {
                     System.err.println("Couldn't remove " + file.getAbsolutePath());
+                    try {
+                        Files.delete(file.toPath());
+                    } catch (IOException e) {
+                        throw new AssertionError(e);
+                    }
                     return false;
                 }
             }
@@ -67,6 +88,6 @@ public class TemporaryFileManager {
     }
 
     public File createTemporaryDirectory(String prefix) throws IOException {
-        return createTemporaryDirectory(prefix, null);
+        return createTemporaryDirectory(prefix, tempDir);
     }
 }

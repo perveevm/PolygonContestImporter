@@ -24,6 +24,7 @@ import tempfilemanager.TemporaryFileManager;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
+import java.nio.file.Files;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -116,11 +117,13 @@ public class PackageDownloader {
     }
 
     private int downloadFile(HttpPost postRequest, File destFile) throws IOException {
-        int statusCode = download(postRequest, new FileOutputStream(destFile), destFile.getName());
-        if (statusCode == 200) {
-            logger.println("Downloaded file saved to -> " + destFile.getAbsolutePath());
+        try (OutputStream dest = Files.newOutputStream(destFile.toPath())) {
+            int statusCode = download(postRequest, dest, destFile.getName());
+            if (statusCode == 200) {
+                logger.println("Downloaded file saved to -> " + destFile.getAbsolutePath());
+            }
+            return statusCode;
         }
-        return statusCode;
     }
 
     public boolean downloadContestXml(String uid, File contestXMLFile) throws IOException {
@@ -198,7 +201,6 @@ public class PackageDownloader {
             File zipFile = fileManager.createTemporaryFile("__archive", ".zip");
             PolygonPackageType fullPackage = downloadProblemPackage(polygonUrl, zipFile);
             new ZipFile(zipFile).extractAll(probDir.getAbsolutePath());
-            fileManager.remove(zipFile);
             return fullPackage;
         } catch (ZipException e) {
             throw new AssertionError(e);

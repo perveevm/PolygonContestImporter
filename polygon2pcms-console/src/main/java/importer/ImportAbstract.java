@@ -32,6 +32,10 @@ abstract class ImportAbstract implements Callable<Integer> {
     String importPropsPath;
     @Option(names = {"--language"}, description = "Language for problem names and problem statements")
     String defaultLanguage;
+    @Option(names = {"--temp-dir"}, description = "Directory for temporary downloaded and created files")
+    File tempDir;
+    @Option(names = {"--keep-temp"}, description = "Don't remove temporary downloaded and created files")
+    boolean keepTemporary;
 
     File vfs;
     Properties importProps;
@@ -40,7 +44,7 @@ abstract class ImportAbstract implements Callable<Integer> {
     File webroot;
     Scanner sysin = new Scanner(System.in);
     PackageDownloader downloader;
-    TemporaryFileManager fileManager = new TemporaryFileManager();
+    TemporaryFileManager fileManager;
     Asker asker;
     Converter converter;
     Deployer deployer;
@@ -71,19 +75,23 @@ abstract class ImportAbstract implements Callable<Integer> {
             downloader = new PackageDownloader(username, password);
             converter = new Converter(importProps, languageProps, executableProps, System.out);
             deployer = new Deployer(vfs, webroot, System.out);
+            fileManager = new TemporaryFileManager(tempDir);
             makeImport();
             return 0;
+        } catch (RuntimeException e) {
+            System.err.println(e.getMessage());
+            return 13;
         } catch (Throwable e) {
             e.printStackTrace();
             return 1;
         } finally {
             File[] toRemove = fileManager.filesToRemove();
             if (toRemove.length > 0) {
-                String list = Arrays.stream(toRemove).map(x -> " - " + x).collect(Collectors.joining("\n"));
-                if (asker.askForUpdate("Remove all created temporary files and directories?\n" + list)) {
+                if (!keepTemporary) {
                     fileManager.removeAll();
                 } else {
-                    System.out.println("Skipping...");
+                    String list = Arrays.stream(toRemove).map(x -> " - " + x).collect(Collectors.joining("\n"));
+                    System.out.println("These temporary downloaded or created files weren't removed:\n" + list);
                 }
             }
         }
