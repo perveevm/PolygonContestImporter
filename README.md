@@ -5,6 +5,8 @@ Import contest settings from polygon.codeforces.com to PCMS2 format.
 
 Download from [here](https://github.com/ilsaf13/PolygonContestImporter/releases).
 
+Or clone this repository and run `mvn package`.
+
 ## First try
 You can start by downloading contest package, say contest-XXXX.zip, extract to contest-XXXX directory.
 Run doall to generate tests. Then you can run PolygonContestImporter:
