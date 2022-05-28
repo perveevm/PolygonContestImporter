@@ -3,7 +3,7 @@ Import contest settings from polygon.codeforces.com to PCMS2 format.
 
 ## Current version
 
-Download from [here](https://github.com/ilsaf13/PolygonContestImporter/releases/tag/v1.2).
+Download from [here](https://github.com/ilsaf13/PolygonContestImporter/releases).
 
 ## First try
 You can start by downloading contest package, say contest-XXXX.zip, extract to contest-XXXX directory.
