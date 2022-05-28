@@ -4,7 +4,7 @@ import me.tongfei.progressbar.ProgressBar;
 import me.tongfei.progressbar.ProgressBarBuilder;
 import me.tongfei.progressbar.ProgressBarConsumer;
 import me.tongfei.progressbar.ProgressBarStyle;
-import net.lingala.zip4j.core.ZipFile;
+import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.ByteArrayOutputStream;
@@ -200,7 +200,9 @@ public class PackageDownloader {
         try {
             File zipFile = fileManager.createTemporaryFile("__archive", ".zip");
             PolygonPackageType fullPackage = downloadProblemPackage(polygonUrl, zipFile);
-            new ZipFile(zipFile).extractAll(probDir.getAbsolutePath());
+            try (ZipFile zip = new ZipFile(zipFile)) {
+                zip.extractAll(probDir.getAbsolutePath());
+            }
             return fullPackage;
         } catch (ZipException e) {
             throw new AssertionError(e);
