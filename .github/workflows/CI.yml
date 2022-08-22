@@ -18,7 +18,7 @@ jobs:
           distribution: adopt
           cache: 'maven'
       - name: Build with Maven
-        run: mvn --batch-mode --update-snapshots package
+        run: mvn --batch-mode --update-snapshots package -Djacoco.skip=true
 
   coverage:
     name: Code Coverage
@@ -34,6 +34,6 @@ jobs:
       - name: Install dependencies
         run: mvn install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
       - name: Run tests
-        run: mvn -B test
+        run: mvn -B verify
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
