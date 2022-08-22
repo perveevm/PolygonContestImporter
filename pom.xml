@@ -11,10 +11,12 @@
     <modules>
         <module>polygon2pcms</module>
         <module>polygon2pcms-console</module>
+        <module>polygon-importer-aggregate</module>
     </modules>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <importer.version>${project.version}</importer.version>
         <kotlin.version>1.7.0</kotlin.version>
         <junit.version>5.6.2</junit.version>
         <jacoco.version>0.8.8</jacoco.version>
@@ -43,10 +45,10 @@
                         </goals>
                     </execution>
                     <execution>
-                        <id>report-aggregate</id>
+                        <id>report</id>
                         <phase>verify</phase>
                         <goals>
-                            <goal>report-aggregate</goal>
+                            <goal>report</goal>
                         </goals>
                     </execution>
                 </executions>
