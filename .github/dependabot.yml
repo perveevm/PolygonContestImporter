@@ -1,0 +1,20 @@
+
+version: 2
+updates:
+  - package-ecosystem: maven
+    directory: "/"
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 10
+
+  - package-ecosystem: maven
+    directory: "/polygon2pcms"
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 10
+
+  - package-ecosystem: maven
+    directory: "/polygon2pcms-console"
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 10
