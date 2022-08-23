@@ -9,13 +9,19 @@ class Cmd(private val workingDirectory: Path) {
     private fun run(vararg args: String): RunResult {
         val outFile = createTempFile(workingDirectory, "", ".out")
         val errFile = createTempFile(workingDirectory, "", ".err")
+        val javaHome = System.getenv("JAVA_HOME")!!;
+        println("JAVA_HOME = $javaHome")
         val builder =
-            ProcessBuilder("java", "-jar", "target/importer-jar-with-dependencies.jar", *args)
+            ProcessBuilder("$javaHome/bin/java", "-jar", "target/importer-jar-with-dependencies.jar", *args)
                 .redirectOutput(outFile.toFile())
                 .redirectError(errFile.toFile())
         val process = builder.start()
         val exitCode = process.waitFor()
-        return RunResult(exitCode, outFile.readBytes(), errFile.readBytes())
+        val out = outFile.readBytes()
+        val err = errFile.readBytes()
+        println("out: \"${String(out)}\"")
+        println("err: \"${String(err)}\"")
+        return RunResult(exitCode, out, err)
     }
 
     fun succeeds(vararg args: String): RunResult {
