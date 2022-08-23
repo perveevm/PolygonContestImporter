@@ -15,7 +15,6 @@
 
     <properties>
         <picocli.version>4.2.0</picocli.version>
-        <zip4j.version>2.11.1</zip4j.version>
     </properties>
 
     <build>
@@ -129,24 +128,6 @@
             <groupId>pcms2.importer</groupId>
             <artifactId>polygon2pcms</artifactId>
             <version>${importer.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.jetbrains.kotlin</groupId>
-            <artifactId>kotlin-stdlib-jdk8</artifactId>
-            <version>${kotlin.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jetbrains.kotlin</groupId>
-            <artifactId>kotlin-test</artifactId>
-            <version>${kotlin.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <version>${junit.version}</version>
-            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>

@@ -21,6 +21,11 @@
         <junit.version>5.9.0</junit.version>
         <jacoco.version>0.8.8</jacoco.version>
         <log4j.version>2.18.0</log4j.version>
+        <zip4j.version>2.11.1</zip4j.version>
+        <httpclient.version>4.5.13</httpclient.version>
+        <progressbar.version>0.8.1</progressbar.version>
+        <commons-io.version>2.11.0</commons-io.version>
+        <commons-text.version>1.8</commons-text.version>
     </properties>
 
     <dependencies>
@@ -33,6 +38,24 @@
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-iostreams</artifactId>
             <version>${log4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-stdlib-jdk8</artifactId>
+            <version>${kotlin.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-test</artifactId>
+            <version>${kotlin.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
