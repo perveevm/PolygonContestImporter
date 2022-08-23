@@ -26,11 +26,10 @@ jobs:
           name: test-result-java${{ matrix.version }}-${{ matrix.os }}.log
           path: package.log
       - name: Upload importer-jar-with-dependencies.jar
+        uses: actions/upload-artifact@v3
         with:
           name: importer-java${{ matrix.version }}-${{ matrix.os }}.jar
           path: polygon2pcms-console/target/importer-jar-with-dependencies.jar
-
-
 
   coverage:
     name: Code Coverage
