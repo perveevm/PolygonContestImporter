@@ -5,6 +5,7 @@ jobs:
   build:
     name: Build
     strategy:
+      fail-fast: false
       matrix:
         version: [11, 17]
         os: [ubuntu-latest, windows-latest, macos-latest]
