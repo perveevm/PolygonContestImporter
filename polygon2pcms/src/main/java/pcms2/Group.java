@@ -1,5 +1,7 @@
 package pcms2;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import pcms2.properties.Feedback;
 import pcms2.properties.Scoring;
 import polygon.properties.FeedbackPolicy;
@@ -14,6 +16,7 @@ import java.util.TreeMap;
  * Created by Ilshat on 11/23/2015.
  */
 public class Group {
+    private final static Logger log = LogManager.getLogger(Group.class);
     String comment = "";
     Scoring scoring = Scoring.GROUP;
     Feedback feedback = Feedback.GROUP_SCORE_AND_TEST;
@@ -62,14 +65,13 @@ public class Group {
             if (pointsPolicy == PointsPolicy.COMPLETE_GROUP) {
                 group.groupBonus = (int) polygonGroup.getPoints();
                 if (group.groupBonus != polygonGroup.getPoints()) {
-                    System.out.printf("WARNING: PCMS does not support non integer points, but group '%s' has '%f' points! Casting to int\n", polygonGroup.getName(), polygonGroup.getPoints());
+                    log.warn("PCMS does not support non integer points, but group '{}' has '{}' points! Casting to int", polygonGroup.getName(), polygonGroup.getPoints());
                 }
             }
         }
 
 
-
-        TreeMap <String, String> parameters = polygonGroup.getParameters();
+        TreeMap<String, String> parameters = polygonGroup.getParameters();
         if (parameters != null) {
             String param = parameters.get("feedback");
             if (param != null) {
@@ -107,7 +109,7 @@ public class Group {
         }
 
         if (hasSampleTests) {
-            System.out.printf("INFO: Group '%s' contains sample tests, changing feedback to statistics!\n", group.comment);
+            log.info("Group '{}' contains sample tests, changing feedback to statistics!", group.comment);
             if (groupNameToId.put("Sample tests", groupNameToId.get(group.comment)) != null) {
                 throw new AssertionError("ERROR: More than one group contains sample tests! Exiting\n");
             }

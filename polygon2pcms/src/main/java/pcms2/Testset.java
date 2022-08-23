@@ -1,5 +1,7 @@
 package pcms2;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import polygon.properties.PointsPolicy;
 
 import java.io.PrintWriter;
@@ -11,6 +13,7 @@ import java.util.Map;
  * Created by Ilshat on 11/22/2015.
  */
 public class Testset {
+    private final static Logger log = LogManager.getLogger(Testset.class);
     String name;
     String inputName;
     String outputName;
@@ -57,7 +60,7 @@ public class Testset {
 
     public void print(PrintWriter pw, String tabs, String type) {
         if (tests.length == 0) {
-            System.out.println(String.format("WARNING: Testset %s contains zero tests, skipped", name));
+            log.warn("Testset {} contains zero tests, skipped", name);
             return;
         }
         pw.println(tabs + "<testset");
@@ -114,7 +117,6 @@ public class Testset {
     }
 
     public static Testset parse(polygon.Testset polygonTestset, String input, String output, double multiplier) {
-        //System.out.println("DEBUG: testsets cnt = " + nl.getLength() + " i = " + i);
         Testset ts = new Testset();
 
         boolean hasGroups = false;
@@ -162,11 +164,11 @@ public class Testset {
                 if (polTest.getPoints() > 0 && polygonTestset.getGroups().get(groupName).getPointsPolicy() == PointsPolicy.EACH_TEST) {
                     points = polTest.getPoints();
                     if (Double.compare(points, (int) points) != 0) {
-                        System.out.println("WARNING: Non-integer points are not supported in PCMS but test '" + j + "' has non-integer points!");
+                        log.warn("Non-integer points are not supported in PCMS but test '" + j + "' has non-integer points!");
                     }
                 }
             } else if (hasGroups) {
-                System.out.println("WARNING: Groups are enabled but test '" + j + "' has no group!");
+                log.warn("Groups are enabled but test '" + j + "' has no group!");
             }
 
             ts.tests[j] = new Test(comment, (int) points);
@@ -179,7 +181,7 @@ public class Testset {
             for (polygon.Group polGroup : polGroups.values()) {
 //                System.out.println("DEBUG: " + polGroup.getName());
                 if (!ts.groupNameToId.containsKey(polGroup.getName())) {
-                    System.out.printf("WARNING: No tests in group '%s'!\n", polGroup.getName());
+                    log.warn("No tests in group '{}'!", polGroup.getName());
                     continue;
                 }
                 int index = ts.groupNameToId.get(polGroup.getName());

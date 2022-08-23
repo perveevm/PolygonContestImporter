@@ -1,19 +1,19 @@
 package importer;
 
-import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.util.Scanner;
 
 public class ScannerPrinterAsker extends Asker {
     private final Scanner in;
-    private final PrintStream out;
+    private final PrintWriter out;
 
-    public ScannerPrinterAsker(Scanner in, PrintStream out, boolean askForAll, boolean updateAll) {
+    public ScannerPrinterAsker(Scanner in, PrintWriter out, boolean askForAll, boolean updateAll) {
         super(askForAll, updateAll);
         this.in = in;
         this.out = out;
     }
 
-    public ScannerPrinterAsker(Scanner in, PrintStream out) {
+    public ScannerPrinterAsker(Scanner in, PrintWriter out) {
         super(false, false);
         this.in = in;
         this.out = out;
@@ -30,8 +30,7 @@ public class ScannerPrinterAsker extends Asker {
             }
             String line = in.nextLine();
             if (in.ioException() != null) {
-                System.err.println("Exception happened, while reading from console " + in.ioException().getMessage());
-                throw new AssertionError(in.ioException());
+                throw new AssertionError("Exception happened, while reading from console", in.ioException());
             }
             switch (line) {
                 case "yy":

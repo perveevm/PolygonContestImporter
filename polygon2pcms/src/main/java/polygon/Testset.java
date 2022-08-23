@@ -1,10 +1,13 @@
 package polygon;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import xmlwrapper.XMLElement;
 
 import java.util.*;
 
 public class Testset {
+    private final static Logger logger = LogManager.getLogger(Testset.class);
     String name;
     String inputPathPattern;
     String outputPathPattern;
@@ -30,13 +33,12 @@ public class Testset {
         //tests
         ts.tests = testsetElement.findFirstChild("tests").findChildrenStream("test").map(Test::parse).toArray(Test[]::new);
         if (ts.tests.length != ts.testCount) {
-            System.err.println("WARNING: test-count = " + ts.testCount +
+            logger.warn("test-count = " + ts.testCount +
                     " isn't equal to number of tests found = " + ts.tests.length);
         }
 
         //groups
         XMLElement groupsElement = testsetElement.findFirstChild("groups");
-//        System.out.println("DEBUG: " + groupsList + " " + groupsList.getLength());
         if (groupsElement.exists()) {
             ts.groups = new TreeMap<>();
             for (XMLElement xmlElement : groupsElement.findChildren("group")) {

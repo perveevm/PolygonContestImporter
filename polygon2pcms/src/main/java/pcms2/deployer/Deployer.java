@@ -1,6 +1,8 @@
 package pcms2.deployer;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.xml.sax.SAXException;
 import pcms2.Challenge;
 import pcms2.Problem;
@@ -10,18 +12,16 @@ import polygon.ProblemDirectory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.util.function.Supplier;
 
 public class Deployer {
-    private File vfsRoot;
-    private File webRoot;
-    private PrintStream logger;
+    private final static Logger log = LogManager.getLogger(Deployer.class);
+    private final File vfsRoot;
+    private final File webRoot;
 
-    public Deployer(File vfsRoot, File webRoot, PrintStream logger) {
+    public Deployer(File vfsRoot, File webRoot) {
         this.vfsRoot = vfsRoot;
         this.webRoot = webRoot;
-        this.logger = logger;
     }
 
     public void deployChallengeXML(File src, String challengeId, DeployerConfig config) throws IOException {
@@ -35,28 +35,28 @@ public class Deployer {
     private void copyToVFS(File contestFile, String destName, String challengeId, DeployerConfig config) throws IOException {
         File vfsEtcDirectory = new File(vfsRoot, "etc/" + challengeId.replace(".", "/"));
         File dest = new File(vfsEtcDirectory, destName);
-        logger.println("Preparing to copy " + contestFile.getAbsolutePath() + " to " + dest.getAbsolutePath());
+        log.info("Preparing to copy " + contestFile.getAbsolutePath() + " to " + dest.getAbsolutePath());
         deployFile(contestFile, dest, config::rewriteContestFiles);
     }
 
     public void copyToVFS(Problem problem, DeployerConfig config) throws IOException {
         File src = problem.getDirectory();
         File dest = resolveProblemVfs(problem.getId());
-        logger.println("Preparing to copy problem " + problem.getShortName() + " to " + dest.getAbsolutePath());
+        log.info("Preparing to copy problem " + problem.getShortName() + " to " + dest.getAbsolutePath());
         deployFile(src, dest, config::rewriteProblemFiles);
     }
 
     private void deployFile(File src, File dest, Supplier<Boolean> replace) throws IOException {
         if (dest.exists()) {
-            logger.println(src.getName() + " '" + dest.getAbsolutePath() + "' exists.");
+            log.info(src.getName() + " '" + dest.getAbsolutePath() + "' exists.");
             if (replace.get()) {
-                logger.println("Updating...");
+                log.info("Updating...");
                 forceCopyFileOrDirectory(src, dest);
             } else {
-                logger.println("Skipping...");
+                log.info("Skipping...");
             }
         } else {
-            logger.println("Copying " + src.getName() + " to '" + dest.getAbsolutePath() + "'.");
+            log.info("Copying " + src.getName() + " to '" + dest.getAbsolutePath() + "'.");
             forceCopyFileOrDirectory(src, dest);
         }
     }
@@ -89,17 +89,17 @@ public class Deployer {
             return;
         }
         File dest = new File(webRoot, "statements/" + challenge.getId().replace(".", "/") + "/statements.pdf");
-        logger.println("Preparing to copy " + challenge.getLanguage() + " statement to " + dest.getAbsolutePath());
+        log.info("Preparing to copy " + challenge.getLanguage() + " statement to " + dest.getAbsolutePath());
         publishFile(src, dest, config);
     }
 
 
     public void publishFile(File src, File dest, DeployerConfig config) throws IOException {
         if (config.publishStatement()) {
-            logger.println("Publishing...");
+            log.info("Publishing...");
             forceCopyFileOrDirectory(src, dest);
         } else {
-            logger.println("Skipping...");
+            log.info("Skipping...");
         }
     }
 }

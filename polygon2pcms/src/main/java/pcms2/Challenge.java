@@ -1,5 +1,6 @@
 package pcms2;
 
+import org.apache.logging.log4j.LogManager;
 import polygon.ContestDescriptor;
 
 import java.io.*;
@@ -45,7 +46,7 @@ public class Challenge {
             name = contest.getContestNames().get(defaultLang);
         } else {
             name = contest.getContestNames().firstEntry().getValue();
-            System.out.println("WARNING: Challenge name for default language '" + defaultLang + "' not found! Using '" + contest.getContestNames().firstKey() + "' name.");
+            LogManager.getLogger().warn("Challenge name for default language '" + defaultLang + "' not found! Using '" + contest.getContestNames().firstKey() + "' name.");
         }
 
         for (Map.Entry<String, ProblemDescriptor> entry : contest.getProblems().entrySet()) {

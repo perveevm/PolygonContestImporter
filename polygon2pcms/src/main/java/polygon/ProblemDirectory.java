@@ -1,5 +1,7 @@
 package polygon;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -8,6 +10,7 @@ import java.util.Arrays;
 import java.util.TreeMap;
 
 public class ProblemDirectory extends ProblemDescriptor {
+    private final static Logger log = LogManager.getLogger(ProblemDirectory.class);
     public static final String POLYGON_XML_NAME = "problem.xml.polygon";
     protected File directory;
     protected File groupsTxtFile;
@@ -67,7 +70,7 @@ public class ProblemDirectory extends ProblemDescriptor {
                 }
 
                 if (!group_par.containsKey("group")) {
-                    System.out.println("WARNING: Group id was not found! " +
+                    log.warn("Group id was not found! " +
                             "Group parameters:'" + Arrays.toString(group_params) + "'. ");
                     continue;
                 }
@@ -75,7 +78,7 @@ public class ProblemDirectory extends ProblemDescriptor {
                 Group group = testset.groups.get(group_par.get("group"));
                 if (group == null) {
                     if (hasGroups) {
-                        System.out.printf("WARNING: It seems that there are no tests in group '%s', skipping\n", group_par.get("group"));
+                        log.warn("It seems that there are no tests in group '{}', skipping", group_par.get("group"));
                         continue;
                     }
                     group = new Group();

@@ -1,5 +1,7 @@
 package pcms2;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import polygon.ProblemDirectory;
 import polygon.properties.PointsPolicy;
 
@@ -13,13 +15,14 @@ import java.util.TreeMap;
  * Created by Ilshat on 11/22/2015.
  */
 public class Problem {
+    private final static Logger log = LogManager.getLogger(Problem.class);
     File directory;
     File xmlFile;
     String id;
     String shortName;
     //testset name -> testset
     //possible testset names - preliminary, main
-    TreeMap <String, Testset> testsets;
+    TreeMap<String, Testset> testsets;
     List<Attachment> attachments;
     List<Solution> solutions;
 
@@ -43,7 +46,7 @@ public class Problem {
             String[] t = problemUrl.split("/");
             String cflogin = t[t.length - 2];
             if (cflogin.contains(".")) {
-                System.out.println("WARNING: Problem owner login contains '.', replacing with '-'");
+                log.warn("Problem owner login contains '.', replacing with '-'");
                 cflogin = cflogin.replaceAll("\\.", "-");
             }
             idPrefix = "com.codeforces.polygon." + cflogin;
@@ -53,7 +56,7 @@ public class Problem {
 
     private void parse(ProblemDirectory polygonProblem, Properties languageProps, Properties executableProps, Properties importProps) {
         shortName = polygonProblem.getShortName();
-        System.out.println("importing problem '" + shortName + "'");
+        log.info("importing problem '" + shortName + "'");
 
         //judging
         String input = polygonProblem.getInput();
@@ -66,9 +69,9 @@ public class Problem {
         polygon.Testset tests = polygonProblem.getTestsets().get("tests");
         double multiplier = Double.parseDouble(importProps.getProperty("timeLimitMultiplier", "1.0"));
         Testset maints = Testset.parse(tests, input, output, multiplier);
-//        System.out.printf("DEBUG: groups count = %d\n", maints.groups.size());
+        log.debug("groups count = {}", maints.groups.size());
         for (Group group : maints.groups) {
-//            System.out.printf("DEBUG: Group info - %s\n", group.toString());
+            log.debug("Group info - {}", group.toString());
             if (group.hasSampleTests) continue;
             int tcount = group.last - group.first + 1;
             String pg = tests.getTests()[group.first].getGroup();
@@ -79,11 +82,11 @@ public class Problem {
             if (group.points != null) {
                 int[] parsedPoints = Group.getNumbersArray(group.points);
                 if (tcount != parsedPoints.length && parsedPoints.length != 1) {
-                    System.out.printf("WARNING: Group points in groups.txt can't be distributed between tests correctly for group '%s'\n", pg);
+                    log.warn("Group points in groups.txt can't be distributed between tests correctly for group '{}'", pg);
                     continue;
                 }
                 if (tcount == parsedPoints.length) {
-                    for (int i = group.first; i <= group.last ; i++) {
+                    for (int i = group.first; i <= group.last; i++) {
                         maints.tests[i].points = parsedPoints[i - group.first];
                     }
                 } else {
@@ -101,7 +104,7 @@ public class Problem {
                 if (zeroPoints > 0) {
 //                    sum = (int) polygonProblem.getTestsets().get("tests").getGroups().get(pg).getPoints();
                     if (sum < tcount) {
-                        System.out.printf("WARNING: Group points can't be distributed between tests correctly for group '%s' points '%d' test count '%d'\n", pg, sum, tcount);
+                        log.warn("Group points can't be distributed between tests correctly for group '{}' points '{}' test count '{}'", pg, sum, tcount);
                         continue;
                     }
 
@@ -115,7 +118,7 @@ public class Problem {
         if (polygonProblem.getTestsets().containsKey("preliminary")) {
             preliminary = Testset.parse(polygonProblem.getTestsets().get("preliminary"), input, output, multiplier);
         } else {
-            System.out.println("INFO: No preliminary testset, getting sample tests");
+            log.info("No preliminary testset, getting sample tests");
             int sampleCount = polygonProblem.getTestsets().get("tests").getSampleTestCount();
             Test[] temp = new Test[sampleCount];
             for (int i = 0; i < sampleCount; i++) {
@@ -183,7 +186,7 @@ public class Problem {
         if (testset != null) {
             testset.print(pw, "\t\t\t", "icpc");
         } else {
-            System.out.println("WARNING: Testset 'tests' not found! This is the main testset in PCMS.");
+            log.warn("Testset 'tests' not found! This is the main testset in PCMS.");
         }
 
         verifier.print(pw, "\t\t\t");
@@ -204,7 +207,7 @@ public class Problem {
         if (testset != null) {
             testset.print(pw, "\t\t\t", "ioi");
         } else {
-            System.out.println("WARNING: Testset 'tests' not found! This is the main testset in PCMS.");
+            log.warn("Testset 'tests' not found! This is the main testset in PCMS.");
         }
 
         verifier.print(pw, "\t\t\t");

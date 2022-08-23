@@ -1,5 +1,7 @@
 package importer;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import pcms2.deployer.DeployerConfig;
 import pcms2.Challenge;
 import pcms2.Problem;
@@ -15,6 +17,7 @@ import java.util.Map;
 import java.util.NavigableMap;
 
 public abstract class ImportContestAbstract extends ImportAbstract {
+    private final static Logger logger = LogManager.getLogger(ImportContestAbstract.class);
     @Parameters(index = "0", paramLabel = "<challenge-id>",
             description = { "Provide challenge-id (ru.demo.day1), it would be used as problem-id prefix (ru.demo.day1.aplusb) ",
                     "or 'auto' for challenge-id generation: 'com.codeforces.polygon.{contest id}' for challenge-id",
@@ -60,6 +63,6 @@ public abstract class ImportContestAbstract extends ImportAbstract {
             deployer.copyToWEB(contestDirectory, challenge, new DeployConfigAsker(asker));
         }
 
-        System.out.println("Contest directory: " + contestDirectory.getAbsolutePath());
+        logger.info("Contest directory: " + contestDirectory.getAbsolutePath());
     }
 }

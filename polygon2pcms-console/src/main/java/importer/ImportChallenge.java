@@ -22,7 +22,7 @@ public class ImportChallenge extends ImportContestAbstract {
 
     @Override
     protected void makeImport() throws IOException, ParserConfigurationException, SAXException {
-        File contestDirectory = new File(folder);
+        File contestDirectory = acquireDirectory(new File(folder), fileManager);
         File contestXMLFile = new File(contestDirectory, "contest.xml");
         ContestXML contest = ContestXML.parse(contestXMLFile);
         //problem index maps to problem
@@ -35,8 +35,7 @@ public class ImportChallenge extends ImportContestAbstract {
             Problem pcmsProblem = converter.convertProblem(new File(contestDirectory, "problems/" + pname), challengeId, false);
             ProblemDirectory polygonProblem = pcmsProblem.getPolygonProblem();
             if (!polygonProblem.getUrl().equals(purl)) {
-                System.out.println("ERROR: Problem URL do not match! Contest problem = '" + purl + "' problems.xml = '" + polygonProblem.getUrl() + "'");
-                System.exit(1);
+                throw new RuntimeException("Problem URL do not match! Contest problem = '" + purl + "' problems.xml = '" + polygonProblem.getUrl() + "'");
             }
             pcmsProblems.put(index, pcmsProblem);
             problemDescriptors.put(index, polygonProblem);

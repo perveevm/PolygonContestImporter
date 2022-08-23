@@ -1,5 +1,7 @@
 package polygon;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.xml.sax.SAXException;
 import xmlwrapper.XMLElement;
 
@@ -11,6 +13,7 @@ import java.util.List;
 import java.util.TreeMap;
 
 public class ProblemDescriptor {
+    private final static Logger log = LogManager.getLogger(ProblemDescriptor.class);
     protected String shortName;
     protected int revision;
     protected String url;
@@ -61,7 +64,7 @@ public class ProblemDescriptor {
 
         shortName = problemElement.getAttribute("short-name");
         revision = Integer.parseInt(problemElement.getAttribute("revision"));
-        System.out.println("parsing problem '" + shortName + "'");
+        log.info("parsing problem '" + shortName + "'");
 
         url = problemElement.getAttribute("url");
 

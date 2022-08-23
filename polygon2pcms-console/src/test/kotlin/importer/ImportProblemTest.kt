@@ -1,5 +1,6 @@
 package importer
 
+import common.Cmd
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import picocli.CommandLine
@@ -12,15 +13,17 @@ import kotlin.test.assertNotNull
 class ImportProblemTest {
 
     @Test
-    fun testImportExampleAPlusB(@TempDir directory: Path) {
-        val fileName = "example-a-plus-b-4.zip"
-        val resource = Path.of(assertNotNull(javaClass.getResource(fileName), "Resource $fileName doesn't exist").toURI())
-        val archive = resource.copyTo(directory.resolve(resource.fileName))
-        val app = Main()
-        val cmd = CommandLine(app)
-        val exitCode = cmd.execute("problem", "com.demo", archive.absolutePathString())
-        assertEquals(0, exitCode) {
-            "Exit code is $exitCode"
-        }
+    fun testImportExampleAPlusBZip(@TempDir directory: Path) {
+        val archive = copyResourceToDirectory("example-a-plus-b-4.zip", directory)
+        Cmd(directory).succeeds("problem", "com.demo", archive.absolutePathString())
+            .stdout_contains("is not a directory, trying to unzip")
+    }
+
+    @Test
+    fun testImportExampleAPlusBDir(@TempDir directory: Path) {
+        val archive = copyResourceToDirectory("example-a-plus-b-4.zip", directory)
+        val dir = directory.resolve("dir")
+        Utils.unzip(archive.toFile(), dir.toFile())
+        Cmd(directory).succeeds("problem", "com.demo", dir.absolutePathString())
     }
 }

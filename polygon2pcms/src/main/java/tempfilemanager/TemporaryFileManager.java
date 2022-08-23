@@ -1,6 +1,8 @@
 package tempfilemanager;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
@@ -10,6 +12,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class TemporaryFileManager {
+    private final static Logger log = LogManager.getLogger(TemporaryFileManager.class);
     Set<File> registered = new HashSet<>();
     Set<File> removed = new HashSet<>();
     File tempDir;
@@ -42,28 +45,17 @@ public class TemporaryFileManager {
         return registered.remove(file);
     }
 
-    public boolean remove(File file) {
+    public boolean remove(File file) throws IOException {
         if (!registered.contains(file)) {
             throw new AssertionError("removing unregistered file");
         }
         if (removed.add(file) && file.exists()) {
-            System.out.println("Removing " + file.getAbsolutePath());
+            log.info("Removing " + file.getAbsolutePath());
             if (file.isDirectory()) {
-                try {
-                    FileUtils.deleteDirectory(file);
-                } catch (IOException e) {
-                    System.err.println("Couldn't remove directory " + file.getAbsolutePath() + ": " + e.getMessage());
-                    return false;
-                }
+                FileUtils.deleteDirectory(file);
             } else {
                 if (!file.delete()) {
-                    System.err.println("Couldn't remove " + file.getAbsolutePath());
-                    try {
-                        Files.delete(file.toPath());
-                    } catch (IOException e) {
-                        throw new AssertionError(e);
-                    }
-                    return false;
+                    Files.delete(file.toPath());
                 }
             }
             return true;
@@ -71,8 +63,10 @@ public class TemporaryFileManager {
         return false;
     }
 
-    public void removeAll() {
-        registered.forEach(this::remove);
+    public void removeAll() throws IOException {
+        for (File file : registered) {
+            remove(file);
+        }
     }
 
     public File[] filesToRemove() {

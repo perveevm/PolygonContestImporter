@@ -1,11 +1,15 @@
 package importer;
 
 import converter.Converter;
-import converter.RecompileCheckerStrategy;
+import net.lingala.zip4j.exception.ZipException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import pcms2.deployer.Deployer;
 import org.xml.sax.SAXException;
 import pcms2.deployer.DeployerConfig;
 import pcms2.Problem;
+import picocli.CommandLine.Model.CommandSpec;
+import picocli.CommandLine.Spec;
 import picocli.CommandLine.Option;
 import polygon.download.PackageDownloader;
 import tempfilemanager.TemporaryFileManager;
@@ -22,6 +26,9 @@ import java.util.stream.Stream;
 
 abstract class ImportAbstract implements Callable<Integer> {
 
+    private final static Logger logger = LogManager.getLogger(ImportAbstract.class);
+
+    @Spec CommandSpec spec;
     @Option(names = "--y", description = "Yes to all (non interactive)")
     boolean updateAll;
     @Option(names = {"-u", "--user"}, description = "Polygon username")
@@ -56,7 +63,8 @@ abstract class ImportAbstract implements Callable<Integer> {
 
     @Override
     public Integer call() {
-        asker = new ScannerPrinterAsker(sysin, System.out, false, updateAll);
+        PrintWriter stdout = spec.commandLine().getOut();
+        asker = new ScannerPrinterAsker(sysin, stdout, false, updateAll);
         try {
             importProps = loadPropertiesOrDefault(new Properties(), "import.properties", importPropsPath);
             vfs = readFileFromProperties(importProps, "vfs");
@@ -73,13 +81,13 @@ abstract class ImportAbstract implements Callable<Integer> {
             languageProps = loadPropertiesOrDefault(getDefaultLanguageProperties(), "language.properties");
             executableProps = loadPropertiesOrDefault(getDefaultExecutableProperties(), "executable.properties");
             downloader = new PackageDownloader(username, password);
-            converter = new Converter(importProps, languageProps, executableProps, System.out);
-            deployer = new Deployer(vfs, webroot, System.out);
+            converter = new Converter(importProps, languageProps, executableProps);
+            deployer = new Deployer(vfs, webroot);
             fileManager = new TemporaryFileManager(tempDir);
             makeImport();
             return 0;
         } catch (RuntimeException e) {
-            System.err.println(e.getMessage());
+            logger.error(e.getMessage());
             return 13;
         } catch (Throwable e) {
             e.printStackTrace();
@@ -88,10 +96,15 @@ abstract class ImportAbstract implements Callable<Integer> {
             File[] toRemove = fileManager.filesToRemove();
             if (toRemove.length > 0) {
                 if (!keepTemporary) {
-                    fileManager.removeAll();
+                    try {
+                        fileManager.removeAll();
+                    } catch (IOException e) {
+                        logger.warn("Some files couldn't be removed: {}", e.getMessage());
+                        // ignore
+                    }
                 } else {
                     String list = Arrays.stream(toRemove).map(x -> " - " + x).collect(Collectors.joining("\n"));
-                    System.out.println("These temporary downloaded or created files weren't removed:\n" + list);
+                    logger.info("These temporary downloaded or created files weren't removed:\n{}", list);
                 }
             }
         }
@@ -111,6 +124,21 @@ abstract class ImportAbstract implements Callable<Integer> {
         if (vfs != null) {
             deployer.copyToVFS(problem, config);
         }
+    }
+
+    protected File acquireDirectory(File f, TemporaryFileManager fileManager) throws IOException {
+        if (!f.isDirectory()) {
+            logger.info(f.getAbsolutePath() + " is not a directory, trying to unzip");
+            try {
+                File dir = fileManager.createTemporaryDirectory("__tmpdir");
+                Utils.unzip(f, dir);
+                return dir;
+            } catch (ZipException e) {
+                throw new AssertionError(f.getAbsolutePath() +
+                        ": failed to unzip, it is not a directory and probably not a zipfile", e);
+            }
+        }
+        return f;
     }
 
     private static Properties loadPropertiesOrDefault(Properties defaultProps, String fileName, String... filesToTry) {

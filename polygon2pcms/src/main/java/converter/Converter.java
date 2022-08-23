@@ -1,6 +1,9 @@
 package converter;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.io.IoBuilder;
 import org.xml.sax.SAXException;
 import pcms2.Problem;
 import polygon.Checker;
@@ -9,25 +12,23 @@ import polygon.ProblemDirectory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintStream;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.util.Properties;
 import java.util.stream.Stream;
 
 public class Converter {
+    private final static Logger log = LogManager.getLogger(Converter.class);
     private final Properties importProps;
     private final Properties languageProps;
     private final Properties executableProps;
-    private final PrintStream logger;
 
     public Converter(Properties importProps,
                      Properties languageProps,
-                     Properties executableProps,
-                     PrintStream logger) {
+                     Properties executableProps) {
         this.importProps = importProps;
         this.languageProps = languageProps;
         this.executableProps = executableProps;
-        this.logger = logger;
     }
 
     private int runDoAll(File probDir, boolean quiet) throws IOException {
@@ -37,14 +38,16 @@ public class Converter {
         processBuilder.directory(probDir);
         boolean ignored = processBuilder.redirectErrorStream();
         Process exec = processBuilder.start();
-        logger.println("Starting PID = " + exec.pid());
+        log.info("Starting PID = " + exec.pid());
         if (!quiet) {
-            IOUtils.copy(exec.getInputStream(), logger);
+            try (OutputStream logStream = IoBuilder.forLogger(log).buildOutputStream()) {
+                IOUtils.copy(exec.getInputStream(), logStream);
+            }
         }
         try {
             return exec.waitFor();
         } catch (InterruptedException e) {
-            System.err.println("The process was interrupted");
+            log.warn("The process was interrupted");
             return 130;
         }
     }
@@ -54,7 +57,7 @@ public class Converter {
         if (exitCode != 0) {
             throw new AssertionError("doall failed with exit code " + exitCode);
         } else {
-            logger.println("Tests generated successfully in " + problem.getDirectory().getAbsolutePath());
+            log.info("Tests generated successfully in " + problem.getDirectory().getAbsolutePath());
         }
     }
 
@@ -88,40 +91,40 @@ public class Converter {
                 ProcessBuilder processBuilder = new ProcessBuilder(
                         "g++", "-o", checkerTmpExecutable, checkerSourceName,
                         "-DPCMS2", "-O2", "-std=c++17", "-static", "-Ifiles", "-Wl,--stack=2560000000");
-                logger.println("INFO: Compiling checker " + processBuilder.command());
+                log.info("Compiling checker " + processBuilder.command());
                 processBuilder.directory(probDir);
                 processBuilder.inheritIO();
                 Process exec = processBuilder.start();
                 try {
                     int exitCode = exec.waitFor();
                     if (exitCode != 0) {
-                        logger.println("WARNING: checker compilation failed, exit code " + exitCode);
+                        log.warn("checker compilation failed, exit code " + exitCode);
                     } else {
                         File tmpFile = new File(probDir, checkerTmpExecutable);
                         if (tmpFile.exists() && tmpFile.canRead() && tmpFile.canWrite()) {
-                            logger.println("INFO: Checker compiled successfully");
+                            log.info("Checker compiled successfully");
                             File checkExec = new File(probDir, checkerExecutable);
                             File polygonCheckExec = new File(probDir, checkerExecutable + ".polygon");
-                            logger.println("INFO: moving " + checkExec.getName() + " -> " + polygonCheckExec.getName());
+                            log.info("moving " + checkExec.getName() + " -> " + polygonCheckExec.getName());
                             if (!checkExec.renameTo(polygonCheckExec)) {
-                                logger.println("WARNING: old checker couldn't be moved");
+                                log.warn("old checker couldn't be moved");
                             } else {
-                                logger.println("INFO: moving " + tmpFile.getName() + " -> " + checkExec.getName());
+                                log.info("moving " + tmpFile.getName() + " -> " + checkExec.getName());
                                 if (!tmpFile.renameTo(checkExec)) {
-                                    logger.println("ERROR: new checker couldn't be moved");
+                                    log.error("new checker couldn't be moved");
                                     throw new AssertionError("No checker for a problem");
                                 }
                             }
                         } else {
-                            logger.println("WARNING: compilation succeeded, but checker binary" +
+                            log.warn("compilation succeeded, but checker binary" +
                                     " doesn't exist or there are no rights");
                         }
                     }
                 } catch (InterruptedException e) {
-                    logger.println("WARNING: the compilation was interrupted");
+                    log.warn("the compilation was interrupted");
                 }
             } else {
-                logger.println("WARNING: checker compilation is supported only in Windows, " +
+                log.warn("checker compilation is supported only in Windows, " +
                         "and only for testlib using g++ sources");
             }
         }
@@ -130,7 +133,7 @@ public class Converter {
         File f = new File(problem.getDirectory(), "problem.xml");
         f.delete();
         if (!temporaryFile.renameTo(f)) {
-            logger.println("ERROR: '" + temporaryFile.getAbsolutePath() + "' couldn't be renamed to 'problem.xml' ");
+            log.error("'{}' couldn't be renamed to 'problem.xml' ", temporaryFile.getAbsolutePath());
         }
         return problem;
     }

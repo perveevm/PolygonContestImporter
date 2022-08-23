@@ -1,6 +1,8 @@
 package pcms2;
 
 import org.apache.commons.io.FilenameUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import polygon.SolutionResource;
 
 import java.io.PrintWriter;
@@ -40,14 +42,15 @@ public class Attachment {
 
     public static List<Attachment> parse(List<polygon.Attachment> attachments, Properties languagesProps, String shortName) {
         List<Attachment> result = new ArrayList<>();
+        Logger log = LogManager.getLogger();
         for (polygon.Attachment attachment : attachments) {
             String atpath = attachment.getPath();
             String atname = FilenameUtils.getName(atpath);
             String ext = FilenameUtils.getExtension(atname);
             String fname = FilenameUtils.getBaseName(atname);
-            //System.out.println("DEBUG: File name is '" + fname + "'");
+            log.debug("DEBUG: File name is '\" + fname + \"'");
             if (fname.equals("Solver") || (fname.equals(shortName) && !ext.equals("h"))) {
-                System.out.println("Skipping solution stub '" + fname + "." + ext + "'");
+                log.info("Skipping solution stub '" + fname + "." + ext + "'");
                 continue;
             }
 

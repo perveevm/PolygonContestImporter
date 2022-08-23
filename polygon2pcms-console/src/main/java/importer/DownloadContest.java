@@ -1,5 +1,7 @@
 package importer;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import polygon.download.PolygonPackageType;
 import org.xml.sax.SAXException;
 import pcms2.Problem;
@@ -8,7 +10,6 @@ import picocli.CommandLine.Parameters;
 import polygon.ContestDescriptor;
 import polygon.ContestXML;
 import polygon.ProblemDescriptor;
-import polygon.ProblemDirectory;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
@@ -19,6 +20,7 @@ import static picocli.CommandLine.*;
 
 @Command(name = "download-contest", description = "Downloads whole contest")
 public class DownloadContest extends ImportContestAbstract {
+    private final static Logger log = LogManager.getLogger(DownloadContest.class);
     @Parameters(index = "2") String uid;
     @Option(names = "--download", description = "Defines download strategy: 'all' downloads all problem packages, " +
             "'new' downloads only problem packages with different from vfs revision") DownloadStrategy downloadStrategy;
@@ -59,10 +61,10 @@ public class DownloadContest extends ImportContestAbstract {
                 String problemId = Problem.getProblemId(challengeId, newProblemDescriptor.getUrl(), newProblemDescriptor.getShortName());
                 if (newProblemDescriptor.getRevision() == deployer.getVfsProblemRevision(problemId)) {
                     download = false;
-                    System.out.println("INFO: VFS revision is same, skipping package download");
+                    log.info("VFS revision is same, skipping package download");
                 }
                 if (download) {
-                    System.out.println("INFO: VFS revision is different, downloading package");
+                    log.info("VFS revision is different, downloading package");
                 }
             }
             if (download) {

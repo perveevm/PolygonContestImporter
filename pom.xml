@@ -20,7 +20,21 @@
         <kotlin.version>1.7.0</kotlin.version>
         <junit.version>5.6.2</junit.version>
         <jacoco.version>0.8.8</jacoco.version>
+        <log4j.version>2.18.0</log4j.version>
     </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>${log4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-iostreams</artifactId>
+            <version>${log4j.version}</version>
+        </dependency>
+    </dependencies>
 
     <build>
         <plugins>

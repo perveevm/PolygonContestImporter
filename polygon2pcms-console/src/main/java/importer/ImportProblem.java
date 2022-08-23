@@ -1,6 +1,5 @@
 package importer;
 
-import net.lingala.zip4j.exception.ZipException;
 import org.xml.sax.SAXException;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
@@ -19,22 +18,8 @@ public class ImportProblem extends ImportProblemAbstract {
     @Override
     protected void makeImport() throws IOException, ParserConfigurationException, SAXException {
         File f = new File(polygonPackage);
-        File probDir = acquireDirectory(f);
+        File probDir = acquireDirectory(f, fileManager);
         convertAndCopy(problemIdPrefix, probDir, asker, runDoAll);
     }
 
-    private File acquireDirectory(File f) throws IOException {
-        if (!f.isDirectory()) {
-            System.out.println(f.getAbsolutePath() + " is not a directory, trying to unzip");
-            try {
-                File probDir = fileManager.createTemporaryDirectory("__problem");
-                Utils.unzip(f, probDir);
-                return probDir;
-            } catch (ZipException e) {
-                throw new AssertionError(f.getAbsolutePath() +
-                        ": failed to unzip, it is not a directory and probably not a zipfile", e);
-            }
-        }
-        return f;
-    }
 }
