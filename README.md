@@ -1,4 +1,8 @@
 # PolygonContestImporter
+
+![Build](https://github.com/ilsaf13/PolygonContestImporter/actions/workflows/CI.yml/badge.svg)
+
+
 Import contest settings from polygon.codeforces.com to PCMS2 format.
 
 ## Current version
