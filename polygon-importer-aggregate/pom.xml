@@ -7,12 +7,12 @@
     <parent>
         <groupId>pcms2.importer</groupId>
         <artifactId>polygon-importer</artifactId>
-        <version>1.4.0</version>
+        <version>1.4.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>polygon-importer-aggregate</artifactId>
     <packaging>pom</packaging>
-    <version>1.4.0</version>
+    <version>1.4.1-SNAPSHOT</version>
 
     <dependencies>
         <dependency>

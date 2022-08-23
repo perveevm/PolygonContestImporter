@@ -7,7 +7,7 @@
     <groupId>pcms2.importer</groupId>
     <artifactId>polygon-importer</artifactId>
     <packaging>pom</packaging>
-    <version>1.4.0</version>
+    <version>1.4.1-SNAPSHOT</version>
     <modules>
         <module>polygon2pcms</module>
         <module>polygon2pcms-console</module>
