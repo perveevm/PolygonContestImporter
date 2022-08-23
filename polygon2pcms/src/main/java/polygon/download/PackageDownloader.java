@@ -43,21 +43,21 @@ public class PackageDownloader {
 
     public PackageDownloader(String username, String password, PrintStream logger) {
         this(username, password, logger, new ProgressBarConsumer() {
-            String lastline = null;
+            private String lastLine = null;
 
             @Override
-            public int getMaxProgressLength() {
+            public int getMaxRenderedLength() {
                 return 100;
             }
 
             @Override
             public void accept(String rendered) {
-                lastline = rendered;
+                lastLine = rendered;
             }
 
             @Override
             public void close() {
-                logger.println(lastline);
+                logger.println(lastLine);
             }
         });
     }
