@@ -9,10 +9,9 @@ class Cmd(private val workingDirectory: Path) {
     private fun run(vararg args: String): RunResult {
         val outFile = createTempFile(workingDirectory, "", ".out")
         val errFile = createTempFile(workingDirectory, "", ".err")
-        val javaHome = System.getenv("JAVA_HOME")!!;
-        println("JAVA_HOME = $javaHome")
+        val classPath = System.getProperty("java.class.path")!!
         val builder =
-            ProcessBuilder("$javaHome/bin/java", "-jar", "target/importer-jar-with-dependencies.jar", *args)
+            ProcessBuilder("java", "-cp", classPath, "importer.Main", *args)
                 .redirectOutput(outFile.toFile())
                 .redirectError(errFile.toFile())
         val process = builder.start()

@@ -19,7 +19,18 @@ jobs:
           distribution: adopt
           cache: 'maven'
       - name: Build with Maven
-        run: mvn --batch-mode --update-snapshots package '-Djacoco.skip=true'
+        run: mvn --batch-mode --update-snapshots package '-Djacoco.skip=true' > package.log
+      - name: Upload package.log
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-result-java${{ matrix.version }}-${{ matrix.os }}.log
+          path: package.log
+      - name: Upload importer-jar-with-dependencies.jar
+        with:
+          name: importer-java${{ matrix.version }}-${{ matrix.os }}.jar
+          path: polygon2pcms-console/target/importer-jar-with-dependencies.jar
+
+
 
   coverage:
     name: Code Coverage
