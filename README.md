@@ -1,9 +1,10 @@
 # PolygonContestImporter
 
-![Build](https://github.com/ilsaf13/PolygonContestImporter/actions/workflows/CI.yml/badge.svg)
+[![Build](https://github.com/ilsaf13/PolygonContestImporter/actions/workflows/CI.yml/badge.svg)](https://github.com/ilsaf13/PolygonContestImporter/actions)
 [![codecov](https://codecov.io/gh/ilsaf13/PolygonContestImporter/branch/master/graph/badge.svg)](https://codecov.io/gh/ilsaf13/PolygonContestImporter)
-[![License: MIT](https://img.shields.io/badge/License-MIT-red.svg)](https://opensource.org/licenses/MIT)
-
+[![Release](https://shields.io/github/v/release/ilsaf13/PolygonContestImporter?display_name=tag)(https://github.com/ilsaf13/PolygonContestImporter/releases/latest)
+[![Commit Activity](https://shields.io/github/commit-activity/m/ilsaf13/PolygonContestImporter)](https://github.com/ilsaf13/PolygonContestImporter/commits/master)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
 
 Import contest settings from polygon.codeforces.com to PCMS2 format.
