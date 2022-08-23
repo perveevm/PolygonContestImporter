@@ -1,6 +1,9 @@
 # PolygonContestImporter
 
 ![Build](https://github.com/ilsaf13/PolygonContestImporter/actions/workflows/CI.yml/badge.svg)
+[![codecov](https://codecov.io/gh/ilsaf13/PolygonContestImporter/branch/master/graph/badge.svg)](https://codecov.io/gh/ilsaf13/PolygonContestImporter)
+[![License: MIT](https://img.shields.io/badge/License-MIT-red.svg)](https://opensource.org/licenses/MIT)
+
 
 
 Import contest settings from polygon.codeforces.com to PCMS2 format.
