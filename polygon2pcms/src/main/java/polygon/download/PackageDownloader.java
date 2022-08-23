@@ -8,14 +8,14 @@ import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.ByteArrayOutputStream;
-import org.apache.http.HttpEntity;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.message.BasicNameValuePair;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.client5.http.entity.UrlEncodedFormEntity;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.NameValuePair;
+import org.apache.hc.core5.http.message.BasicNameValuePair;
 import org.xml.sax.SAXException;
 import polygon.ContestDescriptor;
 import polygon.ContestXML;
@@ -24,6 +24,7 @@ import tempfilemanager.TemporaryFileManager;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -89,21 +90,27 @@ public class PackageDownloader {
 
     private int download(HttpPost postRequest, OutputStream dest, String fileName) throws IOException {
         try (CloseableHttpResponse response = httpClient.execute(postRequest)) {
-            int statusCode = response.getStatusLine().getStatusCode();
+            int statusCode = response.getCode();
             if (statusCode != 200) {
                 return statusCode;
             }
             HttpEntity entity = response.getEntity();
             long fileSize = entity.getContentLength();
-            logger.println("Downloading file " + fileName + " from " + postRequest.getURI().toString() + " (" + fileSize + " bytes)");
+            logger.println("Downloading file " + fileName + " from " + postRequest.getUri().toString() + " (" + fileSize + " bytes)");
             ProgressBarBuilder pbb = new ProgressBarBuilder()
                     .setInitialMax(fileSize)
                     .showSpeed()
                     .setTaskName(fileName)
                     .setStyle(ProgressBarStyle.ASCII)
                     .setUpdateIntervalMillis(100)
-                    .setUnit("MiB", 1L << 20)
                     .setConsumer(pbbConsumer);
+            if (fileSize > 10 * (1 << 20)) {
+                pbb = pbb.setUnit("MiB", 1L << 20);
+            } else if (fileSize > 10 * (1 << 10)) {
+                pbb = pbb.setUnit("KiB", 1L << 10);
+            } else {
+                pbb = pbb.setUnit("B", 1);
+            }
             try (InputStream readFrom = ProgressBar.wrap(entity.getContent(), pbb)) {
                 int copied = IOUtils.copy(readFrom, dest);
                 if (fileSize >= 0 && copied >= 0 && fileSize != copied) {
@@ -113,6 +120,8 @@ public class PackageDownloader {
                 }
             }
             return statusCode;
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
         }
     }
 
