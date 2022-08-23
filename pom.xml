@@ -18,7 +18,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <importer.version>${project.version}</importer.version>
         <kotlin.version>1.7.0</kotlin.version>
-        <junit.version>5.6.2</junit.version>
+        <junit.version>5.9.0</junit.version>
         <jacoco.version>0.8.8</jacoco.version>
         <log4j.version>2.18.0</log4j.version>
     </properties>
