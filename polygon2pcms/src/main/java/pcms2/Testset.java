@@ -50,6 +50,9 @@ public class Testset {
 
     private static String formatHref(String in) {
         int begi = in.indexOf("%");
+        if (begi < 0) {
+            return in;
+        }
         int endi = in.indexOf("d");
         String tt = in.substring(begi + 1, endi);
         String ttt = "";
