@@ -70,4 +70,8 @@ public class XMLElement {
     public boolean exists() {
         return element != null;
     }
+
+    public String getTagName() {
+        return element.getTagName();
+    }
 }
