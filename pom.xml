@@ -21,7 +21,7 @@
         <junit.version>5.9.2</junit.version>
         <jacoco.version>0.8.8</jacoco.version>
         <log4j.version>2.19.0</log4j.version>
-        <zip4j.version>2.11.2</zip4j.version>
+        <zip4j.version>2.11.3</zip4j.version>
         <httpclient5.version>5.2.1</httpclient5.version>
         <progressbar.version>0.9.5</progressbar.version>
         <commons-io.version>2.11.0</commons-io.version>
