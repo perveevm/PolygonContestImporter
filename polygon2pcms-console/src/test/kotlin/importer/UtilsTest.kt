@@ -28,7 +28,7 @@ class UtilsTest {
     private val TEST_LANGUAGES = "lang1, lang2"
     private val TEST_NONEXISTENT_ZIP_FILE_NAME = "nonexistent.zip"
     private val TEST_EXISTING_FILE_NAME = "existingFile"
-    private val TEST_EMPTY_ZIP_FILE_NAME = "empty.zip"
+    private val TEST_HELLO_TXT_FILE_NAME = "hello.txt"
     private val TEST_SINGLE_LANGUAGE = "singleLanguage"
     private val TEST_MULTIPLE_LANGUAGES_WITH_SPACES = "  lang1  ,  lang2  ,  lang3  "
     private val TEST_MULTIPLE_LANGUAGES_WITH_EMPTY_LANGUAGES = "lang1,,,lang2, , , lang3,,"
@@ -41,7 +41,7 @@ class UtilsTest {
     private lateinit var testLangProperties: Properties
     private lateinit var testNonexistentZipFile: File
     private lateinit var testExistingFile: File
-    private lateinit var testEmptyZipFile: File
+    private lateinit var testHelloTxtFile: File
 
     @BeforeEach
     fun setUp() {
@@ -49,9 +49,9 @@ class UtilsTest {
         testZipFile = File(tempDir, TEST_ZIP_FILE_NAME)
         FileUtils.touch(testZipFile)
 
-        // Create test empty zip file
-        testEmptyZipFile = File(tempDir, TEST_EMPTY_ZIP_FILE_NAME)
-        FileUtils.touch(testEmptyZipFile)
+        // Create test txt file
+        testHelloTxtFile = File(tempDir, TEST_HELLO_TXT_FILE_NAME)
+        FileUtils.writeLines(testHelloTxtFile, listOf("hello"))
 
         // Create test existing file
         testExistingFile = File(tempDir, TEST_EXISTING_FILE_NAME)
@@ -85,8 +85,8 @@ class UtilsTest {
         // Delete test existing file
         testExistingFile.delete()
 
-        // Delete test empty zip file
-        testEmptyZipFile.delete()
+        // Delete test hello text file
+        testHelloTxtFile.delete()
     }
 
     @Test
@@ -118,9 +118,9 @@ class UtilsTest {
     }
 
     @Test
-    fun testUnzipEmptyFile() {
-        // Assert that an exception is thrown when trying to unzip an empty file
-        assertThrows(IOException::class.java) { Utils.unzip(testEmptyZipFile, testProbDir) }
+    fun testUnzipHelloFile() {
+        // Assert that an exception is thrown when trying to unzip a non-zip file
+        assertThrows(IOException::class.java) { Utils.unzip(testHelloTxtFile, testProbDir) }
     }
 
     @Test
