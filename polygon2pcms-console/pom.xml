@@ -14,7 +14,7 @@
     <version>1.4.1-SNAPSHOT</version>
 
     <properties>
-        <picocli.version>4.7.3</picocli.version>
+        <picocli.version>4.7.4</picocli.version>
     </properties>
 
     <build>
