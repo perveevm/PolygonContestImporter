@@ -141,10 +141,14 @@ public class Testset {
         for (int j = 0; j < tc; j++) {//tests
             //System.out.println("DEBUG: j = " + j);
             polygon.Test polTest = polygonTestset.getTests()[j];
-            String comment = polTest.getMethod();
-
-            if (polTest.getCmd() != null) {
-                comment += " cmd: '" + polTest.getCmd() + "'";
+            String comment;
+            if (!polTest.getDescription().isEmpty()) {
+                comment = polTest.getDescription();
+            } else {
+                 comment = polTest.getMethod();
+                if (!polTest.getCmd().isEmpty()) {
+                    comment += " cmd: '" + polTest.getCmd() + "'";
+                }
             }
 
             double points = 0;

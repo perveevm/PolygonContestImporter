@@ -42,7 +42,7 @@ public class Attachment {
 
     public static List<Attachment> parse(List<polygon.Attachment> attachments, Properties languagesProps, String shortName) {
         List<Attachment> result = new ArrayList<>();
-        Logger log = LogManager.getLogger();
+        Logger log = LogManager.getLogger(Attachment.class);
         for (polygon.Attachment attachment : attachments) {
             String atpath = attachment.getPath();
             String atname = FilenameUtils.getName(atpath);
