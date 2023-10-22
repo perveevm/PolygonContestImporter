@@ -153,7 +153,7 @@ public class Converter {
                         if (tmpFile.exists() && tmpFile.canRead() && tmpFile.canWrite()) {
                             log.info("Interactor compiled successfully");
                             File interactorExec = probDir.toPath().resolve("files").resolve(interactorExecutable).toFile();
-                            File polygonInteractorExec = probDir.toPath().resolve("files").resolve(interactorExec + ".polygon").toFile();
+                            File polygonInteractorExec = probDir.toPath().resolve("files").resolve(interactorExecutable + ".polygon").toFile();
                             log.info("moving " + interactorExec.getName() + " -> " + polygonInteractorExec.getName());
                             if (!interactorExec.renameTo(polygonInteractorExec)) {
                                 log.warn("old interactor couldn't be moved");
