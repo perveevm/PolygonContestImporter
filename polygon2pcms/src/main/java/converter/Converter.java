@@ -134,11 +134,9 @@ public class Converter {
             if (interactor != null && interactor.getSourceType().startsWith("cpp.g++")) {
                 String interactorTmpExecutable = "__interactor.pcms.exe";
                 String interactorExecutable = interactor.getBinaryPath();
-                Files.delete(probDir.toPath().resolve("files").resolve("testlib.h"));
-                Files.copy(testlibPath, probDir.toPath().resolve("files").resolve("testlib.h"));
                 ProcessBuilder processBuilder = new ProcessBuilder(
                         "g++", "-o", interactorTmpExecutable,
-                        Path.of(interactor.getSourcePath()).getFileName().toString(),
+                        interactor.getSourcePath(),
                         "-DPCMS2", "-O2", "-std=c++17");
                 log.info("Compiling interactor " + processBuilder.command());
                 processBuilder.directory(probDir);
@@ -149,11 +147,11 @@ public class Converter {
                     if (exitCode != 0) {
                         log.warn("interactor compilation failed, exit code " + exitCode);
                     } else {
-                        File tmpFile = probDir.toPath().resolve("files").resolve(interactorTmpExecutable).toFile();
+                        File tmpFile = new File(probDir, interactorTmpExecutable);
                         if (tmpFile.exists() && tmpFile.canRead() && tmpFile.canWrite()) {
                             log.info("Interactor compiled successfully");
-                            File interactorExec = probDir.toPath().resolve("files").resolve(interactorExecutable).toFile();
-                            File polygonInteractorExec = probDir.toPath().resolve("files").resolve(interactorExecutable + ".polygon").toFile();
+                            File interactorExec = new File(probDir, interactorExecutable);
+                            File polygonInteractorExec = new File(probDir, interactorExecutable + ".polygon");
                             log.info("moving " + interactorExec.getName() + " -> " + polygonInteractorExec.getName());
                             if (!interactorExec.renameTo(polygonInteractorExec)) {
                                 log.warn("old interactor couldn't be moved");
