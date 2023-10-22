@@ -19,6 +19,7 @@ public class ProblemDescriptor {
     protected String url;
     protected String input;
     protected String output;
+    protected String runCount;
     protected Checker checker;
     protected Interactor interactor;
 
@@ -77,6 +78,8 @@ public class ProblemDescriptor {
         XMLElement judgingElement = problemElement.findFirstChild("judging");
         input = judgingElement.getAttribute("input-file");
         output = judgingElement.getAttribute("output-file");
+        runCount = judgingElement.getAttribute("run-count");
+
 
         //testset
         for (XMLElement testsetElement : judgingElement.findChildren("testset")) {
@@ -135,6 +138,10 @@ public class ProblemDescriptor {
 
     public String getOutput() {
         return output;
+    }
+
+    public String getRunCount() {
+        return runCount;
     }
 
     public TreeMap<String, Testset> getTestsets() {

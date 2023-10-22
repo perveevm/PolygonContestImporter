@@ -28,6 +28,7 @@ public class Problem {
 
     Verifier verifier;
     Interactor interactor;
+    boolean isRunTwice = false;
 
     private final ProblemDirectory polygonProblem;
 
@@ -63,6 +64,10 @@ public class Problem {
         if (input.isEmpty()) input = "*";
         String output = polygonProblem.getOutput();
         if (output.isEmpty()) output = "*";
+        String runCount = polygonProblem.getRunCount();
+        if (runCount != null && runCount.equals("2")) {
+            isRunTwice = true;
+        }
 
         //testset
         //todo: null pointer if there is no testset named tests
@@ -193,6 +198,9 @@ public class Problem {
         if (interactor != null) {
             interactor.print(pw, "\t\t\t");
         }
+        if (isRunTwice) {
+            pw.println("\t\t\t<mediator type = \"%copy\" />");
+        }
         for (Attachment at : attachments) {
             at.print(pw, "\t\t\t");
         }
@@ -213,6 +221,9 @@ public class Problem {
         verifier.print(pw, "\t\t\t");
         if (interactor != null) {
             interactor.print(pw, "\t\t\t");
+        }
+        if (isRunTwice) {
+            pw.println("\t\t\t<mediator type = \"%copy\" />");
         }
         for (Attachment at : attachments) {
             at.print(pw, "\t\t\t");

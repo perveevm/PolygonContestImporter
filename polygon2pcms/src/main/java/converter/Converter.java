@@ -7,6 +7,7 @@ import org.apache.logging.log4j.io.IoBuilder;
 import org.xml.sax.SAXException;
 import pcms2.Problem;
 import polygon.Checker;
+import polygon.Interactor;
 import polygon.ProblemDirectory;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -14,6 +15,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Properties;
 import java.util.stream.Stream;
 
@@ -78,19 +80,21 @@ public class Converter {
             problemDoAll(problem);
         }
         Checker checker = problem.getPolygonProblem().getChecker();
+        Interactor interactor = problem.getPolygonProblem().getInteractor();
         String checkerSourceName = checker.getSource();
         File probDir = problem.getDirectory();
         File checkerFile = new File(probDir, checkerSourceName);
         RecompileCheckerStrategy recompileCppChecker = RecompileCheckerStrategy.valueOf(importProps.getProperty("recompileChecker", "never").toUpperCase());
+        Path testlibPath = Path.of(importProps.getProperty("testlibPath"));
         if (recompileCppChecker == RecompileCheckerStrategy.ALWAYS ||
                 recompileCppChecker == RecompileCheckerStrategy.POINTS && checkerQuitsPoints(checkerFile)) {
-            if (System.getProperty("os.name").toLowerCase().startsWith("win")
-                    && checker.getType().equals("testlib") && checker.getSourceType().startsWith("cpp.g++")) {
+            if (checker.getType().equals("testlib") && checker.getSourceType().startsWith("cpp.g++")) {
                 String checkerTmpExecutable = "__check.pcms.exe";
                 String checkerExecutable = checker.getBinaryPath();
+                Files.copy(testlibPath, probDir.toPath().resolve("testlib.h"));
                 ProcessBuilder processBuilder = new ProcessBuilder(
                         "g++", "-o", checkerTmpExecutable, checkerSourceName,
-                        "-DPCMS2", "-O2", "-std=c++17", "-static", "-Ifiles", "-Wl,--stack=2560000000");
+                        "-DPCMS2", "-O2", "-std=c++17");
                 log.info("Compiling checker " + processBuilder.command());
                 processBuilder.directory(probDir);
                 processBuilder.inheritIO();
@@ -124,10 +128,54 @@ public class Converter {
                     log.warn("the compilation was interrupted");
                 }
             } else {
-                log.warn("checker compilation is supported only in Windows, " +
-                        "and only for testlib using g++ sources");
+                log.warn("checker compilation is supported for testlib using g++ sources");
+            }
+
+            if (interactor != null && interactor.getSourceType().startsWith("cpp.g++")) {
+                String interactorTmpExecutable = "__interactor.pcms.exe";
+                String interactorExecutable = interactor.getBinaryPath();
+                Files.copy(testlibPath, probDir.toPath().resolve("files").resolve("testlib.h"));
+                ProcessBuilder processBuilder = new ProcessBuilder(
+                        "g++", "-o", interactorTmpExecutable,
+                        Path.of(interactor.getSourcePath()).getFileName().toString(),
+                        "-DPCMS2", "-O2", "-std=c++17");
+                log.info("Compiling interactor " + processBuilder.command());
+                processBuilder.directory(probDir.toPath().resolve("files").toFile());
+                processBuilder.inheritIO();
+                Process exec = processBuilder.start();
+                try {
+                    int exitCode = exec.waitFor();
+                    if (exitCode != 0) {
+                        log.warn("interactor compilation failed, exit code " + exitCode);
+                    } else {
+                        File tmpFile = probDir.toPath().resolve("files").resolve(interactorTmpExecutable).toFile();
+                        if (tmpFile.exists() && tmpFile.canRead() && tmpFile.canWrite()) {
+                            log.info("Interactor compiled successfully");
+                            File interactorExec = probDir.toPath().resolve("files").resolve(interactorExecutable).toFile();
+                            File polygonCheckExec = new File(probDir, interactorExec + ".polygon");
+                            log.info("moving " + interactorExec.getName() + " -> " + polygonCheckExec.getName());
+                            if (!interactorExec.renameTo(polygonCheckExec)) {
+                                log.warn("old interactor couldn't be moved");
+                            } else {
+                                log.info("moving " + tmpFile.getName() + " -> " + interactorExec.getName());
+                                if (!tmpFile.renameTo(interactorExec)) {
+                                    log.error("new interactor couldn't be moved");
+                                    throw new AssertionError("No interactor for a problem");
+                                }
+                            }
+                        } else {
+                            log.warn("compilation succeeded, but interactor binary" +
+                                    " doesn't exist or there are no rights");
+                        }
+                    }
+                } catch (InterruptedException e) {
+                    log.warn("the compilation was interrupted");
+                }
+            } else {
+                log.warn("interactor compilation is supported for testlib using g++ sources");
             }
         }
+
         problem.print(getTemporaryProblemXMLFile(problem));
         File temporaryFile = getTemporaryProblemXMLFile(problem);
         File f = new File(problem.getDirectory(), "problem.xml");
