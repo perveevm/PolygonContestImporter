@@ -134,6 +134,7 @@ public class Converter {
             if (interactor != null && interactor.getSourceType().startsWith("cpp.g++")) {
                 String interactorTmpExecutable = "__interactor.pcms.exe";
                 String interactorExecutable = interactor.getBinaryPath();
+                Files.delete(probDir.toPath().resolve("files").resolve("testlib.h"));
                 Files.copy(testlibPath, probDir.toPath().resolve("files").resolve("testlib.h"));
                 ProcessBuilder processBuilder = new ProcessBuilder(
                         "g++", "-o", interactorTmpExecutable,
