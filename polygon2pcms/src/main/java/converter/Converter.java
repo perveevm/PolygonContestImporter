@@ -141,7 +141,7 @@ public class Converter {
                         Path.of(interactor.getSourcePath()).getFileName().toString(),
                         "-DPCMS2", "-O2", "-std=c++17");
                 log.info("Compiling interactor " + processBuilder.command());
-                processBuilder.directory(probDir.toPath().resolve("files").toFile());
+                processBuilder.directory(probDir);
                 processBuilder.inheritIO();
                 Process exec = processBuilder.start();
                 try {
