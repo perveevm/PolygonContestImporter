@@ -43,6 +43,8 @@ abstract class ImportAbstract implements Callable<Integer> {
     File tempDir;
     @Option(names = {"--keep-temp"}, description = "Don't remove temporary downloaded and created files")
     boolean keepTemporary;
+    @Option(names = {"--admin-login"}, description = "Admin login for auto-submit script. It shouldn't be the full session or party name, only login.")
+    String adminLogin;
 
     File vfs;
     Properties importProps;

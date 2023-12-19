@@ -49,7 +49,12 @@ public abstract class ImportContestAbstract extends ImportAbstract {
                     for (Solution sol : polygonProblem.getSolutions()) {
                         String sourcePath = sol.getSourcePath();
                         Utils.getLanguagesBySourcePath(sourcePath, languageProps).forEach(lang -> {
-                            String sessionId = challenge.getId() + ".0";
+                            String sessionId = challenge.getId();
+                            if (adminLogin == null) {
+                                sessionId += ".0";
+                            } else {
+                                sessionId += "." + adminLogin;
+                            }
                             String problemAlias = entry.getKey().toUpperCase();
                             submit.printf("%s %s %s 1s %s/%s\n", sessionId, problemAlias, lang, directory, sourcePath);
                         });
