@@ -65,9 +65,10 @@ public class Converter {
 
     /**
      * Converts a polygon package to a PCMS problem directory
-     * @param problemDir extracted polygon package
+     *
+     * @param problemDir      extracted polygon package
      * @param problemIdPrefix PCMS problem-id prefix
-     * @param runDoAll whether to run doall.{sh,bat} before converting
+     * @param runDoAll        whether to run doall.{sh,bat} before converting
      * @return PCMS problem descriptor
      * @throws IOException
      * @throws ParserConfigurationException
@@ -88,7 +89,8 @@ public class Converter {
         Path testlibPath = Path.of(importProps.getProperty("testlibPath"));
         if (recompileCppChecker == RecompileCheckerStrategy.ALWAYS ||
                 recompileCppChecker == RecompileCheckerStrategy.POINTS && checkerQuitsPoints(checkerFile)) {
-            if (checker.getType().equals("testlib") && checker.getSourceType().startsWith("cpp.g++")) {
+            if (checker.getType().equals("testlib") && (checker.getSourceType().startsWith("cpp.g++")
+                    || checker.getSource().startsWith("cpp.msys2"))) {
                 String checkerTmpExecutable = "__check.pcms.exe";
                 String checkerExecutable = checker.getBinaryPath();
                 Files.copy(testlibPath, probDir.toPath().resolve("testlib.h"));
@@ -131,7 +133,8 @@ public class Converter {
                 log.warn("checker compilation is supported for testlib using g++ sources");
             }
 
-            if (interactor != null && interactor.getSourceType().startsWith("cpp.g++")) {
+            if (interactor != null && (interactor.getSourceType().startsWith("cpp.g++")
+                    || interactor.getSourceType().startsWith("cpp.msys2"))) {
                 String interactorTmpExecutable = "__interactor.pcms.exe";
                 String interactorExecutable = interactor.getBinaryPath();
                 ProcessBuilder processBuilder = new ProcessBuilder(
