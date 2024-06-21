@@ -45,6 +45,8 @@ abstract class ImportAbstract implements Callable<Integer> {
     boolean keepTemporary;
     @Option(names = {"--admin-login"}, description = "Admin login for auto-submit script. It shouldn't be the full session or party name, only login.")
     String adminLogin;
+    @Option(names = {"--add-suffix"}, description = "If language names (for example cpp.gnu) and executable names (for example x86.exe.win32) should be finished with some contest-specific suffix")
+    String langSuffix;
 
     File vfs;
     Properties importProps;
@@ -68,7 +70,7 @@ abstract class ImportAbstract implements Callable<Integer> {
         PrintWriter stdout = spec.commandLine().getOut();
         asker = new ScannerPrinterAsker(sysin, stdout, false, updateAll);
         try {
-            importProps = loadPropertiesOrDefault(new Properties(), "import.properties", importPropsPath);
+            importProps = loadPropertiesOrDefault(new Properties(), null, "import.properties", importPropsPath);
             vfs = readFileFromProperties(importProps, "vfs");
             webroot = readFileFromProperties(importProps, "webroot");
             if (username == null) {
@@ -80,8 +82,14 @@ abstract class ImportAbstract implements Callable<Integer> {
             if (defaultLanguage == null) {
                 defaultLanguage = importProps.getProperty("defaultLanguage", "english");
             }
-            languageProps = loadPropertiesOrDefault(getDefaultLanguageProperties(), "language.properties");
-            executableProps = loadPropertiesOrDefault(getDefaultExecutableProperties(), "executable.properties");
+            if (adminLogin == null) {
+                adminLogin = importProps.getProperty("adminLogin", "0");
+            }
+            if (langSuffix == null) {
+                langSuffix = importProps.getProperty("addSuffix", null);
+            }
+            languageProps = loadPropertiesOrDefault(getDefaultLanguageProperties(), langSuffix, "language.properties");
+            executableProps = loadPropertiesOrDefault(getDefaultExecutableProperties(), langSuffix, "executable.properties");
             downloader = new PackageDownloader(username, password);
             converter = new Converter(importProps, languageProps, executableProps);
             deployer = new Deployer(vfs, webroot);
@@ -143,20 +151,20 @@ abstract class ImportAbstract implements Callable<Integer> {
         return f;
     }
 
-    private static Properties loadPropertiesOrDefault(Properties defaultProps, String fileName, String... filesToTry) {
+    private static Properties loadPropertiesOrDefault(Properties defaultProps, String suffix, String fileName, String... filesToTry) {
         Stream<File> defaultFiles = Stream.of(getPropertiesDefault(fileName), new File(fileName));
         Stream<File> filesToTryStream = Arrays.stream(filesToTry).filter(Objects::nonNull).map(File::new);
         return Stream.concat(filesToTryStream, defaultFiles).map(file -> {
             try {
-                return loadFile(file);
+                return loadFile(file, suffix);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         }).filter(Objects::nonNull).findFirst().orElse(defaultProps);
     }
 
-    private static Properties loadFile(File file) throws IOException {
-        return !file.exists() ? null : loadPropertiesFromFile(file);
+    private static Properties loadFile(File file, String suffix) throws IOException {
+        return !file.exists() ? null : loadPropertiesFromFile(file, suffix);
     }
 
     private static File getPropertiesDefaultDirectory() {
@@ -167,11 +175,17 @@ abstract class ImportAbstract implements Callable<Integer> {
         return new File(getPropertiesDefaultDirectory(), fileName);
     }
 
-    private static Properties loadPropertiesFromFile(File propsFile) throws IOException {
+    private static Properties loadPropertiesFromFile(File propsFile, String suffix) throws IOException {
         Properties props = new Properties();
         if (propsFile.exists()) {
             try (InputStreamReader in = new InputStreamReader(new FileInputStream(propsFile), "UTF-8")) {
                 props.load(in);
+            }
+        }
+        if (suffix != null) {
+            for (Object key : props.keySet()) {
+                String value = props.getProperty((String) key);
+                props.replace(key, value + suffix);
             }
         }
         return props;
