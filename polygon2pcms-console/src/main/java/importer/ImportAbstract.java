@@ -47,6 +47,8 @@ abstract class ImportAbstract implements Callable<Integer> {
     String adminLogin;
     @Option(names = {"--add-suffix"}, description = "If language names (for example cpp.gnu) and executable names (for example x86.exe.win32) should be finished with some contest-specific suffix")
     String langSuffix;
+    @Option(names = {"--auto-submit-dir"}, description = "The path where importer have to copy submit.lst file (the file will also be copied to VFS)")
+    File autoSubmitDir;
 
     File vfs;
     Properties importProps;
@@ -87,6 +89,9 @@ abstract class ImportAbstract implements Callable<Integer> {
             }
             if (langSuffix == null) {
                 langSuffix = importProps.getProperty("addSuffix", null);
+            }
+            if (autoSubmitDir == null) {
+                autoSubmitDir = readFileFromProperties(importProps, "autoSubmitDir");
             }
             languageProps = loadPropertiesOrDefault(getDefaultLanguageProperties(), langSuffix, "language.properties");
             executableProps = loadPropertiesOrDefault(getDefaultExecutableProperties(), langSuffix, "executable.properties");

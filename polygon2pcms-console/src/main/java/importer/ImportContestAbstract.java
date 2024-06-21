@@ -13,6 +13,7 @@ import polygon.Solution;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.file.Files;
 import java.util.Map;
 import java.util.NavigableMap;
 
@@ -57,6 +58,14 @@ public abstract class ImportContestAbstract extends ImportAbstract {
                 }
             }
             deployer.deploySubmitLst(submitListFile, challenge.getId(), copyToVfsConfig);
+            if (autoSubmitDir != null) {
+                logger.info("Deploying submit.lst to auto-submit directory");
+                try {
+                    Files.copy(submitListFile.toPath(), autoSubmitDir.toPath().resolve("submit.lst"));
+                } catch (IOException e) {
+                    logger.warn("Couldn't copy submit.lst to auto-submit directory");
+                }
+            }
         }
 
         if (webroot != null) {
