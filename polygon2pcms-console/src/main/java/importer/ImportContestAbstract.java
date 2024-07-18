@@ -14,6 +14,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.Map;
 import java.util.NavigableMap;
 
@@ -61,10 +62,9 @@ public abstract class ImportContestAbstract extends ImportAbstract {
             if (autoSubmitDir != null) {
                 logger.info("Deploying submit.lst to auto-submit directory");
                 try {
-                    Files.copy(submitListFile.toPath(), autoSubmitDir.toPath().resolve("submit.lst"));
+                    Files.copy(submitListFile.toPath(), autoSubmitDir.toPath().resolve("submit.lst"), StandardCopyOption.REPLACE_EXISTING);
                 } catch (IOException e) {
                     logger.warn("Couldn't copy submit.lst to auto-submit directory: " + e.getMessage());
-                    e.printStackTrace();
                 }
             }
         }
