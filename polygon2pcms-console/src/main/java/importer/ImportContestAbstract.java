@@ -64,6 +64,7 @@ public abstract class ImportContestAbstract extends ImportAbstract {
                     Files.copy(submitListFile.toPath(), autoSubmitDir.toPath().resolve("submit.lst"));
                 } catch (IOException e) {
                     logger.warn("Couldn't copy submit.lst to auto-submit directory: " + e.getMessage());
+                    e.printStackTrace();
                 }
             }
         }
