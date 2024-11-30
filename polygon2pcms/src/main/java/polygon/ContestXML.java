@@ -1,14 +1,18 @@
 package polygon;
 
 import org.xml.sax.SAXException;
+import ru.perveevm.polygon.api.entities.Problem;
 import xmlwrapper.XMLElement;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
+import java.util.Map;
 import java.util.NavigableMap;
 import java.util.TreeMap;
 
 public class ContestXML {
+    private static final String UNDEFINED = "[Contest was downloaded via API, value is undefined]";
+
     protected String url;
     //language -> name
     protected NavigableMap<String, String> contestNames;
@@ -19,6 +23,19 @@ public class ContestXML {
 
     protected ContestXML(File xmlFile) throws IOException, SAXException, ParserConfigurationException {
         this(new FileInputStream(xmlFile));
+    }
+
+    protected ContestXML(Map<String, Problem> contestProblems) throws IOException, SAXException, ParserConfigurationException {
+        this.url = UNDEFINED;
+        this.contestNames = new TreeMap<>();
+        this.problemLinks = new TreeMap<>();
+        this.statementLinks = new TreeMap<>();
+
+        this.contestNames.put("russian", UNDEFINED);
+        this.statementLinks.put("russian", UNDEFINED);
+        for (Map.Entry<String, Problem> entry : contestProblems.entrySet()) {
+            this.problemLinks.put(entry.getKey(), UNDEFINED);
+        }
     }
 
     protected ContestXML(InputStream inputStream) throws ParserConfigurationException, SAXException, IOException {

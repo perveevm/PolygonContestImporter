@@ -20,6 +20,12 @@ import org.xml.sax.SAXException;
 import polygon.ContestDescriptor;
 import polygon.ContestXML;
 import polygon.ProblemDescriptor;
+import ru.perveevm.polygon.api.PolygonSession;
+import ru.perveevm.polygon.api.PolygonSessionBuilder;
+import ru.perveevm.polygon.api.entities.Problem;
+import ru.perveevm.polygon.api.entities.ProblemPackage;
+import ru.perveevm.polygon.api.entities.enums.PackageState;
+import ru.perveevm.polygon.exceptions.api.PolygonSessionException;
 import tempfilemanager.TemporaryFileManager;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -31,18 +37,25 @@ import java.util.stream.Collectors;
 
 public class PackageDownloader {
     private final CloseableHttpClient httpClient = HttpClients.createDefault();
+    private PolygonSession session;
 
     private final String username;
     private final String password;
+    private final String apiKey;
+    private final String apiSecret;
     private final PrintStream logger;
     private final ProgressBarConsumer pbbConsumer;
 
     public PackageDownloader(String username, String password) {
-        this(username, password, System.out, null);
+        this(username, password, null, null, System.out, null);
+    }
+
+    public PackageDownloader(String username, String password, String apiKey, String apiSecret) {
+        this(username, password, apiKey, apiSecret, System.out, null);
     }
 
     public PackageDownloader(String username, String password, PrintStream logger) {
-        this(username, password, logger, new ProgressBarConsumer() {
+        this(username, password, null, null, logger, new ProgressBarConsumer() {
             private String lastLine = null;
 
             @Override
@@ -62,11 +75,17 @@ public class PackageDownloader {
         });
     }
 
-    private PackageDownloader(String username, String password, PrintStream logger, ProgressBarConsumer consumer) {
+    private PackageDownloader(String username, String password, String apiKey, String apiSecret, PrintStream logger, ProgressBarConsumer consumer) {
         this.username = username;
         this.password = password;
+        this.apiKey = apiKey;
+        this.apiSecret = apiSecret;
         this.logger = logger;
         this.pbbConsumer = consumer;
+
+        if (this.apiKey != null && this.apiSecret != null) {
+            this.session = PolygonSessionBuilder.defaultRetryPolygonSession(this.apiKey, this.apiSecret);
+        }
     }
 
     public boolean downloadPackage(String url, String type, File zipFile) throws IOException {
@@ -77,6 +96,21 @@ public class PackageDownloader {
             logger.println("[WARN] Failed to download " + strType + " package: " + statusCode);
         }
         return statusCode == 200;
+    }
+
+    public boolean downloadPackageAPI(Integer problemId, Integer packageId, String type, File zipFile) {
+        String strType = type == null ? "standard" : "windows";
+        try {
+            session.problemPackage(problemId, packageId, strType, zipFile);
+            return true;
+        } catch (PolygonSessionException e) {
+            logger.println("[WARN] Failed to download " + strType + " package: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public Map<String, Problem> getContestProblems(Integer contestId) throws PolygonSessionException {
+        return session.contestProblems(contestId);
     }
 
     public boolean downloadByURL(String url, File file) throws IOException {
@@ -218,6 +252,32 @@ public class PackageDownloader {
         }
     }
 
+    public PolygonPackageType downloadProblemDirectoryAPI(Integer problemId, Integer latestRevision, File probDir, TemporaryFileManager fileManager) throws IOException {
+        Integer packageId = null;
+        try {
+            ProblemPackage[] packages = session.problemPackages(problemId);
+            packageId = Arrays.stream(packages)
+                    .filter(p -> p.getState() == PackageState.READY)
+                    .map(ProblemPackage::getId)
+                    .max(Integer::compareTo)
+                    .orElseThrow(() -> new PolygonSessionException("There are not ready packages for problem"));
+        } catch (PolygonSessionException e) {
+            logger.println("[WARN] Unable to fetch problem packages list for problem " + problemId);
+            throw new AssertionError(e);
+        }
+        logger.println("Trying to download package " + packageId + " of problem " + problemId);
+        try {
+            File zipFile = fileManager.createTemporaryFile("__archive", ".zip");
+            PolygonPackageType fullPackage = downloadProblemPackageAPI(problemId, packageId, zipFile);
+            try (ZipFile zip = new ZipFile(zipFile)) {
+                zip.extractAll(probDir.getAbsolutePath());
+            }
+            return fullPackage;
+        } catch (ZipException e) {
+            throw new AssertionError(e);
+        }
+    }
+
     private PolygonPackageType downloadProblemPackage(String polygonUrl, File zipFile) throws IOException {
         if (username == null || password == null) {
             throw new AssertionError("Polygon username or password is not set");
@@ -226,6 +286,19 @@ public class PackageDownloader {
             return PolygonPackageType.WINDOWS;
         }
         if (downloadPackage(polygonUrl, null, zipFile)) {
+            return PolygonPackageType.STANDARD;
+        }
+        throw new AssertionError("Couldn't download any package");
+    }
+
+    private PolygonPackageType downloadProblemPackageAPI(Integer problemId, Integer packageId, File zipFile) {
+        if (apiKey == null || apiSecret == null) {
+            throw new AssertionError("Polygon API key or API secret is not set");
+        }
+        if (downloadPackageAPI(problemId, packageId, "windows", zipFile)) {
+            return PolygonPackageType.WINDOWS;
+        }
+        if (downloadPackageAPI(problemId, packageId, null, zipFile)) {
             return PolygonPackageType.STANDARD;
         }
         throw new AssertionError("Couldn't download any package");

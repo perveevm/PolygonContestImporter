@@ -1,11 +1,13 @@
 package polygon;
 
 import org.xml.sax.SAXException;
+import ru.perveevm.polygon.api.entities.Problem;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
 import java.util.NavigableMap;
 import java.util.function.Function;
 
@@ -14,6 +16,11 @@ public class ContestDescriptor extends ContestXML {
 
     public ContestDescriptor(File xmlFile, NavigableMap<String, ProblemDescriptor> problems) throws IOException, SAXException, ParserConfigurationException {
         super(xmlFile);
+        this.problems = problems;
+    }
+
+    public ContestDescriptor(Map<String, Problem> contestProblems, NavigableMap<String, ProblemDescriptor> problems) throws IOException, SAXException, ParserConfigurationException {
+        super(contestProblems);
         this.problems = problems;
     }
 

@@ -11,7 +11,8 @@ import java.util.concurrent.Callable;
             ImportChallenge.class,
             ImportProblem.class,
             DownloadProblem.class,
-            DownloadContest.class
+            DownloadContest.class,
+            DownloadContestAPI.class
         },
         mixinStandardHelpOptions = true,
         version = "PolygonContestImporter 1.4.1-SNAPSHOT"

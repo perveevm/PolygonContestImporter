@@ -35,6 +35,10 @@ abstract class ImportAbstract implements Callable<Integer> {
     String username;
     @Option(names = {"-p", "--password"}, description = "Polygon password", interactive = true)
     String password;
+    @Option(names = {"-k", "--key"}, description = "Polygon API key")
+    String apiKey;
+    @Option(names = {"-s", "--secret"}, description = "Polygon API secret", interactive = true)
+    String apiSecret;
     @Option(names = {"--import-props"}, description = "import.properties file path")
     String importPropsPath;
     @Option(names = {"--language"}, description = "Language for problem names and problem statements")
@@ -81,6 +85,12 @@ abstract class ImportAbstract implements Callable<Integer> {
             if (password == null) {
                 password = importProps.getProperty("polygonPassword", null);
             }
+            if (apiKey == null) {
+                apiKey = importProps.getProperty("polygonApiKey", null);
+            }
+            if (apiSecret == null) {
+                apiSecret = importProps.getProperty("polygonApiSecret", null);
+            }
             if (defaultLanguage == null) {
                 defaultLanguage = importProps.getProperty("defaultLanguage", "english");
             }
@@ -95,7 +105,7 @@ abstract class ImportAbstract implements Callable<Integer> {
             }
             languageProps = loadPropertiesOrDefault(getDefaultLanguageProperties(), langSuffix, "language.properties");
             executableProps = loadPropertiesOrDefault(getDefaultExecutableProperties(), langSuffix, "executable.properties");
-            downloader = new PackageDownloader(username, password);
+            downloader = new PackageDownloader(username, password, apiKey, apiSecret);
             converter = new Converter(importProps, languageProps, executableProps);
             deployer = new Deployer(vfs, webroot);
             fileManager = new TemporaryFileManager(tempDir);
